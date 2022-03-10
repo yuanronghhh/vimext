@@ -1,16 +1,16 @@
 let s:is_debug = 0
 
-function! vimext#debug#warningMsg(msg) abort
+function! vimext#debug#warning(msg) abort
     echohl WarningMsg
     echomsg '[warning].'string(a:msg)
     echohl None
 endfunction
 
-function! vimext#debug#errorMsg(msg) abort
+function! vimext#debug#error(msg) abort
     echoerr '[error].'string(a:msg)
 endfunction
 
-function! vimext#debug#echomsg(mark, msg) abort
+function! vimext#debug#info(msg) abort
   if s:is_debug != 1
     return
 
