@@ -123,19 +123,18 @@ function! vimext#config#LoadConfig()
   let $vundle_home = g:vim_plugin."/Vundle.vim"
   set rtp+=$vundle_home
   call vundle#begin(g:vim_plugin)
-  Plugin 'https://github.com/puremourning/vimspector'
-  Plugin 'https://github.com/majutsushi/tagbar.git'
-  Plugin 'https://github.com/python-mode/python-mode.git'
-  Plugin 'https://github.com/fidian/hexmode.git'
-  Plugin 'https://github.com/lilydjwg/colorizer.git'
-  Plugin 'https://github.com/w0rp/ale'
-  Plugin 'https://github.com/Valloric/YouCompleteMe.git'
+  "Plugin 'https://github.com/puremourning/vimspector'
+  "Plugin 'https://github.com/python-mode/python-mode.git'
+  "Plugin 'https://github.com/fidian/hexmode.git'
+  "Plugin 'https://github.com/lilydjwg/colorizer.git'
+  "Plugin 'https://github.com/w0rp/ale'
+  "Plugin 'https://github.com/Valloric/YouCompleteMe.git'
+  "Plugin 'https://github.com/mattn/emmet-vim.git'
 
-  Plugin 'https://github.com/mattn/emmet-vim.git'
+  Plugin 'https://github.com/majutsushi/tagbar.git'
   Plugin 'https://github.com/terryma/vim-multiple-cursors.git'
   Plugin 'https://github.com/preservim/nerdtree.git'
   Plugin 'https://github.com/ervandew/supertab.git'
-  Plugin 'yuanronghhh/vimext.git'
   call vundle#end()
 
   if has("gui_running")
