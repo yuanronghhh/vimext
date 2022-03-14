@@ -58,7 +58,7 @@ function! vimext#config#LoadConfig()
     set linespace=-3
     set clipboard=unnamed
     set path+=/usr/include,/usr/local/include,/usr/lib/gcc/x86_64-linux-gnu/9/include,/usr/include/c++/9,/usr/include/x86_64-linux-gnu/c++/9,/usr/include/c++/9/backward,/home/greyhound/Local/include
-    set guifont=Ubuntu\ Mono\ 12
+    set guifont=Fixedsys\ Excelsior\ 3.01\ 12
 
     let g:ycm_server_python_interpreter = 'python3'
   else
@@ -97,7 +97,7 @@ function! vimext#config#LoadConfig()
   nnoremap <F2> :YcmCompleter GoTo<cr>
   nnoremap <F3> :tabnew<cr>
   nnoremap <F4> :close<cr>
-  nnoremap <F7> :tab Man -s2,3<cword><cr>
+  nnoremap <F7> :tab Man -s2,3 <cword><cr>
   nnoremap <F8> :HeaderOrCode<cr>
 
   let g:ycm_goto_buffer_command = 'split'
@@ -128,9 +128,9 @@ function! vimext#config#LoadConfig()
   "Plugin 'https://github.com/fidian/hexmode.git'
   "Plugin 'https://github.com/lilydjwg/colorizer.git'
   "Plugin 'https://github.com/w0rp/ale'
-  "Plugin 'https://github.com/Valloric/YouCompleteMe.git'
-  "Plugin 'https://github.com/mattn/emmet-vim.git'
+  Plugin 'https://github.com/Valloric/YouCompleteMe.git'
 
+  Plugin 'https://github.com/mattn/emmet-vim.git'
   Plugin 'https://github.com/majutsushi/tagbar.git'
   Plugin 'https://github.com/terryma/vim-multiple-cursors.git'
   Plugin 'https://github.com/preservim/nerdtree.git'
@@ -145,7 +145,7 @@ function! vimext#config#LoadConfig()
 
   command! -nargs=? -complete=custom,vimext#SessionCompelete OpenSession :call vimext#OpenSession("<args>")
   command! -nargs=? -complete=custom,vimext#SessionCompelete SaveSession :call vimext#SaveSession("<args>")
-  command! -nargs=? HeaderOrCode :call vimext:HeaderOrCode()
+  command! -nargs=? HeaderOrCode :call vimext#HeaderOrCode()
   command! -nargs=? JsonFormat :call vimext#JsonFormat()
   command! -nargs=? EditConfig :call vimext#config#Edit()
 
