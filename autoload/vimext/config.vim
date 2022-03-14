@@ -99,6 +99,7 @@ function! vimext#config#LoadConfig()
   nnoremap <F4> :close<cr>
   nnoremap <F7> :tab Man -s2,3 <cword><cr>
   nnoremap <F8> :HeaderOrCode<cr>
+  nnoremap <silent> <buffer> <leader>b :call vimext#pypdb#operate(line('.'))<CR>
 
   let g:ycm_goto_buffer_command = 'split'
   let g:ycm_filepath_completion_use_working_dir = 0
@@ -107,15 +108,6 @@ function! vimext#config#LoadConfig()
   let NERDTreeShowLineNumbers=0
   let NERDTreeAutoDeleteBuffer=1
 
-  let g:pymode = 1
-  let g:pymode_rope_complete_on_dot = 0
-  let g:pymode_lint = 0
-  let g:pymode_folding = 0
-  let g:pymode_rope = 1
-  let g:pymode_rope_project_root = g:vim_ropepath
-  let g:pymode_rope_autoimport = 0
-  let g:pymode_python = 'python3'
-
   let g:hexmode_xxd_options = '-p'
 
   packadd termdebug
@@ -123,10 +115,7 @@ function! vimext#config#LoadConfig()
   let $vundle_home = g:vim_plugin."/Vundle.vim"
   set rtp+=$vundle_home
   call vundle#begin(g:vim_plugin)
-  "Plugin 'https://github.com/puremourning/vimspector'
-  "Plugin 'https://github.com/python-mode/python-mode.git'
   "Plugin 'https://github.com/fidian/hexmode.git'
-  "Plugin 'https://github.com/lilydjwg/colorizer.git'
   "Plugin 'https://github.com/w0rp/ale'
   Plugin 'https://github.com/Valloric/YouCompleteMe.git'
 
@@ -146,6 +135,7 @@ function! vimext#config#LoadConfig()
   command! -nargs=? -complete=custom,vimext#SessionCompelete OpenSession :call vimext#OpenSession("<args>")
   command! -nargs=? -complete=custom,vimext#SessionCompelete SaveSession :call vimext#SaveSession("<args>")
   command! -nargs=? HeaderOrCode :call vimext#HeaderOrCode()
+  command! -nargs=? PythonDoc :call vimext#pypdb#doc("<args>")
   command! -nargs=? JsonFormat :call vimext#JsonFormat()
   command! -nargs=? EditConfig :call vimext#config#Edit()
 
