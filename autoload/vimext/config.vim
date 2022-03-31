@@ -49,7 +49,7 @@ function! vimext#config#LoadConfig()
   " switch case 缩进问题
   set cinoptions=l1
   if has("gui_running")
-    set columns=120 lines=40
+    set columns=120 lines=30
   endif
   set undofile
   set ssop=blank,buffers,curdir,folds,tabpages,terminal
@@ -58,7 +58,7 @@ function! vimext#config#LoadConfig()
     set linespace=-3
     set clipboard=unnamed
     set path+=/usr/include,/usr/local/include,/usr/lib/gcc/x86_64-linux-gnu/9/include,/usr/include/c++/9,/usr/include/x86_64-linux-gnu/c++/9,/usr/include/c++/9/backward,/home/greyhound/Local/include
-    set guifont=Fixedsys\ Excelsior\ 3.01\ 12
+    set guifont=Ubuntu\ Mono\ 12
 
     let g:ycm_server_python_interpreter = 'python3'
   else
@@ -112,11 +112,16 @@ function! vimext#config#LoadConfig()
   let NERDTreeAutoDeleteBuffer=1
 
   let g:hexmode_xxd_options = '-p'
+  let g:vimspector_enable_mappings = 'HUMAN'
 
   let $vundle_home = g:vim_plugin."/Vundle.vim"
   set rtp+=$vundle_home
   call vundle#begin(g:vim_plugin)
   "Plugin 'https://github.com/puremourning/vimspector'
+  "Plugin 'https://github.com/w0rp/ale'
+  "Plugin 'https://github.com/lilydjwg/colorizer.git'
+  "Plugin 'https://github.com/w0rp/ale'
+  "Plugin 'https://github.com/Valloric/YouCompleteMe.git'
 
   Plugin 'https://github.com/fidian/hexmode.git'
   Plugin 'https://github.com/mattn/emmet-vim.git'
