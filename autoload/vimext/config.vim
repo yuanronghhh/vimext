@@ -57,7 +57,7 @@ function! vimext#config#LoadConfig()
   if has("unix")
     set linespace=-3
     set clipboard=unnamed
-    set path+=/usr/include,/usr/local/include,/usr/lib/gcc/x86_64-linux-gnu/9/include,/usr/include/c++/9,/usr/include/x86_64-linux-gnu/c++/9,/usr/include/c++/9/backward,/home/greyhound/Local/include
+    set path+=/usr/include/x86_64-linux-gnu,/usr/include,/usr/local/include,/usr/lib/gcc/x86_64-linux-gnu/9/include,/usr/include/c++/9,/usr/include/x86_64-linux-gnu/c++/9,/usr/include/c++/9/backward,/home/greyhound/Local/include
     set guifont=Ubuntu\ Mono\ 12
 
     let g:ycm_server_python_interpreter = 'python3'
@@ -99,8 +99,6 @@ function! vimext#config#LoadConfig()
   nnoremap <F3> :tabnew<cr>
   nnoremap <F4> :close<cr>
   nnoremap <F7> :tab Man -s2,3 <cword><cr>
-  nnoremap <F8> :HeaderOrCode<cr>
-  nnoremap <silent> <leader>b :call vimext#pypdb#operate(line('.'))<CR>
 
   let g:ycm_goto_buffer_command = 'split'
   let g:ycm_filepath_completion_use_working_dir = 0
@@ -120,8 +118,7 @@ function! vimext#config#LoadConfig()
   "Plugin 'https://github.com/puremourning/vimspector'
   "Plugin 'https://github.com/w0rp/ale'
   "Plugin 'https://github.com/lilydjwg/colorizer.git'
-  "Plugin 'https://github.com/w0rp/ale'
-  "Plugin 'https://github.com/Valloric/YouCompleteMe.git'
+  Plugin 'https://github.com/Valloric/YouCompleteMe.git'
 
   Plugin 'https://github.com/fidian/hexmode.git'
   Plugin 'https://github.com/mattn/emmet-vim.git'
@@ -148,6 +145,8 @@ function! vimext#config#LoadConfig()
   au! BufRead *.vue :set ft=html
   au! BufRead *.vala :set ft=cpp
   au! BufRead *.cst :set ft=javascript
+  au! FileType python :nnoremap <silent> <leader>b :call vimext#pypdb#operate(line('.'))<CR>
+  au! FileType c :nnoremap <F8> :HeaderOrCode<cr>
 endfunction
 
 function! vimext#config#Edit()
