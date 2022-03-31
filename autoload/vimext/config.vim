@@ -64,6 +64,7 @@ function! vimext#config#LoadConfig()
   else
     set clipboard=unnamed
     set guifont=Fixedsys\ Excelsior\ 3.01\ h12
+    set grepprg=grep\ -nH
   endif
 
   let &undodir = g:vim_home."/undodir"
@@ -99,10 +100,12 @@ function! vimext#config#LoadConfig()
   nnoremap <F4> :close<cr>
   nnoremap <F7> :tab Man -s2,3 <cword><cr>
   nnoremap <F8> :HeaderOrCode<cr>
-  nnoremap <silent> <buffer> <leader>b :call vimext#pypdb#operate(line('.'))<CR>
+  nnoremap <silent> <leader>b :call vimext#pypdb#operate(line('.'))<CR>
 
   let g:ycm_goto_buffer_command = 'split'
   let g:ycm_filepath_completion_use_working_dir = 0
+
+  let g:vimspector_enable_mappings = 'HUMAN'
 
   let NERDTreeShowHidden=1
   let NERDTreeShowLineNumbers=0
@@ -110,15 +113,12 @@ function! vimext#config#LoadConfig()
 
   let g:hexmode_xxd_options = '-p'
 
-  packadd termdebug
-
   let $vundle_home = g:vim_plugin."/Vundle.vim"
   set rtp+=$vundle_home
   call vundle#begin(g:vim_plugin)
-  "Plugin 'https://github.com/fidian/hexmode.git'
-  "Plugin 'https://github.com/w0rp/ale'
-  Plugin 'https://github.com/Valloric/YouCompleteMe.git'
+  "Plugin 'https://github.com/puremourning/vimspector'
 
+  Plugin 'https://github.com/fidian/hexmode.git'
   Plugin 'https://github.com/mattn/emmet-vim.git'
   Plugin 'https://github.com/majutsushi/tagbar.git'
   Plugin 'https://github.com/terryma/vim-multiple-cursors.git'

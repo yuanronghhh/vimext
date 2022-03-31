@@ -1,7 +1,7 @@
 "
 " code from python-mode https://github.com/python-mode/python-mode.git
 "
-function! vimext#pypdb#operate(lnum)
+function vimext#pypdb#operate(lnum)
   let line = getline(a:lnum)
   let g:vimext_breakpoint_cmd = 'import pdb; pdb.set_trace()  # XXX BREAKPOINT'
 
@@ -20,7 +20,7 @@ function! vimext#pypdb#operate(lnum)
   endif
 endfunction
 
-function! vimext#pypdb#save()
+function vimext#pypdb#save()
     if &modifiable && &modified
         try
             noautocmd write
@@ -32,7 +32,7 @@ function! vimext#pypdb#save()
     return expand('%') != ''
 endfunction
 
-function! vimext#pypdb#doc(word)
+function vimext#pypdb#doc(word)
   let l:word = a:word
 
   if strlen(l:word) == 0

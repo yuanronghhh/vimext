@@ -35,6 +35,7 @@ function vimext#SaveSession(sfile)
     let l:sfile = a:sfile.".vim"
   endif
 
+  exec ":NERDTreeClose"
   echo "mks! ".g:vim_session."/".l:sfile
   exec "mks! ".g:vim_session."/".l:sfile
 endfunction
@@ -57,6 +58,7 @@ function vimext#OpenSession(sfile)
 
   echo "source ".g:vim_session."/".l:sfile
   exec "source ".g:vim_session."/".l:sfile
+  exec ":NERDTreeFind"
 endfunction
 
 function! vimext#SetUp()
