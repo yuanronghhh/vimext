@@ -12,18 +12,21 @@ function vimext#HeaderOrCode()
   let l:extensions = ['*.c', '*.h' , '*.cpp' , '*.hpp' , '*.py' , '*.cs' , '*.js' , 'CMakeLists.txt', '*.cmake', '*.lua']
   let l:cmd = "find ./ -type f -name '".join(l:extensions, "' -or -name '")."' | xargs -d '\\n' ctags --extras=+f -a"
   let l:tfiles = tagfiles()
+  let l:nname = ""
 
   if len(l:tfiles) == 0
     exec "silent :!".l:cmd
   endif
 
   if "cpp" == l:cext || "c" == l:cext
-    exec ":edit %<.h"
+    let l:nname = expand("%<").".h"
+    if filereadable(l:nname)
+      exec ":edit ".l:nname
+      call search(l:content, 'c')
+    endif
   else
     exec ":silent! tag! ".l:content
   endif
-
-  call search(l:content, 'c')
 endfunction
 
 function vimext#JsonFormat()
@@ -40,7 +43,7 @@ function vimext#SaveSession(sfile)
     let l:sfile = a:sfile.".vim"
   endif
 
-  exec ":NERDTreeClose"
+  :NERDTreeClose
   echo "mks! ".g:vim_session."/".l:sfile
   exec "mks! ".g:vim_session."/".l:sfile
 endfunction
@@ -63,7 +66,7 @@ function vimext#OpenSession(sfile)
 
   echo "source ".g:vim_session."/".l:sfile
   exec "source ".g:vim_session."/".l:sfile
-  exec ":NERDTreeFind"
+  :NERDTreeFind
 endfunction
 
 function! vimext#SetUp()

@@ -104,9 +104,9 @@ function! vimext#config#LoadConfig()
 
   let g:vimspector_enable_mappings = 'HUMAN'
 
-  let g:NERDTreeShowHidden=1
-  let g:NERDTreeShowLineNumbers=0
-  let g:NERDTreeAutoDeleteBuffer=1
+  let g:NERDTreeShowHidden = 1
+  let g:NERDTreeShowLineNumbers = 0
+  let g:NERDTreeAutoDeleteBuffer = 1
   let g:NERDTreeBookmarksFile = g:vim_session."/NERDTreeBookmarks"
 
   let g:hexmode_xxd_options = '-p'
@@ -146,7 +146,7 @@ function! vimext#config#LoadConfig()
   autocmd! BufRead *.vala :set ft=cpp
   autocmd! BufRead *.cst :set ft=javascript
   autocmd! FileType python :nnoremap <silent> <leader>b :call vimext#pypdb#operate(line('.'))<CR>
-  autocmd! FileType c,cs,python,cpp :nnoremap <F2> :HeaderOrCode<cr>
+  autocmd! FileType js,cmake,c,cs,python,cpp,lua :nnoremap <F2> :HeaderOrCode<cr>
 endfunction
 
 function! vimext#config#Edit()
