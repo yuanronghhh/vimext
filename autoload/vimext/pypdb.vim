@@ -18,6 +18,8 @@ function vimext#pypdb#operate(lnum)
     call append(line('.')-1, indents.g:vimext_breakpoint_cmd)
     normal k
   endif
+
+  call vimext#pypdb#save()
 endfunction
 
 function vimext#pypdb#save()
@@ -36,16 +38,15 @@ function vimext#pypdb#doc(word)
   let l:word = a:word
 
   if strlen(l:word) == 0
-    let l:word = expand("<cword>")
+    let l:line = getline(".")
+    let l:pre = l:line[:col(".") - 1]
+    let l:suf = l:line[col("."):]
+    let l:word = matchstr(pre, "[A-Za-z0-9_.]*$") . matchstr(suf, "^[A-Za-z0-9_]*")
   endif
 
-  exec ":tabnew __doc__"
-  exec ":%!python -m pydoc ".l:word
-  setlocal nomodifiable
-  setlocal modifiable
-  setlocal noswapfile
-  setlocal buftype=nofile
-  setlocal bufhidden=delete
-  setlocal syntax=man
-  setlocal nolist
+  exe "botright 8new __doc__"
+  exec ":%!python3 -m pydoc ".l:word
+  pclose
+  setlocal nomodified nomodifiable buftype=nofile bufhidden=delete noswapfile nowrap previewwindow filetype=rst
+  redraw
 endfunction

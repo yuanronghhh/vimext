@@ -95,7 +95,6 @@ function! vimext#config#LoadConfig()
   nnoremap <C-k> gT
   nnoremap <C-l> <C-w>l
   nnoremap <C-s> :w<cr>
-  nnoremap <F2> :YcmCompleter GoTo<cr>
   nnoremap <F3> :tabnew<cr>
   nnoremap <F4> :close<cr>
   nnoremap <F7> :tab Man -s2,3 <cword><cr>
@@ -105,9 +104,10 @@ function! vimext#config#LoadConfig()
 
   let g:vimspector_enable_mappings = 'HUMAN'
 
-  let NERDTreeShowHidden=1
-  let NERDTreeShowLineNumbers=0
-  let NERDTreeAutoDeleteBuffer=1
+  let g:NERDTreeShowHidden=1
+  let g:NERDTreeShowLineNumbers=0
+  let g:NERDTreeAutoDeleteBuffer=1
+  let g:NERDTreeBookmarksFile = g:vim_session."/NERDTreeBookmarks"
 
   let g:hexmode_xxd_options = '-p'
   let g:vimspector_enable_mappings = 'HUMAN'
@@ -115,10 +115,10 @@ function! vimext#config#LoadConfig()
   let $vundle_home = g:vim_plugin."/Vundle.vim"
   set rtp+=$vundle_home
   call vundle#begin(g:vim_plugin)
-  "Plugin 'https://github.com/puremourning/vimspector'
+  Plugin 'https://github.com/puremourning/vimspector'
   "Plugin 'https://github.com/w0rp/ale'
   "Plugin 'https://github.com/lilydjwg/colorizer.git'
-  Plugin 'https://github.com/Valloric/YouCompleteMe.git'
+  "Plugin 'https://github.com/Valloric/YouCompleteMe.git'
 
   Plugin 'https://github.com/fidian/hexmode.git'
   Plugin 'https://github.com/mattn/emmet-vim.git'
@@ -141,12 +141,12 @@ function! vimext#config#LoadConfig()
   command! -nargs=? JsonFormat :call vimext#JsonFormat()
   command! -nargs=? EditConfig :call vimext#config#Edit()
 
-  au! BufRead *.vs,*.vert,*.glsl,*.frag :set ft=c
-  au! BufRead *.vue :set ft=html
-  au! BufRead *.vala :set ft=cpp
-  au! BufRead *.cst :set ft=javascript
-  au! FileType python :nnoremap <silent> <leader>b :call vimext#pypdb#operate(line('.'))<CR>
-  au! FileType c :nnoremap <F8> :HeaderOrCode<cr>
+  autocmd! BufRead *.vs,*.vert,*.glsl,*.frag :set ft=c
+  autocmd! BufRead *.vue :set ft=html
+  autocmd! BufRead *.vala :set ft=cpp
+  autocmd! BufRead *.cst :set ft=javascript
+  autocmd! FileType python :nnoremap <silent> <leader>b :call vimext#pypdb#operate(line('.'))<CR>
+  autocmd! FileType c,cs,python,cpp :nnoremap <F2> :HeaderOrCode<cr>
 endfunction
 
 function! vimext#config#Edit()

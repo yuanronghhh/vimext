@@ -9,13 +9,18 @@ endfunction
 function vimext#HeaderOrCode()
   let l:cext = expand("%:e")
   let l:content = expand("<cword>")
+  let l:extensions = ['*.c', '*.h' , '*.cpp' , '*.hpp' , '*.py' , '*.cs' , '*.js' , 'CMakeLists.txt', '*.cmake', '*.lua']
+  let l:cmd = "find ./ -type f -name '".join(l:extensions, "' -or -name '")."' | xargs -d '\\n' ctags --extras=+f -a"
+  let l:tfiles = tagfiles()
 
-  if "cpp" == l:cext
-    exec ":edit %<.hpp"
-  elseif "c" == l:cext
+  if len(l:tfiles) == 0
+    exec "silent :!".l:cmd
+  endif
+
+  if "cpp" == l:cext || "c" == l:cext
     exec ":edit %<.h"
   else
-    exec ":tag ".l:content
+    exec ":silent! tag! ".l:content
   endif
 
   call search(l:content, 'c')
