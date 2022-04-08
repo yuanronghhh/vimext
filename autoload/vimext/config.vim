@@ -140,6 +140,7 @@ function! vimext#config#LoadConfig()
   command! -nargs=? PythonDoc :call vimext#pypdb#doc("<args>")
   command! -nargs=? JsonFormat :call vimext#JsonFormat()
   command! -nargs=? EditConfig :call vimext#config#Edit()
+  command! -nargs=? GenCtags :call vimext#GenCtags()
 
   autocmd! BufRead *.vs,*.vert,*.glsl,*.frag :set ft=c
   autocmd! BufRead *.vue :set ft=html

@@ -6,16 +6,21 @@ function vimext#ClosePair(char)
     endif
 endfunction
 
+function vimext#GenCtags()
+  let l:extensions = ['*.c', '*.h' , '*.cpp' , '*.hpp' , '*.py' , '*.cs' , '*.js' , 'CMakeLists.txt', '*.cmake', '*.lua']
+  let l:cmd = "find ./ -type f -name '".join(l:extensions, "' -or -name '")."' | xargs -d '\\n' ctags --extras=+f -a"
+
+  exec "silent :!".l:cmd
+endfunction
+
 function vimext#HeaderOrCode()
   let l:cext = expand("%:e")
   let l:content = expand("<cword>")
-  let l:extensions = ['*.c', '*.h' , '*.cpp' , '*.hpp' , '*.py' , '*.cs' , '*.js' , 'CMakeLists.txt', '*.cmake', '*.lua']
-  let l:cmd = "find ./ -type f -name '".join(l:extensions, "' -or -name '")."' | xargs -d '\\n' ctags --extras=+f -a"
-  let l:tfiles = tagfiles()
   let l:nname = ""
+  let l:tfiles = tagfiles()
 
   if len(l:tfiles) == 0
-    exec "silent :!".l:cmd
+    call vimext#GenCtags()
   endif
 
   if "cpp" == l:cext || "c" == l:cext
