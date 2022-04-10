@@ -18,8 +18,6 @@ function vimext#pypdb#operate(lnum)
     call append(line('.')-1, indents.g:vimext_breakpoint_cmd)
     normal k
   endif
-
-  call vimext#pypdb#save()
 endfunction
 
 function vimext#pypdb#save()

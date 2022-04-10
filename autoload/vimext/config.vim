@@ -95,6 +95,7 @@ function! vimext#config#LoadConfig()
   nnoremap <C-k> gT
   nnoremap <C-l> <C-w>l
   nnoremap <C-s> :w<cr>
+  nnoremap <F2> :call vimext#HeaderOrCode()<cr>
   nnoremap <F3> :tabnew<cr>
   nnoremap <F4> :close<cr>
   nnoremap <F7> :tab Man -s2,3 <cword><cr>
@@ -146,8 +147,7 @@ function! vimext#config#LoadConfig()
   autocmd! BufRead *.vue :set ft=html
   autocmd! BufRead *.vala :set ft=cpp
   autocmd! BufRead *.cst :set ft=javascript
-  autocmd! FileType python :nnoremap <silent> <leader>b :call vimext#pypdb#operate(line('.'))<CR>
-  autocmd! FileType js,cmake,c,cs,python,cpp,lua :nnoremap <F2> :HeaderOrCode<cr>
+  autocmd! FileType python :nnoremap <buffer> <leader>b :call vimext#pypdb#operate(line('.'))<cr>
 endfunction
 
 function! vimext#config#Edit()
