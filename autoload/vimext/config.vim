@@ -126,7 +126,7 @@ function! vimext#config#LoadConfig()
   "Plugin 'https://github.com/puremourning/vimspector'
   "Plugin 'https://github.com/w0rp/ale'
   "Plugin 'https://github.com/lilydjwg/colorizer.git'
-  Plugin 'https://github.com/Valloric/YouCompleteMe.git'
+  "Plugin 'https://github.com/Valloric/YouCompleteMe.git'
 
   Plugin 'https://github.com/fidian/hexmode.git'
   Plugin 'https://github.com/mattn/emmet-vim.git'

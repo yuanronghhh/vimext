@@ -8,9 +8,9 @@ endfunction
 
 function vimext#GenCtags()
   let l:extensions = ['*.c', '*.h' , '*.cpp' , '*.hpp' , '*.py' , '*.cs' , '*.js' , 'CMakeLists.txt', '*.cmake', '*.lua']
-  let l:cmd = "find ./ -type f -name '".join(l:extensions, "' -or -name '")."' | xargs -d '\\n' ctags --extras=+f -a"
+  let l:cmd = "find ./ -type f -name '".join(l:extensions, "' -or -name '")."' | xargs -d '\\n' ctags -a"
 
-  exec "silent :!".l:cmd
+  exec ":!".l:cmd
 endfunction
 
 function vimext#HeaderOrCode()
