@@ -43,7 +43,7 @@ function vimext#pypdb#doc(word)
   endif
 
   exe "botright 8new __doc__"
-  exec ":%!python3 -m pydoc ".l:word
+  exec ":%!".g:python_cmd." -m pydoc ".l:word
   pclose
   setlocal nomodified nomodifiable buftype=nofile bufhidden=delete noswapfile nowrap previewwindow filetype=rst
   redraw

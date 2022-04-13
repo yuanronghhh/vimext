@@ -21,7 +21,7 @@ endif
 let g:vim_plugin = g:vim_home."/plugins"
 let $vimext_home = g:vim_plugin."/vimext"
 set rtp+=$vimext_home
-call vimext#SetUp()
+call vimext#setUp()
 ```
 
 3. execute `:EditConfig` to edit.

@@ -1,3 +1,5 @@
+let g:vimext_loaded = 0
+
 function! vimext#config#LoadConfig()
   behave xterm
   runtime ftplugin/man.vim
@@ -49,28 +51,33 @@ function! vimext#config#LoadConfig()
   " switch case 缩进问题
   set cinoptions=l1
   if has("gui_running")
-    set columns=120 lines=30
+    set columns=120 lines=40
   endif
   set undofile
   set ssop=blank,buffers,curdir,folds,tabpages,terminal
+  let g:python_cmd = "python3"
+
+  let &undodir = g:vim_home."/undodir"
+  let g:vim_plugin = g:vim_home."/plugins"
+  let g:vim_session = g:vim_home."/session"
+  let g:vim_ropepath = g:vim_home."/rope"
+
 
   if has("unix")
     set linespace=-3
     set clipboard=unnamed
     set path+=/usr/include/x86_64-linux-gnu,/usr/include,/usr/local/include,/usr/lib/gcc/x86_64-linux-gnu/9/include,/usr/include/c++/9,/usr/include/x86_64-linux-gnu/c++/9,/usr/include/c++/9/backward,/home/greyhound/Local/include
     set guifont=Ubuntu\ Mono\ 12
-
-    let g:ycm_server_python_interpreter = 'python3'
   else
     set clipboard=unnamed
     set guifont=Fixedsys\ Excelsior\ 3.01\ h12
     set grepprg=grep\ -nH
-  endif
+    let g:python_cmd = "python"
 
-  let &undodir = g:vim_home."/undodir"
-  let g:vim_plugin = g:vim_home."/plugins"
-  let g:vim_session = g:vim_home."/session"
-  let g:vim_ropepath = g:vim_home."/rope"
+    let g:prog_home = substitute(expand("$PROGRAMW6432"), '\\', '/', 'g')
+    let $GitBash = "\"".g:prog_home."/Git/bin/bash.exe\""
+    set shell=$GitBash
+  endif
 
   inoremap < <><ESC>i
   inoremap > <c-r>=vimext#ClosePair('>')<CR>
@@ -95,7 +102,7 @@ function! vimext#config#LoadConfig()
   nnoremap <C-k> gT
   nnoremap <C-l> <C-w>l
   nnoremap <C-s> :w<cr>
-  nnoremap <F2> :call vimext#HeaderOrCode()<cr>
+  nnoremap <F2> :HeaderOrCode<cr>
   nnoremap <F3> :tabnew<cr>
   nnoremap <F4> :close<cr>
   nnoremap <F7> :tab Man -s2,3 <cword><cr>
@@ -116,10 +123,10 @@ function! vimext#config#LoadConfig()
   let $vundle_home = g:vim_plugin."/Vundle.vim"
   set rtp+=$vundle_home
   call vundle#begin(g:vim_plugin)
-  Plugin 'https://github.com/puremourning/vimspector'
+  "Plugin 'https://github.com/puremourning/vimspector'
   "Plugin 'https://github.com/w0rp/ale'
   "Plugin 'https://github.com/lilydjwg/colorizer.git'
-  "Plugin 'https://github.com/Valloric/YouCompleteMe.git'
+  Plugin 'https://github.com/Valloric/YouCompleteMe.git'
 
   Plugin 'https://github.com/fidian/hexmode.git'
   Plugin 'https://github.com/mattn/emmet-vim.git'
@@ -151,6 +158,11 @@ function! vimext#config#LoadConfig()
 endfunction
 
 function! vimext#config#Edit()
+  if g:vimext_loaded == 1
+    return
+  endif
+
   let l:vimext_config = g:vim_plugin."/vimext/autoload/vimext/config.vim"
   exec ":edit ".l:vimext_config
+  let g:vimext_loaded = 1
 endfunction
