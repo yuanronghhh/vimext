@@ -1,6 +1,10 @@
 let g:vimext_loaded = 0
 
-function! vimext#config#LoadConfig()
+function vimext#config#LoadConfig()
+  if g:vimext_loaded == 1
+    return
+  endif
+
   behave xterm
   runtime ftplugin/man.vim
 
@@ -74,9 +78,8 @@ function! vimext#config#LoadConfig()
     set grepprg=grep\ -nH
     let g:python_cmd = "python"
 
-    let g:prog_home = substitute(expand("$PROGRAMW6432"), '\\', '/', 'g')
-    let $GitBash = "\"".g:prog_home."/Git/bin/bash.exe\""
-    set shell=$GitBash
+    let $BashEnv = vimext#config#GetShell()
+    set shell=$BashEnv
   endif
 
   inoremap < <><ESC>i
@@ -119,9 +122,12 @@ function! vimext#config#LoadConfig()
 
   let g:hexmode_xxd_options = '-p'
   let g:vimspector_enable_mappings = 'HUMAN'
+  let g:termdebug_wide = 163
 
   let $vundle_home = g:vim_plugin."/Vundle.vim"
   set rtp+=$vundle_home
+
+  packadd TermDebug
   call vundle#begin(g:vim_plugin)
   "Plugin 'https://github.com/puremourning/vimspector'
   "Plugin 'https://github.com/w0rp/ale'
@@ -149,20 +155,33 @@ function! vimext#config#LoadConfig()
   command! -nargs=? JsonFormat :call vimext#JsonFormat()
   command! -nargs=? EditConfig :call vimext#config#Edit()
   command! -nargs=? GenCtags :call vimext#GenCtags()
+  command! -nargs=? GetBinPath :call vimext#GetBinPath("<args>")
 
   autocmd! BufRead *.vs,*.vert,*.glsl,*.frag :set ft=c
   autocmd! BufRead *.vue :set ft=html
   autocmd! BufRead *.vala :set ft=cpp
   autocmd! BufRead *.cst :set ft=javascript
   autocmd! FileType python :nnoremap <buffer> <leader>b :call vimext#pypdb#operate(line('.'))<cr>
+  autocmd! TerminalOpen * if &buftype == 'terminal' | wincmd J | endif
+
+  let g:vimext_loaded = 1
 endfunction
 
-function! vimext#config#Edit()
-  if g:vimext_loaded == 1
-    return
+function vimext#config#GetShell()
+  let l:bpaths = vimext#GetBinPath("bash")
+  let l:len =  len(l:bpaths)
+  let l:bpath = ''
+
+  if l:len == 1
+    let l:bpath = l:bpaths[0]
+  else
+    let l:bpath = l:bpaths[1]
   endif
 
+  return substitute(l:bpath, "\\", "/", 'g')
+endfunction
+
+function vimext#config#Edit()
   let l:vimext_config = g:vim_plugin."/vimext/autoload/vimext/config.vim"
   exec ":edit ".l:vimext_config
-  let g:vimext_loaded = 1
 endfunction

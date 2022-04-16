@@ -1,9 +1,15 @@
-function! vimext#ClosePair(char)
+function vimext#ClosePair(char)
   if getline('.')[col('.') - 1] == a:char
     return "\<Right>"
   else
     return a:char
   endif
+endfunction
+
+function vimext#GetBinPath(cmd)
+  silent let l:bin_output = system("where ".a:cmd)
+  let l:bpaths = split(l:bin_output, '\n')
+  return l:bpaths
 endfunction
 
 function vimext#GenCtags()
@@ -34,7 +40,7 @@ function vimext#HeaderOrCode()
   endif
 endfunction
 
-function! vimext#JsonFormat()
+function vimext#JsonFormat()
   exec ":%!".g:python_cmd." -m json.tool"
 endfunction
 
@@ -53,12 +59,13 @@ function vimext#SaveSession(sfile)
   exec "mks! ".g:vim_session."/".l:sfile
 endfunction
 
-function! vimext#SessionCompelete(A,L,P)
+function vimext#SessionCompelete(A,L,P)
   let alist = map(globpath(g:vim_session, "*", 1, 1), "fnamemodify(v:val, ':p:t')")
+
   return join(alist, "\n")
 endfunction
 
-function! vimext#OpenSession(sfile)
+function vimext#OpenSession(sfile)
   let l:sfile = a:sfile
 
   if stridx(a:sfile, ".vim") == -1
@@ -74,6 +81,6 @@ function! vimext#OpenSession(sfile)
   :NERDTreeFind
 endfunction
 
-function! vimext#SetUp()
+function vimext#SetUp()
   call vimext#config#LoadConfig()
 endfunction
