@@ -109,7 +109,6 @@ function vimext#config#LoadConfig()
   nnoremap <F3> :tabnew<cr>
   nnoremap <F4> :close<cr>
   nnoremap <F7> :tab Man -s2,3 <cword><cr>
-  tnoremap <C-n> <C-W>N
 
 
   let g:ycm_goto_buffer_command = 'split'
@@ -124,7 +123,6 @@ function vimext#config#LoadConfig()
 
   let g:hexmode_xxd_options = '-p'
   let g:vimspector_enable_mappings = 'HUMAN'
-  let g:termdebug_wide = 163
 
   let $vundle_home = g:vim_plugin."/Vundle.vim"
   set rtp+=$vundle_home
