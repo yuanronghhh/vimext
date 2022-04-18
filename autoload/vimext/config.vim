@@ -127,7 +127,7 @@ function vimext#config#LoadConfig()
   let $vundle_home = g:vim_plugin."/Vundle.vim"
   set rtp+=$vundle_home
 
-  packadd TermDebug
+  packadd termdebug
   call vundle#begin(g:vim_plugin)
   "Plugin 'https://github.com/puremourning/vimspector'
   "Plugin 'https://github.com/w0rp/ale'
