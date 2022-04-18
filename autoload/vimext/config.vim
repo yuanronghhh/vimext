@@ -168,17 +168,8 @@ function vimext#config#LoadConfig()
 endfunction
 
 function vimext#config#GetShell()
-  let l:bpaths = vimext#GetBinPath("bash")
-  let l:len =  len(l:bpaths)
-  let l:bpath = ''
-
-  if l:len == 1
-    let l:bpath = l:bpaths[0]
-  else
-    let l:bpath = l:bpaths[1]
-  endif
-
-  return substitute(l:bpath, "\\", "/", 'g')
+  let l:bpath = vimext#GetBinPath("bash")
+  return "\"".l:bpath."\""
 endfunction
 
 function vimext#config#Edit()

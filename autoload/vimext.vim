@@ -6,10 +6,26 @@ function vimext#ClosePair(char)
   endif
 endfunction
 
+function vimext#DirName(name)
+  return fnamemodify(a:name, ':p:t')
+endfunction
+
 function vimext#GetBinPath(cmd)
   silent let l:bin_output = system("where ".a:cmd)
   let l:bpaths = split(l:bin_output, '\n')
-  return l:bpaths
+  let l:len =  len(l:bpaths)
+  let l:bpath = ''
+
+  if l:len == 0
+    return ""
+  elseif l:len == 1
+    let l:bpath = l:bpaths[0]
+  else
+    let l:bpath = l:bpaths[l:len-1]
+  endif
+
+  let l:bpath = substitute(l:bpath, "\\", "/", 'g')
+  return l:bpath
 endfunction
 
 function vimext#GenCtags()
