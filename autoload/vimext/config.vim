@@ -110,7 +110,6 @@ function vimext#config#LoadConfig()
   nnoremap <F4> :close<cr>
   nnoremap <F7> :tab Man -s2,3 <cword><cr>
 
-
   let g:ycm_goto_buffer_command = 'split'
   let g:ycm_filepath_completion_use_working_dir = 0
 
