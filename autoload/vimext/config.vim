@@ -78,8 +78,10 @@ function vimext#config#LoadConfig()
     set grepprg=grep\ -nH
     let g:python_cmd = "python"
 
-    let $BashEnv = vimext#config#GetShell()
-    set shell=$BashEnv
+    let $BashBin = vimext#config#GetShell()
+    let $BashHome = vimext#DirName($BashBin)
+    let $PATH .= ";".$BashHome.";".$vimext_home."/tools"
+    set shell=$BashBin
   endif
 
   inoremap < <><ESC>i

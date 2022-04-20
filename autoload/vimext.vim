@@ -7,7 +7,7 @@ function vimext#ClosePair(char)
 endfunction
 
 function vimext#DirName(name)
-  return fnamemodify(a:name, ':p:t')
+  return fnamemodify(a:name, ':h')."\""
 endfunction
 
 function vimext#GetBinPath(cmd)
