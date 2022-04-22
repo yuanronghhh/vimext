@@ -66,7 +66,6 @@ function vimext#config#LoadConfig()
   let g:vim_session = g:vim_home."/session"
   let g:vim_ropepath = g:vim_home."/rope"
 
-
   if has("unix")
     set linespace=-3
     set clipboard=unnamed
@@ -111,6 +110,7 @@ function vimext#config#LoadConfig()
   nnoremap <F3> :tabnew<cr>
   nnoremap <F4> :close<cr>
   nnoremap <F7> :tab Man -s2,3 <cword><cr>
+  nnoremap <F8> :YcmCompleter GoTo<cr>
 
   let g:ycm_goto_buffer_command = 'split'
   let g:ycm_filepath_completion_use_working_dir = 0
@@ -131,9 +131,9 @@ function vimext#config#LoadConfig()
   packadd termdebug
   call vundle#begin(g:vim_plugin)
   "Plugin 'https://github.com/puremourning/vimspector'
-  "Plugin 'https://github.com/w0rp/ale'
   "Plugin 'https://github.com/lilydjwg/colorizer.git'
-  "Plugin 'https://github.com/Valloric/YouCompleteMe.git'
+  Plugin 'https://github.com/w0rp/ale'
+  Plugin 'https://github.com/Valloric/YouCompleteMe.git'
 
   Plugin 'https://github.com/fidian/hexmode.git'
   Plugin 'https://github.com/mattn/emmet-vim.git'
