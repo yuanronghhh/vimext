@@ -11,7 +11,12 @@ function vimext#DirName(name)
 endfunction
 
 function vimext#GetBinPath(cmd)
-  silent let l:bin_output = system("where ".a:cmd)
+  let l:bin_output = system("where ".a:cmd)
+
+  if l:bin_output == ""
+    let l:bin_output = exepath(a:cmd)
+  endif
+
   let l:bpaths = split(l:bin_output, '\n')
   let l:len =  len(l:bpaths)
   let l:bpath = ''
@@ -21,7 +26,13 @@ function vimext#GetBinPath(cmd)
   elseif l:len == 1
     let l:bpath = l:bpaths[0]
   else
-    let l:bpath = l:bpaths[l:len-1]
+    for l:item in l:bpaths
+      if stridx(l:item, "System32") > -1
+        continue
+      endif
+
+      let l:bpath = l:item
+    endfor
   endif
 
   let l:bpath = substitute(l:bpath, "\\", "/", 'g')
