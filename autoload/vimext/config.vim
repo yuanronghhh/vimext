@@ -132,14 +132,14 @@ function vimext#config#LoadConfig()
   call vundle#begin(g:vim_plugin)
   "Plugin 'https://github.com/puremourning/vimspector'
   "Plugin 'https://github.com/lilydjwg/colorizer.git'
-  Plugin 'https://github.com/w0rp/ale'
-  Plugin 'https://github.com/Valloric/YouCompleteMe.git'
+  "Plugin 'https://github.com/w0rp/ale'
+  "Plugin 'https://github.com/Valloric/YouCompleteMe.git'
 
   Plugin 'https://github.com/fidian/hexmode.git'
   Plugin 'https://github.com/mattn/emmet-vim.git'
   Plugin 'https://github.com/majutsushi/tagbar.git'
   Plugin 'https://github.com/terryma/vim-multiple-cursors.git'
-  Plugin 'https://github.com/preservim/nerdtree.git'
+  Plugin 'https://github.com/yuanronghhh/nerdtree.git'
   Plugin 'https://github.com/ervandew/supertab.git'
   call vundle#end()
 
@@ -163,7 +163,9 @@ function vimext#config#LoadConfig()
   autocmd! BufRead *.vala :set ft=cpp
   autocmd! BufRead *.cst :set ft=javascript
   autocmd! FileType python :nnoremap <buffer> <leader>b :call vimext#pypdb#operate(line('.'))<cr>
-  autocmd! TerminalOpen * if &buftype == 'terminal' | wincmd J | endif
+  autocmd! TerminalWinOpen * if &buftype == 'terminal'
+        \ | wincmd J
+        \ | endif
 
   let g:vimext_loaded = 1
 endfunction
