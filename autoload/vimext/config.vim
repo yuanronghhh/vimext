@@ -55,7 +55,7 @@ function vimext#config#LoadConfig()
   " switch case 缩进问题
   set cinoptions=l1
   if has("gui_running")
-    set columns=120 lines=40
+    set columns=120 lines=30
   endif
   set undofile
   set ssop=blank,buffers,curdir,folds,tabpages,terminal
@@ -122,7 +122,7 @@ function vimext#config#LoadConfig()
   let g:NERDTreeAutoDeleteBuffer = 1
   let g:NERDTreeBookmarksFile = g:vim_session."/NERDTreeBookmarks"
 
-  let g:hexmode_xxd_options = '-p'
+  "let g:hexmode_xxd_options = '-p'
   let g:vimspector_enable_mappings = 'HUMAN'
 
   let $vundle_home = g:vim_plugin."/Vundle.vim"

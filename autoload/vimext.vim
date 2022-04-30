@@ -37,23 +37,46 @@ endfunction
 
 function vimext#HeaderOrCode()
   let l:cext = expand("%:e")
+  let l:emap = [
+        \ ["c", 1, ["h", "hpp"]],
+        \ ["cpp", 1, ["h", "hpp"]],
+        \ ["h", 0, ["cpp", "c"]],
+        \ ["hpp", 0, ["cpp", "c"]]
+        \ ]
   let l:content = expand("<cword>")
   let l:nname = ""
-  let l:tfiles = tagfiles()
+  let l:ftags = taglist(l:content)
 
-  if len(l:tfiles) == 0
-    call vimext#GenCtags()
-  endif
-
-  if "cpp" == l:cext || "c" == l:cext
-    let l:nname = expand("%<").".h"
-    if filereadable(l:nname)
-      exec ":edit ".l:nname
-      call search(l:content, 'c')
+  for l:item in l:emap
+    if l:item[0] != l:cext
+      continue
     endif
-  else
+
+    for j in l:item[2]
+      let l:tname = expand("%<").".".l:j
+
+      if !filereadable(l:tname)
+        continue
+      endif
+
+      let l:nname = l:tname
+      exec ":edit ".l:nname
+
+      break
+    endfor
+
+    if !l:item[1] && len(l:ftags) > 0
+      exec ":silent! tag! ".l:content
+    endif
+
+    break
+  endfor
+
+  if l:nname == "" && len(l:ftags) > 0
     exec ":silent! tag! ".l:content
   endif
+
+  call search(l:content, 'c')
 endfunction
 
 function vimext#JsonFormat()
