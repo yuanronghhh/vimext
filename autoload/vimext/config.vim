@@ -66,7 +66,6 @@ function vimext#config#LoadConfig()
   let g:vim_session = g:vim_home."/session"
   let g:vim_ropepath = g:vim_home."/rope"
 
-
   if has("unix")
     set linespace=-3
     set clipboard=unnamed
@@ -111,6 +110,7 @@ function vimext#config#LoadConfig()
   nnoremap <F3> :tabnew<cr>
   nnoremap <F4> :close<cr>
   nnoremap <F7> :tab Man -s2,3 <cword><cr>
+  nnoremap <F8> :YcmCompleter GoTo<cr>
 
   let g:ycm_goto_buffer_command = 'split'
   let g:ycm_filepath_completion_use_working_dir = 0
@@ -131,15 +131,15 @@ function vimext#config#LoadConfig()
   packadd termdebug
   call vundle#begin(g:vim_plugin)
   "Plugin 'https://github.com/puremourning/vimspector'
-  "Plugin 'https://github.com/w0rp/ale'
   "Plugin 'https://github.com/lilydjwg/colorizer.git'
+  "Plugin 'https://github.com/w0rp/ale'
   "Plugin 'https://github.com/Valloric/YouCompleteMe.git'
 
   Plugin 'https://github.com/fidian/hexmode.git'
   Plugin 'https://github.com/mattn/emmet-vim.git'
   Plugin 'https://github.com/majutsushi/tagbar.git'
   Plugin 'https://github.com/terryma/vim-multiple-cursors.git'
-  Plugin 'https://github.com/preservim/nerdtree.git'
+  Plugin 'https://github.com/yuanronghhh/nerdtree.git'
   Plugin 'https://github.com/ervandew/supertab.git'
   call vundle#end()
 
@@ -163,7 +163,9 @@ function vimext#config#LoadConfig()
   autocmd! BufRead *.vala :set ft=cpp
   autocmd! BufRead *.cst :set ft=javascript
   autocmd! FileType python :nnoremap <buffer> <leader>b :call vimext#pypdb#operate(line('.'))<cr>
-  autocmd! TerminalOpen * if &buftype == 'terminal' | wincmd J | endif
+  autocmd! TerminalWinOpen * if &buftype == 'terminal'
+        \ | wincmd J
+        \ | endif
 
   let g:vimext_loaded = 1
 endfunction

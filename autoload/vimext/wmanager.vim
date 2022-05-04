@@ -10,12 +10,10 @@ function vimext#wmanager#getNextResult()
   if (s:cur_idx + 1) >= len(s:rs_wins)
     let s:cur_idx = 0
 
-    call vimext#debug#echomsg('back1', s:cur_idx)
     return s:rs_wins[s:cur_idx]
   endif
 
   let s:cur_idx += 1
-  call vimext#debug#echomsg('back2', s:cur_idx)
   return s:rs_wins[s:cur_idx]
 endfunction
 
