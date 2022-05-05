@@ -71,16 +71,19 @@ function vimext#config#LoadConfig()
     set clipboard=unnamed
     set path+=/usr/include/x86_64-linux-gnu,/usr/include,/usr/local/include,/usr/lib/gcc/x86_64-linux-gnu/9/include,/usr/include/c++/9,/usr/include/x86_64-linux-gnu/c++/9,/usr/include/c++/9/backward,/home/greyhound/Local/include
     set guifont=Ubuntu\ Mono\ 12
-  else
+  elseif has("win32")
     set clipboard=unnamed
     set guifont=Fixedsys\ Excelsior\ 3.01\ h12
     set grepprg=grep\ -nH
+    set makeencoding=gbk
     let g:python_cmd = "python"
 
     let $BashBin = vimext#config#GetShell()
     let $BashHome = vimext#DirName($BashBin)
     let $PATH .= ";".$BashHome.";".$vimext_home."/tools"
     set shell=$BashBin
+
+    autocmd! GUIEnter * simalt ~x
   endif
 
   inoremap < <><ESC>i
@@ -130,10 +133,10 @@ function vimext#config#LoadConfig()
 
   packadd termdebug
   call vundle#begin(g:vim_plugin)
-  "Plugin 'https://github.com/puremourning/vimspector'
   "Plugin 'https://github.com/lilydjwg/colorizer.git'
   "Plugin 'https://github.com/w0rp/ale'
-  "Plugin 'https://github.com/Valloric/YouCompleteMe.git'
+  "Plugin 'https://github.com/puremourning/vimspector'
+  Plugin 'https://github.com/Valloric/YouCompleteMe.git'
 
   Plugin 'https://github.com/fidian/hexmode.git'
   Plugin 'https://github.com/mattn/emmet-vim.git'
