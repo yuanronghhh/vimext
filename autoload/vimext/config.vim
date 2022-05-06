@@ -56,7 +56,7 @@ function vimext#config#LoadConfig()
   " switch case 缩进问题
   set cinoptions=l1
   if has("gui_running")
-    set columns=120 lines=30
+    set columns=120 lines=50
   endif
   set undofile
   set ssop=blank,buffers,curdir,folds,tabpages,terminal
@@ -83,9 +83,8 @@ function vimext#config#LoadConfig()
     let $BashHome = vimext#DirName($BashBin)
     let $PATH .= ";".$BashHome.";".$vimext_home."/tools"
     set shell=$BashBin
-
-    "autocmd! GUIEnter * simalt ~x
   endif
+
 
   inoremap < <><ESC>i
   inoremap > <c-r>=vimext#ClosePair('>')<CR>
