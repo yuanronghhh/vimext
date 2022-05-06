@@ -13,6 +13,7 @@ endfunction
 function vimext#GetBinPath(cmd)
   let l:bpath = exepath(a:cmd)
   let l:bpath = substitute(l:bpath, "\\", "/", 'g')
+  let l:bpath = substitute(l:bpath, ".EXE", ".exe", 'g')
   return l:bpath
 endfunction
 

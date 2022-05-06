@@ -118,15 +118,13 @@ function vimext#config#LoadConfig()
   let g:ycm_goto_buffer_command = 'split'
   let g:ycm_filepath_completion_use_working_dir = 0
 
-  let g:vimspector_enable_mappings = 'HUMAN'
-
   let g:NERDTreeShowHidden = 1
   let g:NERDTreeShowLineNumbers = 0
   let g:NERDTreeAutoDeleteBuffer = 1
   let g:NERDTreeBookmarksFile = g:vim_session."/NERDTreeBookmarks"
 
-  "let g:hexmode_xxd_options = '-p'
-  let g:vimspector_enable_mappings = 'HUMAN'
+  let g:hexmode_xxd_options = '-p'
+  "let g:vimspector_enable_mappings = 'HUMAN'
 
   let $vundle_home = g:vim_plugin."/Vundle.vim"
   set rtp+=$vundle_home
@@ -175,7 +173,7 @@ endfunction
 
 function vimext#config#GetShell()
   let l:bpath = vimext#GetBinPath("bash")
-  return "\"".l:bpath."\""
+  return l:bpath
 endfunction
 
 function vimext#config#Edit()
