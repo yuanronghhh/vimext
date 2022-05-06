@@ -18,6 +18,7 @@ function vimext#config#LoadConfig()
   set guioptions=r
   set fileformats=unix,dos,mac
   set fileencoding=utf-8
+  set encoding=utf-8
   set fileencodings=utf-8,gb18030,gb2312,cp936,gbk,ucs-bom,shift-jis
   set showcmd
   set number
@@ -83,7 +84,7 @@ function vimext#config#LoadConfig()
     let $PATH .= ";".$BashHome.";".$vimext_home."/tools"
     set shell=$BashBin
 
-    autocmd! GUIEnter * simalt ~x
+    "autocmd! GUIEnter * simalt ~x
   endif
 
   inoremap < <><ESC>i
@@ -166,7 +167,7 @@ function vimext#config#LoadConfig()
   autocmd! BufRead *.vala :set ft=cpp
   autocmd! BufRead *.cst :set ft=javascript
   autocmd! FileType python :nnoremap <buffer> <leader>b :call vimext#pypdb#operate(line('.'))<cr>
-  autocmd! TerminalWinOpen * if &buftype == 'terminal'
+  autocmd! TerminalOpen * if &buftype == 'terminal'
         \ | wincmd J
         \ | endif
 
