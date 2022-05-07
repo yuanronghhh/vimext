@@ -18,6 +18,7 @@ function vimext#config#LoadConfig()
   set guioptions=r
   set fileformats=unix,dos,mac
   set fileencoding=utf-8
+  set encoding=utf-8
   set fileencodings=utf-8,gb18030,gb2312,cp936,gbk,ucs-bom,shift-jis
   set showcmd
   set number
@@ -85,6 +86,7 @@ function vimext#config#LoadConfig()
     set shell=$BashBin
   endif
 
+
   inoremap < <><ESC>i
   inoremap > <c-r>=vimext#ClosePair('>')<CR>
   inoremap ( ()<ESC>i
@@ -107,23 +109,21 @@ function vimext#config#LoadConfig()
   nnoremap <C-s> :w<cr>
   nnoremap <F2>  :HeaderOrCode<cr>
   nnoremap <F3>  :tabnew<cr>
-  nnoremap <F11> :call vimext#Fullscreen()<cr>
   nnoremap <F4>  :close<cr>
   nnoremap <F7>  :tab Man -s2,3 <cword><cr>
   nnoremap <F8>  :YcmCompleter GoTo<cr>
+  nnoremap <F11> :call vimext#Fullscreen()<cr>
 
   let g:ycm_goto_buffer_command = 'split'
   let g:ycm_filepath_completion_use_working_dir = 0
-
-  let g:vimspector_enable_mappings = 'HUMAN'
 
   let g:NERDTreeShowHidden = 1
   let g:NERDTreeShowLineNumbers = 0
   let g:NERDTreeAutoDeleteBuffer = 1
   let g:NERDTreeBookmarksFile = g:vim_session."/NERDTreeBookmarks"
 
-  "let g:hexmode_xxd_options = '-p'
-  let g:vimspector_enable_mappings = 'HUMAN'
+  let g:hexmode_xxd_options = '-p'
+  "let g:vimspector_enable_mappings = 'HUMAN'
 
   let $vundle_home = g:vim_plugin."/Vundle.vim"
   set rtp+=$vundle_home
@@ -163,7 +163,7 @@ function vimext#config#LoadConfig()
   autocmd! BufRead *.vala :set ft=cpp
   autocmd! BufRead *.cst :set ft=javascript
   autocmd! FileType python :nnoremap <buffer> <leader>b :call vimext#pypdb#operate(line('.'))<cr>
-  autocmd! TerminalWinOpen * if &buftype == 'terminal'
+  autocmd! TerminalOpen * if &buftype == 'terminal'
         \ | wincmd J
         \ | endif
 
@@ -172,7 +172,7 @@ endfunction
 
 function vimext#config#GetShell()
   let l:bpath = vimext#GetBinPath("bash")
-  return "\"".l:bpath."\""
+  return l:bpath
 endfunction
 
 function vimext#config#Edit()
