@@ -1,3 +1,15 @@
+let g:is_fullscreen = 0
+
+function vimext#Fullscreen()
+  if g:is_fullscreen == 0
+    exec ":simalt ~x"
+    let g:is_fullscreen = 1
+  else
+    exec ":simalt ~r"
+    let g:is_fullscreen = 0
+  endif
+endfunction
+
 function vimext#ClosePair(char)
   if getline('.')[col('.') - 1] == a:char
     return "\<Right>"
