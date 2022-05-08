@@ -58,7 +58,7 @@ function vimext#config#LoadConfig()
 
   if has("gui_running")
     colorscheme materialtheme
-    set columns=120 lines=50
+    set columns=120 lines=45
   else
     colorscheme molokai
   endif
@@ -76,7 +76,7 @@ function vimext#config#LoadConfig()
     set guifont=Ubuntu\ Mono\ 12
   elseif has("win32")
     set clipboard=unnamed
-    set guifont=Fixedsys\ Excelsior\ 3.01\ h12
+    set guifont=Consolas:h12
     set grepprg=grep\ -nH
     set makeencoding=gbk
     let g:python_cmd = "python"
@@ -109,8 +109,8 @@ function vimext#config#LoadConfig()
   nnoremap <F2>  :HeaderOrCode<cr>
   nnoremap <F3>  :tabnew<cr>
   nnoremap <F4>  :close<cr>
+  nnoremap <F6>  :call vimext#Fullscreen()<cr>
   nnoremap <F7>  :tab Man -s2,3 <cword><cr>
-  nnoremap <F6> :call vimext#Fullscreen()<cr>
   nnoremap <F8>  :YcmCompleter GoTo<cr>
 
   let g:ycm_goto_buffer_command = 'split'
@@ -128,10 +128,11 @@ function vimext#config#LoadConfig()
   packadd termdebug
 
   let l:plugins = [
-        "\ "ale",
+        \ "ale",
+        "\ "vimspector",
         "\ "colorizer",
         "\ "python-mode",
-        "\ "YouCompleteMe",
+        \ "YouCompleteMe",
         \
         \ "vim-glsl",
         \
@@ -151,7 +152,6 @@ function vimext#config#LoadConfig()
   command! -nargs=? JsonFormat :call vimext#JsonFormat()
   command! -nargs=? EditConfig :call vimext#config#Edit()
   command! -nargs=? GenCtags :call vimext#GenCtags()
-  command! -nargs=0 Terminal :terminal ++hidden
 
   autocmd! BufRead *.vs,*.vert,*.glsl,*.frag :set ft=c
   autocmd! BufRead *.vue :set ft=html
