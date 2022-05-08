@@ -1,5 +1,13 @@
+if has("unix")
+  let g:vim_home = expand("~/.vim")
+else
+  let g:vim_home = substitute(expand("$VIM"), '\\', '/', 'g')
+endif
+
 let g:is_fullscreen = 0
 let g:python_cmd = "python3"
+let g:vim_plugin = g:vim_home."/plugins"
+let g:vim_session = g:vim_home."/session"
 
 function vimext#LoadPlugin(plugins)
   for l:p in a:plugins
@@ -28,7 +36,8 @@ function vimext#ClosePair(char)
 endfunction
 
 function vimext#DirName(name)
-  return fnamemodify(a:name, ':h')."\""
+  let l:dname = fnamemodify(a:name, ':p:h')
+  return l:dname
 endfunction
 
 function vimext#GetBinPath(cmd)

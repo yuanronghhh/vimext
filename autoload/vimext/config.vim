@@ -58,7 +58,7 @@ function vimext#config#LoadConfig()
 
   if has("gui_running")
     colorscheme materialtheme
-    set columns=120 lines=35
+    set columns=120 lines=50
   else
     colorscheme molokai
   endif
@@ -69,17 +69,12 @@ function vimext#config#LoadConfig()
     set ssop=blank,buffers,curdir,folds,tabpages
   endif
 
-  let g:python_cmd = "python3"
   let &undodir = g:vim_home."/undodir"
-  let g:vim_plugin = g:vim_home."/plugins"
-  let g:vim_session = g:vim_home."/session"
-  let g:vim_ropepath = g:vim_home."/rope"
-
 
   if has("unix")
     set linespace=-3
     set clipboard=unnamed
-    set path+=/usr/include/x86_64-linux-gnu,/usr/include,/usr/local/include,/usr/lib/gcc/x86_64-linux-gnu/9/include,/usr/include/c++/9,/usr/include/x86_64-linux-gnu/c++/9,/usr/include/c++/9/backward,/home/greyhound/Local/include
+    set path+=/usr/include/x86_64-linux-gnu,/usr/include,/usr/local/include,/usr/lib/gcc/x86_64-linux-gnu/9/include,/usr/include/c++/9,/usr/include/x86_64-linux-gnu/c++/9,/usr/include/c++/9/backward
     set guifont=Ubuntu\ Mono\ 12
   elseif has("win32")
     set clipboard=unnamed
@@ -89,8 +84,7 @@ function vimext#config#LoadConfig()
     let g:python_cmd = "python"
 
     let $BashBin = vimext#config#GetWinBash()
-    let $BashHome = vimext#DirName($BashBin)
-    let $PATH .= ";".$BashHome.";".$vimext_home."/tools"
+    let $PATH .= ";".$vimext_home."/tools"
     set shell=$BashBin
   endif
 
@@ -131,25 +125,25 @@ function vimext#config#LoadConfig()
 
   let g:hexmode_xxd_options = '-p'
   let g:vimspector_enable_mappings = 'VISUAL_STUDIO'
+  let g:pymode_rope_project_root = g:vim_home."/rope"
 
   packadd termdebug
 
   let l:plugins = [
-        \ "ale",
-        \ "colorizer",
-        \ "vimspector",
-        \ "YouCompleteMe",
+        "\ "ale",
+        "\ "colorizer",
+        "\ "python-mode",
+        "\ "YouCompleteMe",
+        \
+        \ "vim-glsl",
         \
         \ "tagbar",
         \ "vim-multiple-cursors",
         \ "nerdtree",
-        \ "python-mode",
         \ "supertab",
-        \ "emmet-vim",
-        \ "vim-glsl",
-        \ "hexmode"
+        \ "hexmode",
+        \ "emmet-vim"
         \ ]
-
   call vimext#LoadPlugin(l:plugins)
 
   command! -nargs=? -complete=custom,vimext#SessionCompelete OpenSession :call vimext#OpenSession("<args>")
@@ -159,7 +153,7 @@ function vimext#config#LoadConfig()
   command! -nargs=? JsonFormat :call vimext#JsonFormat()
   command! -nargs=? EditConfig :call vimext#config#Edit()
   command! -nargs=? GenCtags :call vimext#GenCtags()
-  command! -nargs=? GetBinPath :call vimext#GetBinPath("<args>")
+  command! -nargs=0 Terminal :terminal ++hidden
 
   autocmd! BufRead *.vs,*.vert,*.glsl,*.frag :set ft=c
   autocmd! BufRead *.vue :set ft=html
