@@ -58,7 +58,7 @@ function vimext#config#LoadConfig()
 
   if has("gui_running")
     colorscheme materialtheme
-    set columns=120 lines=50
+    set columns=120 lines=35
   else
     colorscheme molokai
   endif
@@ -74,6 +74,7 @@ function vimext#config#LoadConfig()
   let g:vim_plugin = g:vim_home."/plugins"
   let g:vim_session = g:vim_home."/session"
   let g:vim_ropepath = g:vim_home."/rope"
+
 
   if has("unix")
     set linespace=-3
@@ -104,23 +105,21 @@ function vimext#config#LoadConfig()
   inoremap ' ''<ESC>i
   inoremap <c-o> <ESC>o
   inoremap { {}<ESC>i
-
   nnoremap x "_x
   nnoremap X "_X
-
   vnoremap x "_x
   vnoremap X "_X
-
   nnoremap <C-h> <C-w>h
   nnoremap <C-j> gt
   nnoremap <C-k> gT
   nnoremap <C-l> <C-w>l
   nnoremap <C-s> :w<cr>
-  nnoremap <F2> :HeaderOrCode<cr>
-  nnoremap <F3> :tabnew<cr>
-  nnoremap <F4> :close<cr>
-  nnoremap <F7> :tab Man -s2,3 <cword><cr>
-  nnoremap <F8> :YcmCompleter GoTo<cr>
+  nnoremap <F2>  :HeaderOrCode<cr>
+  nnoremap <F3>  :tabnew<cr>
+  nnoremap <F4>  :close<cr>
+  nnoremap <F7>  :tab Man -s2,3 <cword><cr>
+  nnoremap <F6> :call vimext#Fullscreen()<cr>
+  nnoremap <F8>  :YcmCompleter GoTo<cr>
 
   let g:ycm_goto_buffer_command = 'split'
   let g:ycm_filepath_completion_use_working_dir = 0
@@ -131,7 +130,7 @@ function vimext#config#LoadConfig()
   let g:NERDTreeBookmarksFile = g:vim_session."/NERDTreeBookmarks"
 
   let g:hexmode_xxd_options = '-p'
-  let g:vimspector_enable_mappings = 'HUMAN'
+  let g:vimspector_enable_mappings = 'VISUAL_STUDIO'
 
   packadd termdebug
 
