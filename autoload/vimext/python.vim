@@ -1,12 +1,6 @@
 "
 " code from python-mode https://github.com/python-mode/python-mode.git
 "
-function vimext#python#InitPython()
-  if has("python3")
-    command! -nargs=1 VimExtPython python3 <args>
-  endif
-endfunction
-
 function vimext#python#operate(lnum)
   let line = getline(a:lnum)
   let g:vimext_breakpoint_cmd = 'import pdb; pdb.set_trace()  # XXX BREAKPOINT'

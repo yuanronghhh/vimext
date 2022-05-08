@@ -141,5 +141,4 @@ endfunction
 
 function vimext#SetUp()
   call vimext#config#LoadConfig()
-  call vimext#python#InitPython()
 endfunction
