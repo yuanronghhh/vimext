@@ -1,3 +1,13 @@
+let g:python_cmd = "python3"
+
+function vimext#LoadPlugin(plugins)
+  for l:p in a:plugins
+    let l:ppath = g:vim_plugin."/".l:p
+
+    exec "set rtp+=".l:ppath
+  endfor
+endfunction
+
 function vimext#ClosePair(char)
   if getline('.')[col('.') - 1] == a:char
     return "\<Right>"
@@ -111,4 +121,5 @@ endfunction
 
 function vimext#SetUp()
   call vimext#config#LoadConfig()
+  call vimext#python#InitPython()
 endfunction

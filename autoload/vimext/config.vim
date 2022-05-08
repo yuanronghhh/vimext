@@ -7,13 +7,13 @@ function vimext#config#LoadConfig()
 
   behave xterm
   runtime ftplugin/man.vim
-
   set nocompatible
 
   syntax on
   filetype on
   filetype plugin on
   filetype indent on
+
   set showmatch
   set guioptions=r
   set fileformats=unix,dos,mac
@@ -48,20 +48,28 @@ function vimext#config#LoadConfig()
   set whichwrap+=<,>,h,l
   set colorcolumn=80
   set scrolloff=3
-
+  set undofile
   set novisualbell
   set t_vb=
   set fdm=syntax
   set t_Co=256
   " switch case 缩进问题
   set cinoptions=l1
-  if has("gui_running")
-    set columns=120 lines=50
-  endif
-  set undofile
-  set ssop=blank,buffers,curdir,folds,tabpages,terminal
-  let g:python_cmd = "python3"
 
+  if has("gui_running")
+    colorscheme materialtheme
+    set columns=120 lines=50
+  else
+    colorscheme molokai
+  endif
+
+  if v:version > 800
+    set ssop=blank,buffers,curdir,folds,tabpages,terminal
+  else
+    set ssop=blank,buffers,curdir,folds,tabpages
+  endif
+
+  let g:python_cmd = "python3"
   let &undodir = g:vim_home."/undodir"
   let g:vim_plugin = g:vim_home."/plugins"
   let g:vim_session = g:vim_home."/session"
@@ -79,12 +87,11 @@ function vimext#config#LoadConfig()
     set makeencoding=gbk
     let g:python_cmd = "python"
 
-    let $BashBin = vimext#config#GetShell()
+    let $BashBin = vimext#config#GetWinBash()
     let $BashHome = vimext#DirName($BashBin)
     let $PATH .= ";".$BashHome.";".$vimext_home."/tools"
     set shell=$BashBin
   endif
-
 
   inoremap < <><ESC>i
   inoremap > <c-r>=vimext#ClosePair('>')<CR>
@@ -124,36 +131,32 @@ function vimext#config#LoadConfig()
   let g:NERDTreeBookmarksFile = g:vim_session."/NERDTreeBookmarks"
 
   let g:hexmode_xxd_options = '-p'
-  "let g:vimspector_enable_mappings = 'HUMAN'
-
-  let $vundle_home = g:vim_plugin."/Vundle.vim"
-  set rtp+=$vundle_home
+  let g:vimspector_enable_mappings = 'HUMAN'
 
   packadd termdebug
-  call vundle#begin(g:vim_plugin)
-  "Plugin 'https://github.com/lilydjwg/colorizer.git'
-  "Plugin 'https://github.com/w0rp/ale'
-  "Plugin 'https://github.com/puremourning/vimspector'
-  Plugin 'https://github.com/Valloric/YouCompleteMe.git'
 
-  Plugin 'https://github.com/fidian/hexmode.git'
-  Plugin 'https://github.com/mattn/emmet-vim.git'
-  Plugin 'https://github.com/majutsushi/tagbar.git'
-  Plugin 'https://github.com/terryma/vim-multiple-cursors.git'
-  Plugin 'https://github.com/yuanronghhh/nerdtree.git'
-  Plugin 'https://github.com/ervandew/supertab.git'
-  call vundle#end()
+  let l:plugins = [
+        \ "ale",
+        \ "colorizer",
+        \ "vimspector",
+        \ "YouCompleteMe",
+        \
+        \ "tagbar",
+        \ "vim-multiple-cursors",
+        \ "nerdtree",
+        \ "python-mode",
+        \ "supertab",
+        \ "emmet-vim",
+        \ "vim-glsl",
+        \ "hexmode"
+        \ ]
 
-  if has("gui_running")
-    colorscheme materialtheme
-  else
-    colorscheme molokai
-  endif
+  call vimext#LoadPlugin(l:plugins)
 
   command! -nargs=? -complete=custom,vimext#SessionCompelete OpenSession :call vimext#OpenSession("<args>")
   command! -nargs=? -complete=custom,vimext#SessionCompelete SaveSession :call vimext#SaveSession("<args>")
   command! -nargs=? HeaderOrCode :call vimext#HeaderOrCode()
-  command! -nargs=? PythonDoc :call vimext#pypdb#doc("<args>")
+  command! -nargs=? PythonDoc :call vimext#python#doc("<args>")
   command! -nargs=? JsonFormat :call vimext#JsonFormat()
   command! -nargs=? EditConfig :call vimext#config#Edit()
   command! -nargs=? GenCtags :call vimext#GenCtags()
@@ -163,7 +166,7 @@ function vimext#config#LoadConfig()
   autocmd! BufRead *.vue :set ft=html
   autocmd! BufRead *.vala :set ft=cpp
   autocmd! BufRead *.cst :set ft=javascript
-  autocmd! FileType python :nnoremap <buffer> <leader>b :call vimext#pypdb#operate(line('.'))<cr>
+  autocmd! FileType python :nnoremap <buffer> <leader>b :call vimext#python#operate(line('.'))<cr>
   autocmd! TerminalOpen * if &buftype == 'terminal'
         \ | wincmd J
         \ | endif
@@ -171,7 +174,7 @@ function vimext#config#LoadConfig()
   let g:vimext_loaded = 1
 endfunction
 
-function vimext#config#GetShell()
+function vimext#config#GetWinBash()
   let l:bpath = vimext#GetBinPath("bash")
   return l:bpath
 endfunction

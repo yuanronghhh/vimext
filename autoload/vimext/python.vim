@@ -1,7 +1,13 @@
 "
 " code from python-mode https://github.com/python-mode/python-mode.git
 "
-function vimext#pypdb#operate(lnum)
+function vimext#python#InitPython()
+  if has("python3")
+    command! -nargs=1 VimExtPython python3 <args>
+  endif
+endfunction
+
+function vimext#python#operate(lnum)
   let line = getline(a:lnum)
   let g:vimext_breakpoint_cmd = 'import pdb; pdb.set_trace()  # XXX BREAKPOINT'
 
@@ -20,19 +26,19 @@ function vimext#pypdb#operate(lnum)
   endif
 endfunction
 
-function vimext#pypdb#save()
+function vimext#python#save()
     if &modifiable && &modified
         try
             noautocmd write
         catch /E212/
-            call vimext#pypdb#error("File modified and I can't save it. Please save it manually.")
+            call vimext#python#error("File modified and I can't save it. Please save it manually.")
             return 0
         endtry
     endif
     return expand('%') != ''
 endfunction
 
-function vimext#pypdb#doc(word)
+function vimext#python#doc(word)
   let l:word = a:word
 
   if strlen(l:word) == 0
