@@ -152,6 +152,7 @@ function vimext#config#LoadConfig()
   command! -nargs=? JsonFormat :call vimext#JsonFormat()
   command! -nargs=? EditConfig :call vimext#config#Edit()
   command! -nargs=? GenCtags :call vimext#GenCtags()
+  command! -nargs=0 GitBash :call vimext#config#GitBash()
 
   autocmd! BufRead *.vs,*.vert,*.glsl,*.frag :set ft=c
   autocmd! BufRead *.vue :set ft=html
@@ -168,6 +169,11 @@ endfunction
 function vimext#config#GetWinBash()
   let l:bpath = vimext#GetBinPath("bash")
   return l:bpath
+endfunction
+
+function vimext#config#GitBash()
+  let l:cmd = vimext#DirName($BashBin)."/../git-bash"
+  exec ":silent !start ".l:cmd
 endfunction
 
 function vimext#config#Edit()
