@@ -24,7 +24,7 @@ endif
 
 let $vimext_home = g:vim_home."/plugins/vimext"
 set rtp+=$vimext_home
-call vimext#setUp()
+call vimext#config#LoadConfig()
 ```
 
 3. add "<git-bash-home>/bin" to path environment if on windows for `grep` linux command.
