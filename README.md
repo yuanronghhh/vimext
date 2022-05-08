@@ -10,8 +10,8 @@ no plugin is neccessary.
 
 ## How
 
-1. Copy this plugin to "~/.vim/plugins/" on linux,
-   Copy to "$VIM/plugins/" on windows.
+1. Copy this plugin to "~/.vim/plugins/" if on linux,
+   Copy this plugin to "$VIM/plugins/" if on windows.
 
 2. Copy below script to `vimrc` or `_vimrc` config for init.
 
@@ -44,7 +44,7 @@ call vimext#config#LoadConfig()
 2. PythonDoc <args> for python doc read.
 3. JsonFormat use for python json.tools format.
 
-### WIndow feature
+### Window feature
 1. terminal find if add "bash.exe" in path.
 2. <F6> for fullscreen on win10.
 3. add ctags.exe and make.exe to vim path, see `$vimext_home/tools`.
