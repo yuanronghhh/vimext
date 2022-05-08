@@ -69,8 +69,6 @@ function vimext#config#LoadConfig()
     set ssop=blank,buffers,curdir,folds,tabpages
   endif
 
-  let &undodir = g:vim_home."/undodir"
-
   if has("unix")
     set linespace=-3
     set clipboard=unnamed

@@ -1,13 +1,22 @@
-if has("unix")
-  let g:vim_home = expand("~/.vim")
-else
-  let g:vim_home = substitute(expand("$VIM"), '\\', '/', 'g')
+if !has("g:vim_home")
+  if has("unix")
+    let g:vim_home = expand("~/.vim")
+  else
+    let g:vim_home = substitute(expand("$VIM"), '\\', '/', 'g')
+  endif
+
+  let $vimext_home = g:vim_home."/plugins/vimext"
 endif
 
-let g:is_fullscreen = 0
-let g:python_cmd = "python3"
+let &undodir = g:vim_home."/undodir"
 let g:vim_plugin = g:vim_home."/plugins"
 let g:vim_session = g:vim_home."/session"
+let g:is_fullscreen = 0
+let g:python_cmd = "python3"
+
+if !isdirectory(g:vim_session)
+  call mkdir(g:vim_session)
+endif
 
 function vimext#LoadPlugin(plugins)
   for l:p in a:plugins
