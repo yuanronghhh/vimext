@@ -1,22 +1,28 @@
-if !has("g:vim_home")
-  if has("unix")
-    let g:vim_home = expand("~/.vim")
-  else
-    let g:vim_home = substitute(expand("$VIM"), '\\', '/', 'g')
-  endif
-
-  let $vimext_home = g:vim_home."/plugins/vimext"
-endif
-
-let &undodir = g:vim_home."/undodir"
-let g:vim_plugin = g:vim_home."/plugins"
-let g:vim_session = g:vim_home."/session"
 let g:is_fullscreen = 0
 let g:python_cmd = "python3"
+let g:vim_session = g:vim_home."/session"
+let &undodir = g:vim_home."/undodir"
+let g:vim_plugin = g:vim_home."/plugins"
 
-if !isdirectory(g:vim_session)
-  call mkdir(g:vim_session)
-endif
+function vimext#init()
+  if !has("g:vim_home")
+    if has("unix")
+      let g:vim_home = expand("~/.vim")
+    else
+      let g:vim_home = substitute(expand("$VIM"), '\\', '/', 'g')
+    endif
+
+    let $vimext_home = g:vim_home."/plugins/vimext"
+  endif
+
+  if !isdirectory(g:vim_session)
+    call mkdir(g:vim_session)
+  endif
+
+  if !isdirectory(&undodir)
+    call mkdir(&undodir)
+  endif
+endfunction
 
 function vimext#LoadPlugin(plugins)
   for l:p in a:plugins
@@ -146,8 +152,4 @@ function vimext#OpenSession(sfile)
   echo "source ".g:vim_session."/".l:sfile
   exec "source ".g:vim_session."/".l:sfile
   :NERDTreeFind
-endfunction
-
-function vimext#SetUp()
-  call vimext#config#LoadConfig()
 endfunction

@@ -1,4 +1,5 @@
 let g:vimext_loaded = 0
+call vimext#init()
 
 function vimext#config#LoadConfig()
   if g:vimext_loaded == 1
