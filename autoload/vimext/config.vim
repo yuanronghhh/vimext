@@ -77,7 +77,7 @@ function vimext#config#LoadConfig()
     set guifont=Ubuntu\ Mono\ 12
   elseif has("win32")
     set clipboard=unnamed
-    set guifont=Consolas:h12
+    set guifont=FixedSys:h12
     set grepprg=grep\ -nH
     set makeencoding=gbk
     let g:python_cmd = "python"
@@ -129,11 +129,11 @@ function vimext#config#LoadConfig()
   packadd termdebug
 
   let l:plugins = [
-        \ "ale",
+        "\ "ale",
         "\ "vimspector",
         "\ "colorizer",
         "\ "python-mode",
-        \ "YouCompleteMe",
+        "\ "YouCompleteMe",
         \
         \ "vim-glsl",
         \
