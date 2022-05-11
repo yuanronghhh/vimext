@@ -169,7 +169,7 @@ endfunction
 
 function vimext#config#GetWinBash()
   let l:bpath = vimext#GetBinPath("bash")
-  return l:bpath
+  return shellescape(bpath)
 endfunction
 
 function vimext#config#GitBash()
