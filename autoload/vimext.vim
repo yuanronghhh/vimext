@@ -32,7 +32,7 @@ function vimext#LoadPlugin(plugins)
   endfor
 endfunction
 
-function vimext#Fullscreen()
+function vimext#FullScreen()
   if g:is_fullscreen == 0
     exec ":simalt ~x"
     let g:is_fullscreen = 1

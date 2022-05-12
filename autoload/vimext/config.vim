@@ -101,17 +101,19 @@ function vimext#config#LoadConfig()
   nnoremap X "_X
   vnoremap x "_x
   vnoremap X "_X
+
+  nnoremap <F9>  :HeaderOrCode<cr>
+  nnoremap <F10> :cp<cr>
+  nnoremap <F11> :cn<cr>
+
   nnoremap <C-h> <C-w>h
   nnoremap <C-j> gt
   nnoremap <C-k> gT
   nnoremap <C-l> <C-w>l
   nnoremap <C-s> :w<cr>
-  nnoremap <F2>  :HeaderOrCode<cr>
+  nnoremap <F2>  :YcmCompleter GoTo<cr>
   nnoremap <F3>  :tabnew<cr>
   nnoremap <F4>  :close<cr>
-  nnoremap <F6>  :call vimext#Fullscreen()<cr>
-  nnoremap <F7>  :tab Man -s2,3 <cword><cr>
-  nnoremap <F8>  :YcmCompleter GoTo<cr>
 
   let g:ycm_goto_buffer_command = 'split'
   let g:ycm_filepath_completion_use_working_dir = 0
@@ -153,6 +155,8 @@ function vimext#config#LoadConfig()
   command! -nargs=? EditConfig :call vimext#config#Edit()
   command! -nargs=? GenCtags :call vimext#GenCtags()
   command! -nargs=0 GitBash :call vimext#config#GitBash()
+  command! -nargs=0 TabMan :tab Man -s2,3 <cword><cr>
+  command! -nargs=0 FullScreen :call vimext#FullScreen()
 
   autocmd! BufRead *.vs,*.vert,*.glsl,*.frag :set ft=c
   autocmd! BufRead *.vue :set ft=html
