@@ -56,6 +56,7 @@ function vimext#config#LoadConfig()
   set t_Co=256
   " switch case 缩进问题
   set cinoptions=l1
+  set ssop=blank,buffers,curdir,folds,tabpages
 
   if has("gui_running")
     colorscheme materialtheme
@@ -65,9 +66,7 @@ function vimext#config#LoadConfig()
   endif
 
   if v:version > 800
-    set ssop=blank,buffers,curdir,folds,tabpages,terminal
-  else
-    set ssop=blank,buffers,curdir,folds,tabpages
+    set ssop+=terminal
   endif
 
   if has("unix")
@@ -160,8 +159,11 @@ function vimext#config#LoadConfig()
   autocmd! BufRead *.vala :set ft=cpp
   autocmd! BufRead *.cst :set ft=javascript
   autocmd! FileType python :nnoremap <buffer> <leader>b :call vimext#python#operate(line('.'))<cr>
+
+  tnoremap <C-j> <C-W>gt
+  tnoremap <C-k> <C-W>gT
   autocmd! TerminalOpen * if &buftype == 'terminal'
-        \ | wincmd J
+        \ | wincmd T
         \ | endif
 
   let g:vimext_loaded = 1
@@ -174,6 +176,7 @@ endfunction
 
 function vimext#config#GitBash()
   let l:cmd = vimext#DirName($BashBin)."/../git-bash"
+  call vimext#debug#info(l:cmd)
   exec ":silent !start ".l:cmd
 endfunction
 

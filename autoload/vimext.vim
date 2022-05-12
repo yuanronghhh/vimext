@@ -52,7 +52,6 @@ endfunction
 
 function vimext#DirName(name)
   let l:dname = fnamemodify(a:name, ':h')[1:]
-  call vimext#debug#info(l:dname)
   return l:dname
 endfunction
 
