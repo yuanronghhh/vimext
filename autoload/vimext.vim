@@ -25,8 +25,14 @@ function vimext#init()
 endfunction
 
 function vimext#LoadPlugin(plugins)
+  let l:ppath = ""
+
   for l:p in a:plugins
-    let l:ppath = g:vim_plugin."/".l:p
+    if l:p[1] == ":" || l:p[0] == "/"
+      let l:ppath = l:p
+    else
+      let l:ppath = g:vim_plugin."/".l:p
+    endif
 
     exec "set rtp+=".l:ppath
   endfor

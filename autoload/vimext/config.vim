@@ -65,7 +65,7 @@ function vimext#config#LoadConfig()
     colorscheme molokai
   endif
 
-  if v:version > 800
+  if v:version >= 800
     set ssop+=terminal
   endif
 
@@ -140,10 +140,10 @@ function vimext#config#LoadConfig()
         \
         \ "tagbar",
         \ "vim-multiple-cursors",
-        \ "nerdtree",
         \ "supertab",
         \ "hexmode",
-        \ "emmet-vim"
+        \ "emmet-vim",
+        \ "D:/GreyHound/PRIVATE/Git/nerdtree"
         \ ]
   call vimext#LoadPlugin(l:plugins)
 
@@ -166,9 +166,15 @@ function vimext#config#LoadConfig()
 
   tnoremap <C-j> <C-W>gt
   tnoremap <C-k> <C-W>gT
-  autocmd! TerminalOpen * if &buftype == 'terminal'
-        \ | wincmd T
-        \ | endif
+  if has("nvim")
+    autocmd! TermOpen * if &buftype == 'terminal'
+          \ | wincmd T
+          \ | endif
+  else
+    autocmd! TerminalOpen * if &buftype == 'terminal'
+          \ | wincmd T
+          \ | endif
+  endif
 
   let g:vimext_loaded = 1
 endfunction
