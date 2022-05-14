@@ -1,10 +1,10 @@
 let g:vimext_loaded = 0
-call vimext#init()
 
 function vimext#config#LoadConfig()
   if g:vimext_loaded == 1
     return
   endif
+  call vimext#init()
 
   behave xterm
   runtime ftplugin/man.vim
@@ -69,14 +69,21 @@ function vimext#config#LoadConfig()
     set ssop+=terminal
   endif
 
+  "中文字体
   if has("unix")
     set linespace=-3
     set clipboard=unnamed
-    set path+=/usr/include/x86_64-linux-gnu,/usr/include,/usr/local/include,/usr/lib/gcc/x86_64-linux-gnu/9/include,/usr/include/c++/9,/usr/include/x86_64-linux-gnu/c++/9,/usr/include/c++/9/backward
-    set guifont=Ubuntu\ Mono\ 12
+    set path+=/usr/include/x86_64-linux-gnu,
+          \/usr/include,
+          \/usr/local/include,
+          \/usr/lib/gcc/x86_64-linux-gnu/9/include,
+          \/usr/include/c++/9,
+          \/usr/include/x86_64-linux-gnu/c++/9,
+          \/usr/include/c++/9/backward
+    set guifont="Ubuntu Mono 12"
   elseif has("win32")
     set clipboard=unnamed
-    set guifont=FixedSys:h12
+    set guifont=Consolas:h12
     set grepprg=grep\ -nH
     set makeencoding=gbk
     let g:python_cmd = "python"
@@ -84,6 +91,8 @@ function vimext#config#LoadConfig()
     let $BashBin = vimext#config#GetWinBash()
     let $PATH .= ";".$vimext_home."/tools"
     set shell=$BashBin
+
+    command! -nargs=0 FullScreen :call vimext#FullScreen()
   endif
 
   inoremap < <><ESC>i
@@ -102,6 +111,7 @@ function vimext#config#LoadConfig()
   vnoremap x "_x
   vnoremap X "_X
 
+  " for c develop
   nnoremap <F9>  :HeaderOrCode<cr>
   nnoremap <F10> :cp<cr>
   nnoremap <F11> :cn<cr>
@@ -134,7 +144,7 @@ function vimext#config#LoadConfig()
         "\ "vimspector",
         "\ "colorizer",
         "\ "python-mode",
-        "\ "YouCompleteMe",
+        \ "YouCompleteMe",
         \
         \ "vim-glsl",
         \
@@ -143,7 +153,7 @@ function vimext#config#LoadConfig()
         \ "supertab",
         \ "hexmode",
         \ "emmet-vim",
-        \ "D:/GreyHound/PRIVATE/Git/nerdtree"
+        \ "E:/Codes/REPOSITORY/nerdtree"
         \ ]
   call vimext#LoadPlugin(l:plugins)
 
@@ -156,7 +166,6 @@ function vimext#config#LoadConfig()
   command! -nargs=? GenCtags :call vimext#GenCtags()
   command! -nargs=0 GitBash :call vimext#config#GitBash()
   command! -nargs=0 TabMan :tab Man -s2,3 <cword><cr>
-  command! -nargs=0 FullScreen :call vimext#FullScreen()
 
   autocmd! BufRead *.vs,*.vert,*.glsl,*.frag :set ft=c
   autocmd! BufRead *.vue :set ft=html

@@ -1,19 +1,18 @@
 ## Introduce
 
-Vim config for portable.
-no plugin is neccessary.
+Vim config easy to copy.
 
-## Recommend
+## Recommend, not nessaray
 
 1. git-bash installed for windows.
 2. python3 installed.
 
 ## How
 
-1. Copy this plugin to "~/.vim/plugins/" if on linux,
+1. Install vim on `windows/unix` platform.
+2. Copy this plugin to "~/.vim/plugins/" if on linux,
    Copy this plugin to "$VIM/plugins/" if on windows.
-
-2. Copy below script to `vimrc` or `_vimrc` config for init.
+3. Copy below script content into `vimrc` or `_vimrc` config file for init.
 
 ```vimscript
 if has("unix")
@@ -35,9 +34,9 @@ call vimext#config#LoadConfig()
 
 1. OpenSession && SaveSession for session manage on `<vim_home>/session` directory.
 2. colorscheme `materialtheme` for gui, `molokai` for no gui vim.
-3. nerdtree, multiple-cursors, emmet-vim plugin loaded if copied plugin to `~/plugins` directory.
+3. nerdtree, multiple-cursors plugin loaded if exists plugin in `~/plugins` directory.
 4. persistent undo in `<vim_home>/undodir`.
-5. <F2> `HeaderOrCode` command for c programmer jump `.c` to `.h` with same directory.
+5. <F9> `HeaderOrCode` command for c programmer jump `.c` to `.h` if the same directory.
 
 ## Python feature
 1. comamnd <leader>b will import pdb for python repl debug.
@@ -45,6 +44,6 @@ call vimext#config#LoadConfig()
 3. JsonFormat use for python json.tools format.
 
 ### Window feature
-1. terminal find if add "bash.exe" in path.
-2. <F6> for fullscreen on win10.
-3. add ctags.exe and make.exe to vim path, see `$vimext_home/tools`.
+1. terminal find if add `GitPortable/bin/bash.exe` in path.
+2. `:Fullscreen` command on win10.
+3. add `ctags.exe` to vim path, see `$vimext_home/tools`.
