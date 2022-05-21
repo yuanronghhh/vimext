@@ -68,6 +68,7 @@ function vimext#config#LoadConfig()
 
   if v:version >= 800
     set ssop+=terminal
+    packadd termdebug
   endif
 
   "中文字体
@@ -137,8 +138,6 @@ function vimext#config#LoadConfig()
   let g:vimspector_enable_mappings = 'VISUAL_STUDIO'
   let g:pymode_rope_project_root = g:vim_home."/rope"
 
-  packadd termdebug
-
   let l:plugins = [
         "\ "ale",
         "\ "colorizer",
@@ -164,12 +163,14 @@ function vimext#config#LoadConfig()
   command! -nargs=? EditConfig :call vimext#config#Edit()
   command! -nargs=? GenCtags :call vimext#GenCtags()
   command! -nargs=? ManTab :call vimext#ManTab("<args>")
+  command! -nargs=+ Debug :call vimext#debug#Debug("<args>")
 
   autocmd! BufRead *.vs,*.vert,*.glsl,*.frag :set ft=c
   autocmd! BufRead *.vue :set ft=html
   autocmd! BufRead *.vala :set ft=cpp
   autocmd! BufRead *.cst :set ft=javascript
   autocmd! FileType python :nnoremap <buffer> <leader>b :call vimext#python#operate(line('.'))<cr>
+  autocmd! User TermdebugStopPost :tabclose
 
   tnoremap <C-j> <C-W>gt
   tnoremap <C-k> <C-W>gT
@@ -184,7 +185,7 @@ endfunction
 
 function vimext#config#GitBash()
   let l:cmd = vimext#DirName($BashBin)."/../git-bash"
-  call vimext#logger#info(l:cmd)
+  call vimext#logger#Info(l:cmd)
   exec ":silent !start ".l:cmd
 endfunction
 

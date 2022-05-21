@@ -1,6 +1,6 @@
 let s:is_debug = 1
 
-function vimext#logger#warning(msg) abort
+function vimext#logger#Warning(msg) abort
   if s:is_debug != 1
     return
   endif
@@ -10,7 +10,7 @@ function vimext#logger#warning(msg) abort
   echohl None
 endfunction
 
-function vimext#logger#error(msg) abort
+function vimext#logger#Error(msg) abort
   if s:is_debug != 1
     return
   endif
@@ -20,7 +20,7 @@ function vimext#logger#error(msg) abort
   echohl None
 endfunction
 
-function vimext#logger#info(msg) abort
+function vimext#logger#Info(msg) abort
   if s:is_debug != 1
     return
   endif
