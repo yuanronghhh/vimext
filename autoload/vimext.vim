@@ -69,10 +69,21 @@ function vimext#GetBinPath(cmd)
 endfunction
 
 function vimext#GenCtags()
+  let l:tags_cmd = $vimext_home."/tools/ctags"
   let l:extensions = ['*.c', '*.h' , '*.cpp' , '*.hpp' , '*.py' , '*.cs' , '*.js' , 'CMakeLists.txt', '*.cmake', '*.lua']
-  let l:cmd = "find ./ -type f -name '".join(l:extensions, "' -or -name '")."' | xargs -d '\\n' ctags -a"
+  let l:cmd = "find ./ -type f -name '".join(l:extensions, "' -or -name '")."' | xargs -d '\\n' ".l:tags_cmd." -a"
 
   exec ":!".l:cmd
+endfunction
+
+function vimext#ManTab(word)
+  let l:word = a:word
+
+  if strlen(l:word) == 0
+    let l:word = expand("<cword>")
+  endif
+
+  exec ":tab Man -s2,3 ".l:word
 endfunction
 
 function vimext#HeaderOrCode()

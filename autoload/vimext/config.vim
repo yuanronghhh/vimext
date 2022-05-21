@@ -57,6 +57,7 @@ function vimext#config#LoadConfig()
   " switch case 缩进问题
   set cinoptions=l1
   set ssop=blank,buffers,curdir,folds,tabpages
+  let $PATH .= ";".$vimext_home."/tools"
 
   if has("gui_running")
     colorscheme materialtheme
@@ -71,7 +72,6 @@ function vimext#config#LoadConfig()
 
   "中文字体
   if has("unix")
-    set linespace=-3
     set clipboard=unnamed
     set path+=/usr/include/x86_64-linux-gnu,
           \/usr/include,
@@ -80,7 +80,7 @@ function vimext#config#LoadConfig()
           \/usr/include/c++/9,
           \/usr/include/x86_64-linux-gnu/c++/9,
           \/usr/include/c++/9/backward
-    set guifont="Ubuntu Mono 12"
+    set guifont=Ubuntu\ Mono\ 12
   elseif has("win32")
     set clipboard=unnamed
     set guifont=Consolas:h12
@@ -89,10 +89,10 @@ function vimext#config#LoadConfig()
     let g:python_cmd = "python"
 
     let $BashBin = vimext#config#GetWinBash()
-    let $PATH .= ";".$vimext_home."/tools"
     set shell=$BashBin
 
     command! -nargs=0 FullScreen :call vimext#FullScreen()
+    command! -nargs=0 GitBash :call vimext#config#GitBash()
   endif
 
   inoremap < <><ESC>i
@@ -141,10 +141,9 @@ function vimext#config#LoadConfig()
 
   let l:plugins = [
         "\ "ale",
-        "\ "vimspector",
         "\ "colorizer",
         "\ "python-mode",
-        \ "YouCompleteMe",
+        "\ "YouCompleteMe",
         \
         \ "vim-glsl",
         \
@@ -153,7 +152,7 @@ function vimext#config#LoadConfig()
         \ "supertab",
         \ "hexmode",
         \ "emmet-vim",
-        \ "E:/Codes/REPOSITORY/nerdtree"
+        \ "nerdtree"
         \ ]
   call vimext#LoadPlugin(l:plugins)
 
@@ -164,8 +163,7 @@ function vimext#config#LoadConfig()
   command! -nargs=? JsonFormat :call vimext#JsonFormat()
   command! -nargs=? EditConfig :call vimext#config#Edit()
   command! -nargs=? GenCtags :call vimext#GenCtags()
-  command! -nargs=0 GitBash :call vimext#config#GitBash()
-  command! -nargs=0 TabMan :tab Man -s2,3 <cword><cr>
+  command! -nargs=? ManTab :call vimext#ManTab("<args>")
 
   autocmd! BufRead *.vs,*.vert,*.glsl,*.frag :set ft=c
   autocmd! BufRead *.vue :set ft=html
@@ -175,15 +173,6 @@ function vimext#config#LoadConfig()
 
   tnoremap <C-j> <C-W>gt
   tnoremap <C-k> <C-W>gT
-  if has("nvim")
-    autocmd! TermOpen * if &buftype == 'terminal'
-          \ | wincmd T
-          \ | endif
-  else
-    autocmd! TerminalOpen * if &buftype == 'terminal'
-          \ | wincmd T
-          \ | endif
-  endif
 
   let g:vimext_loaded = 1
 endfunction
@@ -195,7 +184,7 @@ endfunction
 
 function vimext#config#GitBash()
   let l:cmd = vimext#DirName($BashBin)."/../git-bash"
-  call vimext#debug#info(l:cmd)
+  call vimext#logger#info(l:cmd)
   exec ":silent !start ".l:cmd
 endfunction
 
