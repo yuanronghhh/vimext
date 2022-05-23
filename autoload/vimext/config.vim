@@ -157,11 +157,11 @@ function vimext#config#LoadConfig()
 
   command! -nargs=? -complete=custom,vimext#SessionCompelete OpenSession :call vimext#OpenSession("<args>")
   command! -nargs=? -complete=custom,vimext#SessionCompelete SaveSession :call vimext#SaveSession("<args>")
-  command! -nargs=? HeaderOrCode :call vimext#HeaderOrCode()
+  command! -nargs=? HeaderOrCode :call vimext#HeaderOrCode()<cr>
   command! -nargs=? PythonDoc :call vimext#python#doc("<args>")
-  command! -nargs=? JsonFormat :call vimext#JsonFormat()
-  command! -nargs=? EditConfig :call vimext#config#Edit()
-  command! -nargs=? GenCtags :call vimext#GenCtags()
+  command! -nargs=? JsonFormat :call vimext#JsonFormat()<cr>
+  command! -nargs=? EditConfig :call vimext#config#Edit()<cr>
+  command! -nargs=? GenCtags :call vimext#GenCtags()<cr>
   command! -nargs=? ManTab :call vimext#ManTab("<args>")
   command! -nargs=+ Debug :call vimext#debug#Debug("<args>")
 
@@ -169,7 +169,7 @@ function vimext#config#LoadConfig()
   autocmd! BufRead *.vue :set ft=html
   autocmd! BufRead *.vala :set ft=cpp
   autocmd! BufRead *.cst :set ft=javascript
-  autocmd! FileType python :nnoremap <buffer> <leader>b :call vimext#python#operate(line('.'))
+  autocmd! FileType python :nnoremap <buffer> <leader>b :call vimext#python#operate(line('.'))<cr>
 
   tnoremap <C-j> <C-W>gt
   tnoremap <C-k> <C-W>gT
