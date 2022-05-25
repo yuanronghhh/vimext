@@ -134,7 +134,7 @@ function vimext#config#LoadConfig()
   let g:NERDTreeAutoDeleteBuffer = 1
   let g:NERDTreeBookmarksFile = g:vim_session."/NERDTreeBookmarks"
 
-  let g:hexmode_xxd_options = '-p'
+  ""let g:hexmode_xxd_options = '-p'
   let g:vimspector_enable_mappings = 'VISUAL_STUDIO'
   let g:pymode_rope_project_root = g:vim_home."/rope"
 
@@ -157,11 +157,11 @@ function vimext#config#LoadConfig()
 
   command! -nargs=? -complete=custom,vimext#SessionCompelete OpenSession :call vimext#OpenSession("<args>")
   command! -nargs=? -complete=custom,vimext#SessionCompelete SaveSession :call vimext#SaveSession("<args>")
-  command! -nargs=? HeaderOrCode :call vimext#HeaderOrCode()<cr>
+  command! -nargs=? HeaderOrCode :call vimext#HeaderOrCode()
   command! -nargs=? PythonDoc :call vimext#python#doc("<args>")
-  command! -nargs=? JsonFormat :call vimext#JsonFormat()<cr>
-  command! -nargs=? EditConfig :call vimext#config#Edit()<cr>
-  command! -nargs=? GenCtags :call vimext#GenCtags()<cr>
+  command! -nargs=? JsonFormat :call vimext#JsonFormat()
+  command! -nargs=? EditConfig :call vimext#config#Edit()
+  command! -nargs=? GenCtags :call vimext#GenCtags()
   command! -nargs=? ManTab :call vimext#ManTab("<args>")
   command! -nargs=+ Debug :call vimext#debug#Debug("<args>")
 
