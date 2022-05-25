@@ -134,7 +134,7 @@ function vimext#config#LoadConfig()
   let g:NERDTreeAutoDeleteBuffer = 1
   let g:NERDTreeBookmarksFile = g:vim_session."/NERDTreeBookmarks"
 
-  let g:hexmode_xxd_options = '-p'
+  ""let g:hexmode_xxd_options = '-p'
   let g:vimspector_enable_mappings = 'VISUAL_STUDIO'
   let g:pymode_rope_project_root = g:vim_home."/rope"
 
