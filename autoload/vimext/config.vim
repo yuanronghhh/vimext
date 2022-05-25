@@ -84,7 +84,7 @@ function vimext#config#LoadConfig()
     set guifont=Ubuntu\ Mono\ 12
   elseif has("win32")
     set clipboard=unnamed
-    set guifont=Consolas:h12
+    set guifont=Consolas:h11
     set grepprg=grep\ -nH
     set makeencoding=gbk
     let g:python_cmd = "python"
@@ -157,11 +157,11 @@ function vimext#config#LoadConfig()
 
   command! -nargs=? -complete=custom,vimext#SessionCompelete OpenSession :call vimext#OpenSession("<args>")
   command! -nargs=? -complete=custom,vimext#SessionCompelete SaveSession :call vimext#SaveSession("<args>")
-  command! -nargs=? HeaderOrCode :call vimext#HeaderOrCode()<cr>
+  command! -nargs=? HeaderOrCode :call vimext#HeaderOrCode()
   command! -nargs=? PythonDoc :call vimext#python#doc("<args>")
-  command! -nargs=? JsonFormat :call vimext#JsonFormat()<cr>
-  command! -nargs=? EditConfig :call vimext#config#Edit()<cr>
-  command! -nargs=? GenCtags :call vimext#GenCtags()<cr>
+  command! -nargs=? JsonFormat :call vimext#JsonFormat()
+  command! -nargs=? EditConfig :call vimext#config#Edit()
+  command! -nargs=? GenCtags :call vimext#GenCtags()
   command! -nargs=? ManTab :call vimext#ManTab("<args>")
   command! -nargs=+ Debug :call vimext#debug#Debug("<args>")
 
