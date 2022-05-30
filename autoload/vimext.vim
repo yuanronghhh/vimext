@@ -68,8 +68,20 @@ function vimext#GetBinPath(cmd)
   return l:bpath
 endfunction
 
+function vimext#GetCWDPath()
+  let l:bpath = getcwd()
+  let l:bpath = substitute(l:bpath, "\\", "/", 'g')
+  let l:bpath = substitute(l:bpath, ".EXE", ".exe", 'g')
+  return l:bpath
+endfunction
+
 function vimext#GenCtags()
   let l:tags_cmd = $vimext_home."/tools/ctags"
+
+  if has("win32")
+    let l:tags_cmd = l:tags_cmd.".exe"
+  endif
+
   let l:extensions = ['*.c', '*.h' , '*.cpp' , '*.hpp' , '*.py' , '*.cs' , '*.js' , 'CMakeLists.txt', '*.cmake', '*.lua']
   let l:cmd = "find ./ -type f -name '".join(l:extensions, "' -or -name '")."' | xargs -d '\\n' ".l:tags_cmd." -a"
 
