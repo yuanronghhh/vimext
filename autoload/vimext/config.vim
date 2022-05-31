@@ -183,9 +183,9 @@ function vimext#config#GetWinBash()
 endfunction
 
 function vimext#config#GitBash()
-  let l:cmd = "/git-bash.exe --cd=\"".vimext#GetCWDPath()."\""
+  let l:cmd = "bash"
   call vimext#logger#Info(l:cmd)
-  call system(l:cmd)
+  exec ":silent !start ".l:cmd
 endfunction
 
 function vimext#config#Edit()
