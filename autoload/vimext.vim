@@ -1,11 +1,8 @@
-let g:is_fullscreen = 0
-let g:python_cmd = "python3"
-let g:vim_session = g:vim_home."/session"
-let &undodir = g:vim_home."/undodir"
-let g:vim_plugin = g:vim_home."/plugins"
-
 function vimext#init()
-  if !has("g:vim_home")
+  let $VIM=substitute($VIM, "\\", "/", "g")
+  let $VIMRUNTIME=substitute($VIMRUNTIME, "\\", "/", "g")
+
+  if !exists("g:vim_home")
     if has("unix")
       let g:vim_home = expand("~/.vim")
     else
@@ -14,6 +11,12 @@ function vimext#init()
 
     let $vimext_home = g:vim_home."/plugins/vimext"
   endif
+
+  let g:is_fullscreen = 0
+  let g:python_cmd = "python3"
+  let g:vim_session = g:vim_home."/session"
+  let &undodir = g:vim_home."/undodir"
+  let g:vim_plugin = g:vim_home."/plugins"
 
   if !isdirectory(g:vim_session)
     call mkdir(g:vim_session)
