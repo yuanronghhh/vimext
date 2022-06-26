@@ -165,7 +165,7 @@ function vimext#config#LoadConfig()
   command! -nargs=? ManTab :call vimext#ManTab("<args>")
   command! -nargs=+ Debug :call vimext#debug#Debug("<args>")
 
-  autocmd! BufRead *.vs,*.vert,*.glsl,*.frag :set ft=c
+  autocmd! BufRead *.vs,*.vert,*.glsl,*.frag,*.comp :set ft=c
   autocmd! BufRead *.vue :set ft=html
   autocmd! BufRead *.vala :set ft=cpp
   autocmd! BufRead *.cst :set ft=javascript
