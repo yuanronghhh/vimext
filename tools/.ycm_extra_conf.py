@@ -7,21 +7,21 @@ import os
 from distutils.sysconfig import get_python_inc
 from pathlib import Path
 
-flags = [
+Deps = set()
+oldflags = [
     '-Wall',
     '-Wextra',
     '-Werror',
     '-Wno-long-long',
     '-Wno-variadic-macros',
     '-fexceptions',
-    '-x',
-    'c++',
+    '-x'
+    'c'
     ]
 
 SOURCE_EXTENSIONS = [ '.cpp', '.cxx', '.cc', '.c', '.m', '.mm' ]
 DIR_OF_THIS_SCRIPT = p.abspath( p.dirname( __file__ ) )
 HEADER_EXTENSIONS = [ '.h', '.hxx', '.hpp', '.hh' ]
-Deps = set()
 
 def GetDataBase():
     compilation_database_folder = Path(DIR_OF_THIS_SCRIPT + "/build")
@@ -54,26 +54,25 @@ def debug(info):
 
 def GetDependenciesInc(deps):
   libdir = Path(DIR_OF_THIS_SCRIPT).parent.joinpath("lib/win64_vc14")
-  addition_include = [DIR_OF_THIS_SCRIPT,
-      "glib/include",
-      "glib/include/gio",
-      "glib/include/gio-win32-2.0",
-      "glib/include/glib",
-      "glib/include/glib-2.0",
-      "glib/include/gobject",
-      "cglm/include",
-      "glad/include",
-      "glfw3/include",
-      "Unity/include",
-      "F:/Program Files/VulkanSDK/1.3.204.1/Include"
-  ]
-
   for h in addition_include:
     inc = libdir.joinpath(h)
     deps.add("-I" + inc.as_posix())
 
-def GetRecursiveHeaderDir(deps):
-    for dp, dns, fns in os.walk(DIR_OF_THIS_SCRIPT):
+def getProjectIncs(filename, Deps):
+    incs = Path(filename).parent.joinpath("ProjectIncludes.txt")
+
+    Deps.add("-I" + incs.parent.as_posix())
+
+    if incs.exists():
+        with open(incs, "r") as c:
+            for line in c.readlines():
+                Deps.add("-I" + line.strip())
+
+def GetRecursiveHeaderDir(bdir, deps):
+    if not p.exists(bdir):
+        return
+
+    for dp, dns, fns in os.walk(bdir):
         for f in fns:
             if f.endswith(".h"):
                 deps.add("-I" + Path(dp).joinpath(f).parent.as_posix())
@@ -90,14 +89,13 @@ def PathToPythonUsedDuringBuild():
 
 def Settings( **kwargs ):
   language = kwargs[ 'language' ]
+  flags = []
 
   if language == 'cfamily':
     filename = FindCorrespondingSourceFile(kwargs[ 'filename' ])
 
-    GetDependenciesInc(Deps)
-    GetRecursiveHeaderDir(Deps)
-
-    flags.append("-I" + Path(filename).parent.as_posix())
+    getProjectIncs(filename, Deps)
+    flags.extend(oldflags)
     flags.extend(Deps)
 
     return {

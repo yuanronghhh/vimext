@@ -52,7 +52,7 @@ function vimext#config#LoadConfig()
   set undofile
   set novisualbell
   set t_vb=
-  set fdm=syntax
+  set fdm=indent
   set t_Co=256
   " switch case 缩进问题
   set cinoptions=l1
@@ -127,7 +127,7 @@ function vimext#config#LoadConfig()
   nnoremap <F4>  :close<cr>
 
   let g:ycm_goto_buffer_command = 'split'
-  let g:ycm_filepath_completion_use_working_dir = 0
+  let g:ycm_global_ycm_extra_conf = g:vim_plugin."/vimext/tools/.ycm_extra_conf.py"
 
   let g:NERDTreeShowHidden = 1
   let g:NERDTreeShowLineNumbers = 0
@@ -142,7 +142,7 @@ function vimext#config#LoadConfig()
         "\ "ale",
         "\ "colorizer",
         "\ "python-mode",
-        "\ "YouCompleteMe",
+        \ "YouCompleteMe",
         \
         \ "vim-glsl",
         \
