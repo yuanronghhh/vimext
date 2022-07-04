@@ -52,7 +52,7 @@ function vimext#config#LoadConfig()
   set undofile
   set novisualbell
   set t_vb=
-  set fdm=syntax
+  set fdm=indent
   set t_Co=256
   " switch case 缩进问题
   set cinoptions=l1
@@ -127,8 +127,8 @@ function vimext#config#LoadConfig()
   nnoremap <F3>  :tabnew<cr>
   nnoremap <F4>  :close<cr>
 
-  "let g:ycm_goto_buffer_command = 'split'
   let g:ycm_confirm_extra_conf = 0
+  let g:ycm_global_ycm_extra_conf = g:vim_plugin."/vimext/tools/.ycm_extra_conf.py"
 
   let g:NERDTreeShowHidden = 1
   let g:NERDTreeShowLineNumbers = 0
@@ -166,7 +166,7 @@ function vimext#config#LoadConfig()
   command! -nargs=? ManTab :call vimext#ManTab("<args>")
   command! -nargs=+ Debug :call vimext#debug#Debug("<args>")
 
-  autocmd! BufRead *.vs,*.vert,*.glsl,*.frag :set ft=c
+  autocmd! BufRead *.vs,*.vert,*.glsl,*.frag,*.comp :set ft=c
   autocmd! BufRead *.vue,*.cshtml :set ft=html
   autocmd! BufRead *.vala :set ft=cpp
   autocmd! BufRead *.cst :set ft=javascript
