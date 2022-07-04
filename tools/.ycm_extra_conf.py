@@ -15,7 +15,7 @@ oldflags = [
     '-Wno-long-long',
     '-Wno-variadic-macros',
     '-fexceptions',
-    '-x'
+    '-x',
     'c'
     ]
 
@@ -97,6 +97,7 @@ def Settings( **kwargs ):
     getProjectIncs(filename, Deps)
     flags.extend(oldflags)
     flags.extend(Deps)
+    debug(flags)
 
     return {
         'flags': flags,
