@@ -91,6 +91,7 @@ function vimext#config#LoadConfig()
 
     let $BashBin = vimext#config#GetWinBash()
     set shell=$BashBin
+    let g:tagbar_ctags_bin = vimext#GetBinPath("ctags.exe")
 
     command! -nargs=0 FullScreen :call vimext#FullScreen()
     command! -nargs=0 GitBash :call vimext#config#GitBash()
@@ -126,8 +127,8 @@ function vimext#config#LoadConfig()
   nnoremap <F3>  :tabnew<cr>
   nnoremap <F4>  :close<cr>
 
-  let g:ycm_goto_buffer_command = 'split'
-  let g:ycm_filepath_completion_use_working_dir = 0
+  "let g:ycm_goto_buffer_command = 'split'
+  let g:ycm_confirm_extra_conf = 0
 
   let g:NERDTreeShowHidden = 1
   let g:NERDTreeShowLineNumbers = 0
@@ -142,7 +143,7 @@ function vimext#config#LoadConfig()
         "\ "ale",
         "\ "colorizer",
         "\ "python-mode",
-        "\ "YouCompleteMe",
+        \ "YouCompleteMe",
         \
         \ "vim-glsl",
         \
@@ -166,7 +167,7 @@ function vimext#config#LoadConfig()
   command! -nargs=+ Debug :call vimext#debug#Debug("<args>")
 
   autocmd! BufRead *.vs,*.vert,*.glsl,*.frag :set ft=c
-  autocmd! BufRead *.vue :set ft=html
+  autocmd! BufRead *.vue,*.cshtml :set ft=html
   autocmd! BufRead *.vala :set ft=cpp
   autocmd! BufRead *.cst :set ft=javascript
   autocmd! FileType python :nnoremap <buffer> <leader>b :call vimext#python#operate(line('.'))<cr>
