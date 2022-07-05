@@ -57,6 +57,8 @@ function vimext#config#LoadConfig()
   " switch case 缩进问题
   set cinoptions=l1
   set ssop=blank,buffers,curdir,folds,tabpages
+  set completeopt=menu,menuone,preview
+
   let $PATH .= ";".$vimext_home."/tools"
 
   if has("gui_running")
