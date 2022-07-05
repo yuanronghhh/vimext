@@ -57,6 +57,8 @@ function vimext#config#LoadConfig()
   " switch case 缩进问题
   set cinoptions=l1
   set ssop=blank,buffers,curdir,folds,tabpages
+  set completeopt=menu,menuone
+
   let $PATH .= ";".$vimext_home."/tools"
 
   if has("gui_running")
@@ -84,7 +86,7 @@ function vimext#config#LoadConfig()
     set guifont=Ubuntu\ Mono\ 12
   elseif has("win32")
     set clipboard=unnamed
-    set guifont=Consolas:h11
+    set guifont=fixedSys:h12
     set grepprg=grep\ -nH
     set makeencoding=gbk
     let g:python_cmd = "python"
@@ -129,6 +131,11 @@ function vimext#config#LoadConfig()
 
   let g:ycm_confirm_extra_conf = 0
   let g:ycm_global_ycm_extra_conf = g:vim_plugin."/vimext/tools/.ycm_extra_conf.py"
+  let g:ycm_add_preview_to_completeopt = 0
+  let g:ycm_collect_identifiers_from_comments_and_strings = 1
+  let g:ycm_complete_in_strings = 1
+  let g:ycm_min_num_identifier_candidate_chars = 2
+  let g:ycm_collect_identifiers_from_comments_and_strings = 1
 
   let g:NERDTreeShowHidden = 1
   let g:NERDTreeShowLineNumbers = 0
