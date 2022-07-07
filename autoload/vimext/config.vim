@@ -57,7 +57,6 @@ function vimext#config#LoadConfig()
   " switch case 缩进问题
   set cinoptions=l1
   set ssop=blank,buffers,curdir,folds,tabpages
-  set completeopt=menu,menuone,preview
 
   let $PATH .= ";".$vimext_home."/tools"
 
@@ -73,6 +72,7 @@ function vimext#config#LoadConfig()
     packadd termdebug
   endif
 
+  set grepprg=grep\ -nH
   "中文字体
   if has("unix")
     set clipboard=unnamed
@@ -87,7 +87,6 @@ function vimext#config#LoadConfig()
   elseif has("win32")
     set clipboard=unnamed
     set guifont=fixedSys:h12
-    set grepprg=grep\ -nH
     set makeencoding=gbk
     let g:python_cmd = "python"
 
@@ -129,13 +128,13 @@ function vimext#config#LoadConfig()
   nnoremap <F3>  :tabnew<cr>
   nnoremap <F4>  :close<cr>
 
-  let g:ycm_confirm_extra_conf = 0
-  let g:ycm_global_ycm_extra_conf = g:vim_plugin."/vimext/tools/.ycm_extra_conf.py"
-  let g:ycm_add_preview_to_completeopt = 0
-  let g:ycm_collect_identifiers_from_comments_and_strings = 1
-  let g:ycm_complete_in_strings = 1
-  let g:ycm_min_num_identifier_candidate_chars = 2
-  let g:ycm_collect_identifiers_from_comments_and_strings = 1
+  "let g:ycm_confirm_extra_conf = 0
+  "let g:ycm_global_ycm_extra_conf = g:vim_plugin."/vimext/tools/.ycm_extra_conf.py"
+  "let g:ycm_add_preview_to_completeopt = 0
+  "let g:ycm_collect_identifiers_from_comments_and_strings = 1
+  "let g:ycm_complete_in_strings = 1
+  "let g:ycm_min_num_identifier_candidate_chars = 2
+  "let g:ycm_collect_identifiers_from_comments_and_strings = 1
 
   let g:NERDTreeShowHidden = 1
   let g:NERDTreeShowLineNumbers = 0
@@ -156,7 +155,7 @@ function vimext#config#LoadConfig()
         \
         \ "tagbar",
         \ "vim-multiple-cursors",
-        \ "supertab",
+        "\ "supertab",
         \ "hexmode",
         \ "emmet-vim",
         \ "nerdtree"
