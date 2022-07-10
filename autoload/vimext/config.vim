@@ -52,7 +52,7 @@ function vimext#config#LoadConfig()
   set undofile
   set novisualbell
   set t_vb=
-  set fdm=indent
+  set fdm=syntax
   set t_Co=256
   " switch case 缩进问题
   set cinoptions=l1
@@ -128,13 +128,13 @@ function vimext#config#LoadConfig()
   nnoremap <F3>  :tabnew<cr>
   nnoremap <F4>  :close<cr>
 
-  "let g:ycm_confirm_extra_conf = 0
-  "let g:ycm_global_ycm_extra_conf = g:vim_plugin."/vimext/tools/.ycm_extra_conf.py"
-  "let g:ycm_add_preview_to_completeopt = 0
-  "let g:ycm_collect_identifiers_from_comments_and_strings = 1
-  "let g:ycm_complete_in_strings = 1
-  "let g:ycm_min_num_identifier_candidate_chars = 2
-  "let g:ycm_collect_identifiers_from_comments_and_strings = 1
+  let g:ycm_confirm_extra_conf = 0
+  let g:ycm_global_ycm_extra_conf = g:vim_plugin."/vimext/tools/.ycm_extra_conf.py"
+  let g:ycm_add_preview_to_completeopt = 0
+  let g:ycm_collect_identifiers_from_comments_and_strings = 1
+  let g:ycm_complete_in_strings = 1
+  let g:ycm_min_num_identifier_candidate_chars = 2
+  let g:ycm_collect_identifiers_from_comments_and_strings = 1
 
   let g:NERDTreeShowHidden = 1
   let g:NERDTreeShowLineNumbers = 0
@@ -155,7 +155,7 @@ function vimext#config#LoadConfig()
         \
         \ "tagbar",
         \ "vim-multiple-cursors",
-        "\ "supertab",
+        \ "supertab",
         \ "hexmode",
         \ "emmet-vim",
         \ "nerdtree"
@@ -185,13 +185,12 @@ function vimext#config#LoadConfig()
 endfunction
 
 function vimext#config#GetWinBash()
-  let l:bpath = vimext#GetBinPath("bash")
-  return shellescape(bpath)
+  let l:bpath = vimext#GetBinPath("bash.exe")
+  return shellescape(l:bpath)
 endfunction
 
 function vimext#config#GitBash()
   let l:cmd = "bash"
-  call vimext#logger#Info(l:cmd)
   exec ":silent !start ".l:cmd
 endfunction
 
