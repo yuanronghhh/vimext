@@ -61,14 +61,16 @@ function vimext#config#LoadConfig()
   let $PATH .= ";".$vimext_home."/tools"
 
   if has("gui_running")
-    colorscheme materialtheme
+    colorscheme habamax
+    "materialtheme
     set columns=120 lines=45
   else
-    colorscheme molokai
+    colorscheme habamax
   endif
 
   if v:version >= 800
     set ssop+=terminal
+    set wildoptions=pum
     packadd termdebug
   endif
 
@@ -86,7 +88,7 @@ function vimext#config#LoadConfig()
     set guifont=Ubuntu\ Mono\ 12
   elseif has("win32")
     set clipboard=unnamed
-    set guifont=fixedSys:h12
+    set guifont=Fixedsys:h12
     set makeencoding=gbk
     let g:python_cmd = "python"
 
@@ -145,21 +147,7 @@ function vimext#config#LoadConfig()
   let g:vimspector_enable_mappings = 'VISUAL_STUDIO'
   let g:pymode_rope_project_root = g:vim_home."/rope"
 
-  let l:plugins = [
-        "\ "ale",
-        "\ "colorizer",
-        "\ "python-mode",
-        \ "YouCompleteMe",
-        \
-        \ "vim-glsl",
-        \
-        \ "tagbar",
-        \ "vim-multiple-cursors",
-        \ "supertab",
-        \ "hexmode",
-        \ "emmet-vim",
-        \ "nerdtree"
-        \ ]
+  let l:plugins = ["YouCompleteMe","vim-glsl","tagbar","vim-multiple-cursors","supertab","hexmode","emmet-vim","nerdtree"]
   call vimext#LoadPlugin(l:plugins)
 
   command! -nargs=? -complete=custom,vimext#SessionCompelete OpenSession :call vimext#OpenSession("<args>")
