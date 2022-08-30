@@ -145,21 +145,7 @@ function vimext#config#LoadConfig()
   let g:vimspector_enable_mappings = 'VISUAL_STUDIO'
   let g:pymode_rope_project_root = g:vim_home."/rope"
 
-  let l:plugins = [
-        "\ "ale",
-        "\ "colorizer",
-        "\ "python-mode",
-        \ "YouCompleteMe",
-        \
-        \ "vim-glsl",
-        \
-        \ "tagbar",
-        \ "vim-multiple-cursors",
-        \ "supertab",
-        \ "hexmode",
-        \ "emmet-vim",
-        \ "nerdtree"
-        \ ]
+  let l:plugins = [ "colorizer",  "tagbar",  "vim-multiple-cursors",  "supertab",  "hexmode",  "emmet-vim",  "nerdtree" ]
   call vimext#LoadPlugin(l:plugins)
 
   command! -nargs=? -complete=custom,vimext#SessionCompelete OpenSession :call vimext#OpenSession("<args>")
