@@ -85,8 +85,8 @@ function vimext#GenCtags()
     let l:tags_cmd = l:tags_cmd.".exe"
   endif
 
-  let l:extensions = ['*.c', '*.h' , '*.cpp' , '*.hpp' , '*.py' , '*.cs' , '*.js' , 'CMakeLists.txt', '*.cmake', '*.lua']
-  let l:cmd = "find ./ -type f -name '".join(l:extensions, "' -or -name '")."' | xargs -d '\\n' ".l:tags_cmd." -a"
+  let l:extensions = ['*.c', '*.h' , '*.cpp' , '*.hpp' , '*.py' , '*.cs' , '*.js' , 'CMakeLists.txt', '*.cmake', '*.lua', '*.java']
+  let l:cmd = "find ./ -type f -name '".join(l:extensions, "' -or -name '")."' | xargs -d '\\n' ".l:tags_cmd." --append=yes"
 
   exec ":!".l:cmd
 endfunction
