@@ -25,6 +25,10 @@ function vimext#init()
   if !isdirectory(&undodir)
     call mkdir(&undodir)
   endif
+
+  if has("python3")
+    call vimext#autotags#init()
+  endif
 endfunction
 
 function vimext#LoadPlugin(plugins)
@@ -79,15 +83,7 @@ function vimext#GetCWDPath()
 endfunction
 
 function vimext#GenCtags()
-  let l:tags_cmd = $vimext_home."/tools/ctags"
-
-  if has("win32")
-    let l:tags_cmd = l:tags_cmd.".exe"
-  endif
-
-  let l:extensions = ['*.c', '*.h' , '*.cpp' , '*.hpp' , '*.py' , '*.cs' , '*.js' , 'CMakeLists.txt', '*.cmake', '*.lua', '*.java']
-  let l:cmd = "find ./ -type f -name '".join(l:extensions, "' -or -name '")."' | xargs -d '\\n' ".l:tags_cmd." --append=yes"
-
+  let l:cmd = vimext#autotags#GetCtagsCmd()
   exec ":!".l:cmd
 endfunction
 

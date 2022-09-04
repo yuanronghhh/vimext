@@ -61,16 +61,14 @@ function vimext#config#LoadConfig()
   let $PATH .= ";".$vimext_home."/tools"
 
   if has("gui_running")
-    colorscheme habamax
-    "materialtheme
+    colorscheme materialtheme
     set columns=120 lines=45
   else
-    colorscheme habamax
+    colorscheme molokai
   endif
 
   if v:version >= 800
     set ssop+=terminal
-    set wildoptions=pum
     packadd termdebug
   endif
 
@@ -126,17 +124,11 @@ function vimext#config#LoadConfig()
   nnoremap <C-k> gT
   nnoremap <C-l> <C-w>l
   nnoremap <C-s> :w<cr>
-  nnoremap <F2>  :YcmCompleter GoTo<cr>
   nnoremap <F3>  :tabnew<cr>
   nnoremap <F4>  :close<cr>
 
-  let g:ycm_confirm_extra_conf = 0
-  let g:ycm_global_ycm_extra_conf = g:vim_plugin."/vimext/tools/.ycm_extra_conf.py"
-  let g:ycm_add_preview_to_completeopt = 0
-  let g:ycm_collect_identifiers_from_comments_and_strings = 1
-  let g:ycm_complete_in_strings = 1
-  let g:ycm_min_num_identifier_candidate_chars = 2
-  let g:ycm_collect_identifiers_from_comments_and_strings = 1
+  "let g:ycm_confirm_extra_conf = 0
+  "let g:ycm_global_ycm_extra_conf = g:vim_plugin."/vimext/tools/.ycm_extra_conf.py"
 
   let g:NERDTreeShowHidden = 1
   let g:NERDTreeShowLineNumbers = 0
@@ -147,7 +139,7 @@ function vimext#config#LoadConfig()
   let g:vimspector_enable_mappings = 'VISUAL_STUDIO'
   let g:pymode_rope_project_root = g:vim_home."/rope"
 
-  let l:plugins = ["colorizer", "YouCompleteMe","vim-glsl","tagbar","vim-multiple-cursors","supertab","hexmode","emmet-vim","nerdtree"]
+  let l:plugins = ["colorizer", "vim-glsl","tagbar","vim-multiple-cursors","supertab","hexmode","emmet-vim","nerdtree"]
   call vimext#LoadPlugin(l:plugins)
 
   command! -nargs=? -complete=custom,vimext#SessionCompelete OpenSession :call vimext#OpenSession("<args>")
