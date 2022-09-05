@@ -105,6 +105,7 @@ class AutoTags:
 
         lock.release()
 
+
     def rebuild(self):
         filename = vim.eval("expand(\"%:p\")")
         if not filename:
@@ -112,7 +113,7 @@ class AutoTags:
         filename = filename.replace("\\", "/")
 
         p = path.dirname(filename)
-        tagfile = None
+        tagfile = self.tagfile
 
         if not self.tagfile or not self.tagfile.startswith(p):
             tagfile = self.find_tag_recursive(p)
@@ -123,5 +124,6 @@ class AutoTags:
         th = Thread(target=self.ctag_update, args=(tagfile, filename))
         th.daemon = True
         th.start()
+        th.join()
 
 g_atags = AutoTags()
