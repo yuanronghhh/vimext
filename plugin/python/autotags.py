@@ -1,7 +1,6 @@
 import vim
 import logging
 import subprocess
-import array
 import os
 
 from itertools import takewhile, repeat
@@ -10,6 +9,8 @@ from threading import Thread, Lock
 
 logging.basicConfig(format="%(message)s", level=logging.INFO)
 lock = Lock()
+
+maxsize = 50 # 50mb
 
 
 def do_cmd(cmd, cwd):
@@ -24,29 +25,46 @@ def do_cmd(cmd, cwd):
     stdout = proc.communicate()[0]
     return stdout.split("\n")
 
+def os_pwrite(fp, p, bs, recp):
+    fp.seek(p)
+    fp.write(bs)
 
-def clean_tags(tagfile, newtag, filename):
+    end = fp.tell()
+    fp.seek(recp)
+
+    return end
+
+def mem_write(lines, bs):
+    lines.append(bs)
+
+def clean_tags(tagfile, filename):
     pname = path.dirname(tagfile)
     relpath = filename[len(pname):]
+    lines = []
 
-    with open(tagfile, "rb") as fp1:
-        with open(newtag, "wb") as fp2:
-            for line in iter(fp1.readline, b''):
-                if line[0] == ord('!'):
-                    fp2.write(line)
-                    continue
+    with open(tagfile, "r+b") as fp1:
+        for line in iter(fp1.readline, b'\n'):
+            if line == b'':
+                break
 
-                nv = line.split(b'\t')
-                if len(nv) < 2:
-                    # may be not correct tag file
-                    return False
+            if line[0] == ord('!'):
+                mem_write(lines, line)
+                continue
 
-                vs = nv[1].lstrip(b'.').replace(b"\\", b"/")
-                if vs == relpath or vs == filename:
-                    continue
+            nv = line.split(b'\t')
+            if len(nv) < 2:
+                logging.error("may be not correct tag file")
+                return False
 
-                fp2.write(line)
+            vs = nv[1].lstrip(b'.').replace(b'\\', b'/').decode('utf-8')
+            if vs == relpath or vs == filename:
+                continue
 
+            mem_write(lines, line)
+
+        fp1.seek(0)
+        fp1.truncate(0)
+        fp1.writelines(lines)
 
 class AutoTags:
     def __init__(self):
@@ -65,7 +83,7 @@ class AutoTags:
 
             for e in self.extensions:
                 cmd.append("-name")
-                cmd.append(e)
+                cmd.append("'" + e + "'")
 
                 if e != extensions[-1]:
                     cmd.append("-or")
@@ -90,19 +108,14 @@ class AutoTags:
 
     def ctag_update(self, tagfile, filename):
         tagdir = path.dirname(tagfile)
-        newtag = tagfile + ".safe"
 
-        cmd = self.get_ctags_cmd(newtag, filename)
+        cmd = self.get_ctags_cmd(tagfile, filename)
         if not cmd:
             return
 
         lock.acquire(blocking=True)
-
-        clean_tags(tagfile, newtag, filename)
+        clean_tags(tagfile, filename)
         do_cmd(cmd, tagdir)
-        os.unlink(tagfile)
-        os.rename(newtag, tagfile)
-
         lock.release()
 
 
@@ -120,6 +133,10 @@ class AutoTags:
             if not tagfile:
                 return
         self.tagfile = tagfile
+
+        st = os.stat(tagfile)
+        if (st.st_size / 1024 / 1024) > maxsize:
+            return
 
         th = Thread(target=self.ctag_update, args=(tagfile, filename))
         th.daemon = True
