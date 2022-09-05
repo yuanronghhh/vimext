@@ -36,12 +36,12 @@ def clean_tags(tagfile, newtag, filename):
                     fp2.write(line)
                     continue
 
-                nv = line.decode("utf-8").split('\t')
+                nv = line.split(b'\t')
                 if len(nv) < 2:
                     # may be not correct tag file
                     return False
 
-                vs = nv[1].lstrip('.').replace("\\", "/")
+                vs = nv[1].lstrip(b'.').replace(b"\\", b"/")
                 if vs == relpath or vs == filename:
                     continue
 
@@ -124,6 +124,5 @@ class AutoTags:
         th = Thread(target=self.ctag_update, args=(tagfile, filename))
         th.daemon = True
         th.start()
-        th.join()
 
 g_atags = AutoTags()
