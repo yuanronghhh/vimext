@@ -6,9 +6,10 @@ import os
 
 from itertools import takewhile, repeat
 from os import path, chdir
-from threading import Thread
+from threading import Thread, Lock
 
 logging.basicConfig(format="%(message)s", level=logging.INFO)
+lock = Lock()
 
 
 def do_cmd(cmd, cwd):
@@ -95,11 +96,14 @@ class AutoTags:
         if not cmd:
             return
 
+        lock.acquire(blocking=True)
+
         clean_tags(tagfile, newtag, filename)
         do_cmd(cmd, tagdir)
-
         os.unlink(tagfile)
         os.rename(newtag, tagfile)
+
+        lock.release()
 
     def rebuild(self):
         filename = vim.eval("expand(\"%:p\")")
