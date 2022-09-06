@@ -10,7 +10,7 @@ from threading import Thread, Lock
 logging.basicConfig(format="%(message)s", level=logging.INFO)
 lock = Lock()
 
-maxsize = 50 # 50mb
+maxsize = 100 # mb
 
 
 def do_cmd(cmd, cwd):
@@ -36,6 +36,9 @@ def os_pwrite(fp, p, bs, recp):
 
 def mem_write(lines, bs):
     lines.append(bs)
+
+def binsearch_tag(fp, filename):
+    pass
 
 def clean_tags(tagfile, filename):
     pname = path.dirname(tagfile)
@@ -136,6 +139,9 @@ class AutoTags:
 
         st = os.stat(tagfile)
         if (st.st_size / 1024 / 1024) > maxsize:
+            return
+
+        if path.splitext(tagfile)[-1] not in self.extensions:
             return
 
         th = Thread(target=self.ctag_update, args=(tagfile, filename))
