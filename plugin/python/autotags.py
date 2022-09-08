@@ -72,7 +72,7 @@ def clean_tags(tagfile, filename):
 class AutoTags:
     def __init__(self):
         self.tagfile = None
-        self.extensions = ['*.c', '*.h' , '*.cpp' , '*.hpp' , '*.py' , '*.cs' , '*.js' , 'CMakeLists.txt', '*.cmake', '*.lua', '*.java']
+        self.extensions = ['*.vim', '*.c', '*.h' , '*.cpp' , '*.hpp' , '*.py' , '*.cs' , '*.js' , 'CMakeLists.txt', '*.cmake', '*.lua', '*.java']
 
     def get_ctags_cmd(self, newtag, filename):
         tags_cmd = vim.eval("$vimext_home") + "/tools/ctags"
