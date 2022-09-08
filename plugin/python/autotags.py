@@ -3,8 +3,7 @@ import logging
 import subprocess
 import os
 
-from itertools import takewhile, repeat
-from os import path, chdir
+from os import path
 from threading import Thread, Lock
 
 logging.basicConfig(format="%(message)s", level=logging.INFO)
