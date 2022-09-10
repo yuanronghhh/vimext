@@ -62,7 +62,7 @@ function vimext#config#LoadConfig()
 
   if has("gui_running")
     colorscheme materialtheme
-    set columns=120 lines=45
+    set columns=120 lines=35
   else
     colorscheme molokai
   endif
@@ -83,7 +83,7 @@ function vimext#config#LoadConfig()
           \/usr/include/c++/9,
           \/usr/include/x86_64-linux-gnu/c++/9,
           \/usr/include/c++/9/backward
-    set guifont=Ubuntu\ Mono\ 12
+    set guifont=FZFangSong\-Z02S\ bold\ 12
   elseif has("win32")
     set clipboard=unnamed
     set guifont=Fixedsys:h12
@@ -124,11 +124,9 @@ function vimext#config#LoadConfig()
   nnoremap <C-k> gT
   nnoremap <C-l> <C-w>l
   nnoremap <C-s> :w<cr>
+  nnoremap <F2>  :NERDTreeFind<cr>
   nnoremap <F3>  :tabnew<cr>
   nnoremap <F4>  :close<cr>
-
-  "let g:ycm_confirm_extra_conf = 0
-  "let g:ycm_global_ycm_extra_conf = g:vim_plugin."/vimext/tools/.ycm_extra_conf.py"
 
   let g:NERDTreeShowHidden = 1
   let g:NERDTreeShowLineNumbers = 0
@@ -139,7 +137,7 @@ function vimext#config#LoadConfig()
   let g:vimspector_enable_mappings = 'VISUAL_STUDIO'
   let g:pymode_rope_project_root = g:vim_home."/rope"
 
-  let l:plugins = ["colorizer", "vim-glsl","tagbar","vim-multiple-cursors","supertab","hexmode","emmet-vim","nerdtree"]
+  let l:plugins = ["tagbar","vim-multiple-cursors","supertab","hexmode","emmet-vim","nerdtree"]
   call vimext#LoadPlugin(l:plugins)
 
   command! -nargs=? -complete=custom,vimext#SessionCompelete OpenSession :call vimext#OpenSession("<args>")

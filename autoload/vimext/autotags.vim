@@ -16,7 +16,7 @@ function vimext#autotags#Init()
 
 python3 << EOF
 import vim
-sys.path.insert(0, vim.eval("$vimext_home") + "./plugin/python")
+sys.path.insert(0, vim.eval("$vimext_home") + "/plugin/python")
 from autotags import g_atags
 EOF
 endfunction

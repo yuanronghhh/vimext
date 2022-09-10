@@ -16,13 +16,13 @@ def do_cmd(cmd, cwd):
     """ Abstract subprocess """
     proc = subprocess.Popen(cmd,
                             cwd=cwd,
-                            shell=True,
+                            shell=False,
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE,
                             universal_newlines=True)
     stdout = proc.communicate()[0]
-    return stdout.split("\n")
+    return stdout
 
 def os_pwrite(fp, p, bs, recp):
     fp.seek(p)
@@ -59,7 +59,7 @@ def clean_tags(tagfile, filename):
                 return False
 
             vs = nv[1].lstrip(b'.').replace(b'\\', b'/').decode('utf-8')
-            if vs == relpath or vs == filename:
+            if vs.endswith(relpath) or vs == filename:
                 continue
 
             mem_write(lines, line)
@@ -71,28 +71,27 @@ def clean_tags(tagfile, filename):
 class AutoTags:
     def __init__(self):
         self.tagfile = None
-        self.extensions = ['*.vim', '*.c', '*.h' , '*.cpp' , '*.hpp' , '*.py' , '*.cs' , '*.js' , 'CMakeLists.txt', '*.cmake', '*.lua', '*.java']
+        self.matches = ['*.vim', '*.c', '*.h' , '*.cpp' , '*.hpp' , '*.py' , '*.cs' , '*.js' , 'CMakeLists.txt', '*.cmake', '*.lua', '*.java']
 
     def get_ctags_cmd(self, newtag, filename):
         tags_cmd = vim.eval("$vimext_home") + "/tools/ctags"
-        extensions = self.extensions
-
-        if vim.eval('has("win32")'):
+        matches = self.matches
+        if int(vim.eval('has("win32")')):
             tags_cmd = tags_cmd + ".exe"
 
         if not filename:
             cmd = ["find", "./", "-type", "f"]
 
-            for e in self.extensions:
+            for e in self.matches:
                 cmd.append("-name")
                 cmd.append("'" + e + "'")
 
-                if e != extensions[-1]:
+                if e != matches[-1]:
                     cmd.append("-or")
 
             cmd.extend(["|", "xargs", "-d", "\'\\n\'", tags_cmd, "-a"])
         else:
-            cmd = [tags_cmd, "-a", "-f", newtag, filename]
+            cmd = [tags_cmd,"--tag-relative=always", "-a", "-f", newtag, filename]
 
         return cmd
 
@@ -140,7 +139,11 @@ class AutoTags:
         if (st.st_size / 1024 / 1024) > maxsize:
             return
 
-        if path.splitext(tagfile)[-1] not in self.extensions:
+        ext = path.splitext(filename)[-1]
+        for m in self.matches:
+            if m.endswith(ext):
+                break
+        else:
             return
 
         th = Thread(target=self.ctag_update, args=(tagfile, filename))
