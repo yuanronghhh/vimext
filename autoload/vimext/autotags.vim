@@ -14,9 +14,5 @@ function vimext#autotags#Init()
     autocmd BufWritePost,FileWritePost * call vimext#autotags#Rebuild()
   augroup END
 
-python3 << EOF
-import vim
-sys.path.insert(0, vim.eval("$vimext_home") + "/plugin/python")
-from autotags import g_atags
-EOF
+  python3 from autotags import g_atags
 endfunction

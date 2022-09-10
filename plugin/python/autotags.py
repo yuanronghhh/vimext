@@ -1,7 +1,7 @@
-import vim
 import logging
 import subprocess
 import os
+import vimpy
 
 from os import path
 from threading import Thread, Lock
@@ -23,6 +23,8 @@ def do_cmd(cmd, cwd):
                             universal_newlines=True)
     stdout = proc.communicate()[0]
     return stdout
+
+
 
 def os_pwrite(fp, p, bs, recp):
     fp.seek(p)
@@ -73,28 +75,6 @@ class AutoTags:
         self.tagfile = None
         self.matches = ['*.vim', '*.c', '*.h' , '*.cpp' , '*.hpp' , '*.py' , '*.cs' , '*.js' , 'CMakeLists.txt', '*.cmake', '*.lua', '*.java']
 
-    def get_ctags_cmd(self, newtag, filename):
-        tags_cmd = vim.eval("$vimext_home") + "/tools/ctags"
-        matches = self.matches
-        if int(vim.eval('has("win32")')):
-            tags_cmd = tags_cmd + ".exe"
-
-        if not filename:
-            cmd = ["find", "./", "-type", "f"]
-
-            for e in self.matches:
-                cmd.append("-name")
-                cmd.append("'" + e + "'")
-
-                if e != matches[-1]:
-                    cmd.append("-or")
-
-            cmd.extend(["|", "xargs", "-d", "\'\\n\'", tags_cmd, "-a"])
-        else:
-            cmd = [tags_cmd,"--tag-relative=always", "-a", "-f", newtag, filename]
-
-        return cmd
-
     def find_tag_recursive(self, p):
         tag = path.join(p, "tags")
 
@@ -119,11 +99,33 @@ class AutoTags:
         do_cmd(cmd, tagdir)
         lock.release()
 
+    def get_ctags_cmd(self, newtag, filename):
+        tags_cmd = vimpy.vim_ctags_bin()
+        matches = self.matches
+        if vimpy.vim_has("win32"):
+            tags_cmd = tags_cmd + ".exe"
+
+        if not filename:
+            cmd = ["find", "./", "-type", "f"]
+
+            for e in matches:
+                cmd.append("-name")
+                cmd.append("'" + e + "'")
+
+                if e != matches[-1]:
+                    cmd.append("-or")
+
+            cmd.extend(["|", "xargs", "-d", "\'\\n\'", tags_cmd, "-a"])
+        else:
+            cmd = [tags_cmd,"--tag-relative=always", "-a", "-f", newtag, filename]
+
+        return cmd
 
     def rebuild(self):
-        filename = vim.eval("expand(\"%:p\")")
+        filename = vimpy.vim_fullname()
         if not filename:
             return
+
         filename = filename.replace("\\", "/")
 
         p = path.dirname(filename)
@@ -149,5 +151,6 @@ class AutoTags:
         th = Thread(target=self.ctag_update, args=(tagfile, filename))
         th.daemon = True
         th.start()
+        th.join()
 
 g_atags = AutoTags()

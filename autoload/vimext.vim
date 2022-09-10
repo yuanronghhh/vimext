@@ -27,6 +27,7 @@ function vimext#init()
   endif
 
   if has("python3")
+    call vimext#python#Init()
     call vimext#autotags#Init()
   endif
 endfunction
