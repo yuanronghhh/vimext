@@ -2,6 +2,7 @@ import logging
 import subprocess
 import os
 import vimpy
+import sys
 
 from os import path
 from threading import Thread, Lock
@@ -14,13 +15,16 @@ maxsize = 100 # mb
 
 def do_cmd(cmd, cwd):
     """ Abstract subprocess """
+    use_shell = False
+    if sys.platform == "win32":
+        use_shell = True
+
     proc = subprocess.Popen(cmd,
                             cwd=cwd,
-                            shell=False,
+                            shell=use_shell,
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE,
-                            universal_newlines=True)
+                            stderr=subprocess.PIPE)
     stdout = proc.communicate()[0]
     return stdout
 
@@ -151,6 +155,5 @@ class AutoTags:
         th = Thread(target=self.ctag_update, args=(tagfile, filename))
         th.daemon = True
         th.start()
-        th.join()
 
 g_atags = AutoTags()
