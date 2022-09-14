@@ -25,9 +25,8 @@ def do_cmd(cmd, cwd):
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
-    stdout = proc.communicate()[0]
+    stdout, stderr = proc.communicate()
     return stdout
-
 
 
 def os_pwrite(fp, p, bs, recp):
@@ -47,7 +46,7 @@ def binsearch_tag(fp, filename):
 
 def clean_tags(tagfile, filename):
     pname = path.dirname(tagfile)
-    relpath = filename[len(pname):]
+    relpath = filename[len(pname):].lstrip("/")
     lines = []
 
     with open(tagfile, "r+b") as fp1:
@@ -65,6 +64,7 @@ def clean_tags(tagfile, filename):
                 return False
 
             vs = nv[1].lstrip(b'.').replace(b'\\', b'/').decode('utf-8')
+
             if vs.endswith(relpath) or vs == filename:
                 continue
 
@@ -80,7 +80,7 @@ class AutoTags:
         self.matches = ['*.vim', '*.c', '*.h' , '*.cpp' , '*.hpp' , '*.py' , '*.cs' , '*.js' , 'CMakeLists.txt', '*.cmake', '*.lua', '*.java']
 
     def find_tag_recursive(self, p):
-        tag = path.join(p, "tags")
+        tag = p + "/tags"
 
         if path.exists(tag):
             return tag
