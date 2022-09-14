@@ -61,7 +61,7 @@ function vimext#config#LoadConfig()
   let $PATH .= ";".$vimext_home."/tools"
 
   if has("gui_running")
-    colorscheme materialtheme
+    colorscheme habamax
     set columns=120 lines=35
   else
     colorscheme molokai
@@ -93,7 +93,11 @@ function vimext#config#LoadConfig()
     let $BashBin = vimext#config#GetWinBash()
     set shell=$BashBin
     let g:tagbar_ctags_bin = vimext#GetBinPath("ctags.exe")
-
+    let $VS_INCLUDES=""
+          \."F:/Program Files (x86)/Microsoft Visual Studio/2017/Community/VC/Tools/MSVC/14.16.27023/include"
+          \.";C:/Program Files (x86)/Windows Kits/10/Include/10.0.17763.0/um"
+          \.";C:/Program Files (x86)/Windows Kits/10/Include/10.0.17763.0/ucrt"
+    set path+=$VS_INCLUDES
     command! -nargs=0 FullScreen :call vimext#FullScreen()
     command! -nargs=0 GitBash :call vimext#config#GitBash()
   endif

@@ -1,33 +1,16 @@
 import logging
-import subprocess
 import os
 import vimpy
 import sys
 
 from os import path
+from utils import process_cmd
 from threading import Thread, Lock
 
 logging.basicConfig(format="%(message)s", level=logging.INFO)
 lock = Lock()
 
 maxsize = 100 # mb
-
-
-def do_cmd(cmd, cwd):
-    """ Abstract subprocess """
-    use_shell = False
-    if sys.platform == "win32":
-        use_shell = True
-
-    proc = subprocess.Popen(cmd,
-                            cwd=cwd,
-                            shell=use_shell,
-                            stdin=subprocess.PIPE,
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE)
-    stdout, stderr = proc.communicate()
-    return stdout
-
 
 def os_pwrite(fp, p, bs, recp):
     fp.seek(p)
@@ -100,7 +83,7 @@ class AutoTags:
 
         lock.acquire(blocking=True)
         clean_tags(tagfile, filename)
-        do_cmd(cmd, tagdir)
+        process_cmd(cmd, tagdir)
         lock.release()
 
     def get_ctags_cmd(self, newtag, filename):
