@@ -1,5 +1,7 @@
 import subprocess
 import sys
+import os
+import json
 
 
 def process_cmd(cmd, cwd):
@@ -13,21 +15,52 @@ def process_cmd(cmd, cwd):
                             shell=use_shell,
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE)
+                            stderr=subprocess.PIPE,
+                            universal_newlines=True)
     stdout, stderr = proc.communicate()
+    if stderr:
+        return None
+
     return stdout
 
 def get_vs_info():
     vswhere = "C:\\Program Files (x86)\\Microsoft Visual Studio\\Installer\\vswhere.exe"
-    cmd = ("\"%s\" -format json" % (vswhere))
+    cmd = [vswhere, "-format", "json"]
 
-    out, err = process(cmd, True)
-    if err:
+    out = process_cmd(cmd, os.getcwd())
+    if not out:
         return None
 
     return json.loads(out)
 
 def get_vs_header_path():
-    vs = get_vs_info()
-    inc_path = "%s/VC/Tools/MSVC/14.16.27023/include" % (vs["installationPath"])
-    return inc_path
+    vss = get_vs_info()
+    vs = None
+    inc_path = None
+    if len(vss) > 1:
+        vs = vss[-1]
+
+    # vs 2017
+    if vs["installationVersion"].startswith("15."):
+        inc_path = "%s/VC/Tools/MSVC/14.16.27023/include" % (vs["installationPath"])
+
+    return inc_path.replace("\\", "/")
+
+def get_system_header_path():
+    incs = None
+
+    if sys.platform == "win32":
+        incs = ["C:/Program Files (x86)/Windows Kits/10/Include/10.0.17763.0/um",
+                "C:/Program Files (x86)/Windows Kits/10/Include/10.0.17763.0/ucrt",
+                get_vs_header_path()]
+
+    if sys.platform == "unix":
+        incs = ["/usr/include/x86_64-linux-gnu",
+                "/usr/include",
+                "/usr/local/include",
+                "/usr/lib/gcc/x86_64-linux-gnu/9/include",
+                "/usr/include/c++/9",
+                "/usr/include/x86_64-linux-gnu/c++/9",
+                "/usr/include/c++/9/backward"]
+
+    return ",".join(incs).replace(" ", "\\ ")

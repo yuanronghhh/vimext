@@ -72,17 +72,12 @@ function vimext#config#LoadConfig()
     packadd termdebug
   endif
 
+  let $C_HEADERS=vimext#GetSystemHeaderPath()
+  set path+=$C_HEADERS
   set grepprg=grep\ -nH
   "中文字体
   if has("unix")
     set clipboard=unnamed
-    set path+=/usr/include/x86_64-linux-gnu,
-          \/usr/include,
-          \/usr/local/include,
-          \/usr/lib/gcc/x86_64-linux-gnu/9/include,
-          \/usr/include/c++/9,
-          \/usr/include/x86_64-linux-gnu/c++/9,
-          \/usr/include/c++/9/backward
     set guifont=FZFangSong\-Z02S\ bold\ 12
   elseif has("win32")
     set clipboard=unnamed
@@ -93,11 +88,6 @@ function vimext#config#LoadConfig()
     let $BashBin = vimext#config#GetWinBash()
     set shell=$BashBin
     let g:tagbar_ctags_bin = vimext#GetBinPath("ctags.exe")
-    let $VS_INCLUDES=""
-          \."F:/Program Files (x86)/Microsoft Visual Studio/2017/Community/VC/Tools/MSVC/14.16.27023/include"
-          \.";C:/Program Files (x86)/Windows Kits/10/Include/10.0.17763.0/um"
-          \.";C:/Program Files (x86)/Windows Kits/10/Include/10.0.17763.0/ucrt"
-    set path+=$VS_INCLUDES
     command! -nargs=0 FullScreen :call vimext#FullScreen()
     command! -nargs=0 GitBash :call vimext#config#GitBash()
   endif
@@ -144,8 +134,8 @@ function vimext#config#LoadConfig()
   let l:plugins = ["tagbar","vim-multiple-cursors","supertab","hexmode","emmet-vim","nerdtree"]
   call vimext#LoadPlugin(l:plugins)
 
-  command! -nargs=? -complete=custom,vimext#SessionCompelete OpenSession :call vimext#OpenSession("<args>")
-  command! -nargs=? -complete=custom,vimext#SessionCompelete SaveSession :call vimext#SaveSession("<args>")
+  command! -nargs=? -complete=custom,vimext#session#SessionCompelete OpenSession :call vimext#session#OpenSession("<args>")
+  command! -nargs=? -complete=custom,vimext#session#SessionCompelete SaveSession :call vimext#session#SaveSession("<args>")
   command! -nargs=? HeaderOrCode :call vimext#HeaderOrCode()
   command! -nargs=? PythonDoc :call vimext#python#doc("<args>")
   command! -nargs=? JsonFormat :call vimext#JsonFormat()

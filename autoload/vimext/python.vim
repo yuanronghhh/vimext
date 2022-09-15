@@ -5,9 +5,9 @@ function vimext#python#Init()
 python3 << EOF
 import vim
 sys.path.insert(0, vim.eval("$vimext_home") + "/plugin/python")
+import utils
 EOF
 endfunction
-
 
 function vimext#python#operate(lnum)
   let line = getline(a:lnum)

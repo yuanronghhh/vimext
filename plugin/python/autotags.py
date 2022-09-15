@@ -4,7 +4,7 @@ import vimpy
 import sys
 
 from os import path
-from utils import process_cmd
+from utils import process_cmd, get_system_header_path
 from threading import Thread, Lock
 
 logging.basicConfig(format="%(message)s", level=logging.INFO)
@@ -89,6 +89,7 @@ class AutoTags:
     def get_ctags_cmd(self, newtag, filename):
         tags_cmd = vimpy.vim_ctags_bin()
         matches = self.matches
+        sys_incs = get_system_header_path()
         if vimpy.vim_has("win32"):
             tags_cmd = tags_cmd + ".exe"
 
@@ -102,9 +103,10 @@ class AutoTags:
                 if e != matches[-1]:
                     cmd.append("-or")
 
-            cmd.extend(["|", "xargs", "-d", "\'\\n\'", tags_cmd, "-a"])
+            cmd.extend(["|", "xargs", "-d", "\'\\n\'",\
+                    tags_cmd, "--tag-relative=always", "-a", "-f", newtag])
         else:
-            cmd = [tags_cmd,"--tag-relative=always", "-a", "-f", newtag, filename]
+            cmd = [tags_cmd, "--tag-relative=always", "-a", "-f", newtag, filename]
 
         return cmd
 

@@ -30,6 +30,8 @@ function vimext#init()
     call vimext#python#Init()
     call vimext#autotags#Init()
   endif
+
+  call vimext#channel#init()
 endfunction
 
 function vimext#LoadPlugin(plugins)
@@ -88,6 +90,11 @@ function vimext#GenCtags()
   exec ":!".l:cmd
 endfunction
 
+function vimext#GetSystemHeaderPath()
+  let l:ipath = py3eval("utils.get_system_header_path()")
+  return l:ipath
+endfunction
+
 function vimext#ManTab(word)
   let l:word = a:word
 
@@ -144,41 +151,4 @@ endfunction
 
 function vimext#JsonFormat()
   exec ":%!".g:python_cmd." -m json.tool"
-endfunction
-
-function vimext#SaveSession(sfile)
-  let l:sfile = a:sfile
-  if strlen(a:sfile) == 0
-    let l:sfile = "s.vim"
-  endif
-
-  if stridx(l:sfile, ".vim") == -1
-    let l:sfile = a:sfile.".vim"
-  endif
-
-  :NERDTreeClose
-  echo "mks! ".g:vim_session."/".l:sfile
-  exec "mks! ".g:vim_session."/".l:sfile
-endfunction
-
-function vimext#SessionCompelete(A,L,P)
-  let alist = map(globpath(g:vim_session, "*", 1, 1), "fnamemodify(v:val, ':p:t')")
-
-  return join(alist, "\n")
-endfunction
-
-function vimext#OpenSession(sfile)
-  let l:sfile = a:sfile
-
-  if stridx(a:sfile, ".vim") == -1
-    let l:sfile = a:sfile.".vim"
-  endif
-
-  if strlen(a:sfile) == 0
-    let l:sfile = "s.vim"
-  endif
-
-  echo "source ".g:vim_session."/".l:sfile
-  exec "source ".g:vim_session."/".l:sfile
-  :NERDTreeFind
 endfunction
