@@ -4,6 +4,9 @@ import os
 import json
 
 
+vsInfo = None
+
+
 def process_cmd(cmd, cwd):
     """ Abstract subprocess """
     use_shell = False
@@ -24,6 +27,11 @@ def process_cmd(cmd, cwd):
     return stdout
 
 def get_vs_info():
+    global vsInfo
+
+    if vsInfo:
+        return vsInfo
+
     vswhere = "C:\\Program Files (x86)\\Microsoft Visual Studio\\Installer\\vswhere.exe"
     cmd = [vswhere, "-format", "json"]
 
@@ -31,7 +39,8 @@ def get_vs_info():
     if not out:
         return None
 
-    return json.loads(out)
+    vsInfo = json.loads(out)
+    return vsInfo
 
 def get_vs_header_path():
     vss = get_vs_info()
@@ -63,4 +72,8 @@ def get_system_header_path():
                 "/usr/include/x86_64-linux-gnu/c++/9",
                 "/usr/include/c++/9/backward"]
 
-    return ",".join(incs).replace(" ", "\\ ")
+    return incs
+
+def get_system_header_str():
+    hds = get_system_header_path()
+    return ",".join(hds).replace(" ", "\\ ")

@@ -90,6 +90,7 @@ class AutoTags:
         tags_cmd = vimpy.vim_ctags_bin()
         matches = self.matches
         sys_incs = get_system_header_path()
+
         if vimpy.vim_has("win32"):
             tags_cmd = tags_cmd + ".exe"
 
@@ -104,10 +105,12 @@ class AutoTags:
                     cmd.append("-or")
 
             cmd.extend(["|", "xargs", "-d", "\'\\n\'",\
-                    tags_cmd, "--tag-relative=always", "-a", "-f", newtag])
+                    tags_cmd,\
+                    "--tag-relative=always", "-a", "-f", newtag])
         else:
             cmd = [tags_cmd, "--tag-relative=always", "-a", "-f", newtag, filename]
 
+        cmd.extend(["'" + inc + "/std*.h'" for inc in sys_incs])
         return cmd
 
     def rebuild(self):

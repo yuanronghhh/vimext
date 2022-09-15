@@ -91,7 +91,7 @@ function vimext#GenCtags()
 endfunction
 
 function vimext#GetSystemHeaderPath()
-  let l:ipath = py3eval("utils.get_system_header_path()")
+  let l:ipath = py3eval("utils.get_system_header_str()")
   return l:ipath
 endfunction
 
