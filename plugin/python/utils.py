@@ -46,8 +46,11 @@ def get_vs_header_path():
     vss = get_vs_info()
     vs = None
     inc_path = None
-    if len(vss) > 1:
-        vs = vss[-1]
+
+    if len(vss) == 0:
+        return None
+
+    vs = vss[-1]
 
     # vs 2017
     if vs["installationVersion"].startswith("15."):
@@ -59,9 +62,11 @@ def get_system_header_path():
     incs = None
 
     if sys.platform == "win32":
+        vinc = get_vs_header_path()
         incs = ["C:/Program Files (x86)/Windows Kits/10/Include/10.0.17763.0/um",
-                "C:/Program Files (x86)/Windows Kits/10/Include/10.0.17763.0/ucrt",
-                get_vs_header_path()]
+                "C:/Program Files (x86)/Windows Kits/10/Include/10.0.17763.0/ucrt"]
+        if vinc:
+            incs.append(vinc)
 
     if sys.platform == "unix":
         incs = ["/usr/include/x86_64-linux-gnu",
