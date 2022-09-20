@@ -55,7 +55,6 @@ def clean_tags(tagfile, filename):
 
             mem_write(lines, line)
 
-        print("has_match %d" % has_match)
         if has_match:
             fp1.seek(0)
             fp1.truncate(0)
@@ -137,12 +136,12 @@ class AutoTags:
         if (st.st_size / 1024 / 1024) > maxsize:
             return
 
-        # ext = path.splitext(filename)[-1]
-        # for m in self.matches:
-        #     if m.endswith(ext):
-        #         break
-        # else:
-        #     return
+        ext = path.splitext(filename)[-1]
+        for m in self.matches:
+            if m.endswith(ext):
+                break
+        else:
+            return
 
         th = Thread(target=self.ctag_update, args=(tagfile, filename))
         th.start()
