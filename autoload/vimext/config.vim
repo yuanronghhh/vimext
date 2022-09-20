@@ -61,7 +61,7 @@ function vimext#config#LoadConfig()
   let $PATH .= ";".$vimext_home."/tools"
 
   if has("gui_running")
-    colorscheme habamax
+    colorscheme materialtheme
     set columns=120 lines=35
   else
     colorscheme molokai

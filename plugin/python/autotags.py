@@ -33,6 +33,7 @@ def clean_tags(tagfile, filename):
     lines = []
 
     with open(tagfile, "r+b") as fp1:
+        has_match = False
         for line in iter(fp1.readline, b'\n'):
             if line == b'':
                 break
@@ -49,13 +50,15 @@ def clean_tags(tagfile, filename):
             vs = nv[1].lstrip(b'.').replace(b'\\', b'/').decode('utf-8')
 
             if vs.endswith(relpath) or vs == filename:
+                has_match = True
                 continue
 
             mem_write(lines, line)
 
-        fp1.seek(0)
-        fp1.truncate(0)
-        fp1.writelines(lines)
+        if has_match:
+            fp1.seek(0)
+            fp1.truncate(0)
+            fp1.writelines(lines)
 
 class AutoTags:
     def __init__(self):
@@ -141,7 +144,6 @@ class AutoTags:
             return
 
         th = Thread(target=self.ctag_update, args=(tagfile, filename))
-        th.daemon = True
         th.start()
 
 g_atags = AutoTags()
