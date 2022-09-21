@@ -14,7 +14,6 @@ comment_template = """
  * Returns: None
  */
 """
-
 vsInfo = None
 
 def process_cmd(cmd, cwd):
@@ -199,4 +198,3 @@ class CommentParser:
             proto = self.parse_c_proto()
 
 g_comment = CommentParser()
-g_comment.get_comment()
