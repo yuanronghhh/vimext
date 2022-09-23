@@ -14,3 +14,7 @@ def vim_has(name):
 def vim_get_line():
     line = vim.eval("getline(\".\")")
     return line
+
+def vim_msg(msg):
+    # vim.eval("echomsg %s" % msg)
+    return
