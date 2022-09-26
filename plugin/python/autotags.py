@@ -84,7 +84,6 @@ class AutoTags:
         if not cmd:
             return
 
-        vimpy.vim_msg("[update] %s,%s" % (tagfile, filename))
         lock.acquire(blocking=True)
         clean_tags(tagfile, filename)
         process_cmd(cmd, tagdir)

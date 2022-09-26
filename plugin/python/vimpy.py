@@ -16,5 +16,4 @@ def vim_get_line():
     return line
 
 def vim_msg(msg):
-    # vim.eval("echomsg %s" % msg)
-    return
+    print(msg)
