@@ -6,9 +6,9 @@ function vimext#config#LoadConfig()
   endif
   call vimext#init()
 
+  set nocompatible
   behave xterm
   runtime ftplugin/man.vim
-  set nocompatible
 
   syntax on
   filetype on
@@ -81,15 +81,17 @@ function vimext#config#LoadConfig()
     set guifont=FZFangSong\-Z02S\ bold\ 12
   elseif has("win32")
     set clipboard=unnamed
-    set guifont=Fixedsys:h12
+    set guifont=Fixedsys\ Exceisior
     set makeencoding=gbk
     let g:python_cmd = "python"
-
     let $BashBin = vimext#config#GetWinBash()
     set shell=$BashBin
     let g:tagbar_ctags_bin = vimext#GetBinPath("ctags.exe")
     command! -nargs=0 FullScreen :call vimext#FullScreen()
     command! -nargs=0 GitBash :call vimext#config#GitBash()
+  elseif has("mac")
+    set guiligatures
+    set noanti
   endif
 
   inoremap < <><ESC>i
