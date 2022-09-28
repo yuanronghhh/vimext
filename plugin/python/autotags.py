@@ -77,22 +77,31 @@ class AutoTags:
 
         return self.find_tag_recursive(np)
 
-    def ctag_update(self, tagfile, filename):
-        tagdir = path.dirname(tagfile)
-
+    def ctag_update(self, cwd, tagfile, filename):
         cmd = self.get_ctags_cmd(tagfile, filename)
         if not cmd:
             return
 
         lock.acquire(blocking=True)
-        clean_tags(tagfile, filename)
-        process_cmd(cmd, tagdir)
+        if filename:
+            clean_tags(tagfile, filename)
+        process_cmd(cmd, cwd)
         lock.release()
 
     def get_ctags_cmd(self, newtag, filename):
         tags_cmd = vimpy.vim_ctags_bin()
         matches = self.matches
         sys_incs = get_system_header_path()
+        cmd = []
+
+        hds = ["assert.h", "ctype.h", "errno.h", "float.h", "iso646.h", \
+                "limits.h", "locale.h", "math.h", "setjmp.h", "signal.h", \
+                "stdarg.h", "stdbool.h", "stddef.h", "stdint.h", "stdio.h", \
+                "stdlib.h", "string.h", "time.h", "uchar.h", "wchar.h", \
+                "wctype.h"]
+        igns = ["__THROW", "_Check_return_wat_", "__cdecl", "_ACRTIMP", "_In_", \
+                "_Check_return_", "_Success_", "_In_z_", \
+                "_Inout_", "_CRT_STDIO_INLINE", "__CRTDECL", "_Printf_format_string_"]
 
         if vimpy.vim_has("win32"):
             tags_cmd = tags_cmd + ".exe"
@@ -113,37 +122,59 @@ class AutoTags:
         else:
             cmd = [tags_cmd, "--tag-relative=always", "-a", "-f", newtag, filename]
 
-        cmd.extend(["'" + inc + "/std*.h'" for inc in sys_incs])
+        for ig in igns:
+            cmd.append("-I '" + ig + "'")
+
+        for inc in sys_incs:
+            for h in hds:
+                oinc = "%s/%s" % (inc, h)
+                if not path.exists(oinc):
+                    continue
+
+                cmd.append("'" + oinc + "'")
+
         return cmd
 
-    def rebuild(self):
-        filename = vimpy.vim_fullname()
-        if not filename:
-            return
+    def regen_tags(self):
+        self.gen_tags(False)
 
-        filename = filename.replace("\\", "/")
-
-        p = path.dirname(filename)
-        tagfile = self.tagfile
-
-        if not self.tagfile or not self.tagfile.startswith(p):
-            tagfile = self.find_tag_recursive(p)
-            if not tagfile:
+    def gen_tags(self, is_cmd = True):
+        cwd = None
+        if not is_cmd:
+            filename = vimpy.vim_fullname()
+            if not filename:
                 return
+
+            filename = filename.replace("\\", "/")
+
+            p = path.dirname(filename)
+            tagfile = self.tagfile
+
+            if not self.tagfile or not self.tagfile.startswith(p):
+                tagfile = self.find_tag_recursive(p)
+                if not tagfile:
+                    return
+
+            st = os.stat(tagfile)
+            if (st.st_size / 1024 / 1024) > maxsize:
+                return
+
+            ext = path.splitext(filename)[-1]
+            for m in self.matches:
+                if m.endswith(ext):
+                    break
+            else:
+                return
+
+            cwd = path.dirname(tagfile)
+        else:
+            tagfile = "tags"
+            cwd = vimpy.vim_cwd()
+            filename = None
+
         self.tagfile = tagfile
 
-        st = os.stat(tagfile)
-        if (st.st_size / 1024 / 1024) > maxsize:
-            return
-
-        ext = path.splitext(filename)[-1]
-        for m in self.matches:
-            if m.endswith(ext):
-                break
-        else:
-            return
-
-        th = Thread(target=self.ctag_update, args=(tagfile, filename))
+        th = Thread(target=self.ctag_update, args=(cwd, tagfile, filename))
         th.start()
 
 g_atags = AutoTags()

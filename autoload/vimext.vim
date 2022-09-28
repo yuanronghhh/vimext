@@ -85,11 +85,6 @@ function vimext#GetCWDPath()
   return l:bpath
 endfunction
 
-function vimext#GenCtags()
-  let l:cmd = vimext#autotags#GetCtagsCmd()
-  exec ":!".l:cmd
-endfunction
-
 function vimext#GetSystemHeaderPath()
   let l:ipath = py3eval("utils.get_system_header_str()")
   return l:ipath

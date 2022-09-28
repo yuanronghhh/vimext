@@ -142,7 +142,7 @@ function vimext#config#LoadConfig()
   command! -nargs=? PythonDoc :call vimext#python#doc("<args>")
   command! -nargs=? JsonFormat :call vimext#JsonFormat()
   command! -nargs=? EditConfig :call vimext#config#Edit()
-  command! -nargs=? GenCtags :call vimext#GenCtags()
+  command! -nargs=? GenCtags :call vimext#autotags#GenCtags()
   command! -nargs=? ManTab :call vimext#ManTab("<args>")
   command! -nargs=+ Debug :call vimext#debug#Debug("<args>")
 

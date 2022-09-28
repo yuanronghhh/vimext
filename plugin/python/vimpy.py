@@ -17,3 +17,8 @@ def vim_get_line():
 
 def vim_msg(msg):
     print(msg)
+
+def vim_cwd():
+    cwd = vim.eval("getcwd()")
+    cwd = cwd.replace("\\", "/")
+    return cwd
