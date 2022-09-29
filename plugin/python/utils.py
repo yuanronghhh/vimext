@@ -30,10 +30,7 @@ def process_cmd(cmd, cwd):
                             stderr=subprocess.PIPE,
                             universal_newlines=True)
     stdout, stderr = proc.communicate()
-    if stderr:
-        return None
-
-    return stdout
+    return stdout, stderr
 
 
 def get_vs_info():
@@ -45,8 +42,8 @@ def get_vs_info():
     vswhere = "C:\\Program Files (x86)\\Microsoft Visual Studio\\Installer\\vswhere.exe"
     cmd = [vswhere, "-format", "json"]
 
-    out = process_cmd(cmd, os.getcwd())
-    if not out:
+    out, err = process_cmd(cmd, os.getcwd())
+    if err:
         return None
 
     vsInfo = json.loads(out)

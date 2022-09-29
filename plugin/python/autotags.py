@@ -7,7 +7,7 @@ from os import path
 from utils import process_cmd, get_system_header_path
 from threading import Thread, Lock
 
-logging.basicConfig(format="%(message)s", level=logging.INFO)
+logging.basicConfig(filename="D:/GreyHound/PRIVATE/TMP/note.log", format="%(message)s", level=logging.INFO)
 lock = Lock()
 
 maxsize = 100 # mb
@@ -64,6 +64,28 @@ class AutoTags:
     def __init__(self):
         self.tagfile = None
         self.matches = ['*.vim', '*.c', '*.h' , '*.cpp' , '*.hpp' , '*.py' , '*.cs' , '*.js' , 'CMakeLists.txt', '*.cmake', '*.lua', '*.java']
+        self.tags_cmd = "ctags"
+        self.sys_incs = []
+        self.igns = []
+        self.std_hds = ["assert.h", "ctype.h", "errno.h", "float.h", "iso646.h", \
+                "limits.h", "locale.h", "math.h", "setjmp.h", "signal.h", \
+                "stdarg.h", "stdbool.h", "stddef.h", "stdint.h", "stdio.h", \
+                "stdlib.h", "string.h", "time.h", "uchar.h", "wchar.h", "malloc.h" \
+                "wctype.h"]
+
+
+        if sys.platform == "win32":
+            self.tags_cmd = vimpy.vim_ctags_bin()
+            self.tags_cmd = self.tags_cmd + ".exe"
+            self.igns = ["__THROW", "_Check_return_wat_", "__cdecl", "_ACRTIMP", "_In_",
+                    "_Check_return_", "_Success_", "_In_z_", "_Check_return_opt_",
+                    "_Ret_maybenull_", "_Post_writable_byte_size_", "_CRTALLOCATOR",
+                    "_CRT_JIT_INTRINSIC", "_CRTRESTRICT", "_CRT_HYBRIDPATCHABLE" "_CRT_GUARDOVERFLOW",
+                    "_Inout_", "_CRT_STDIO_INLINE", "__CRTDECL", "_Printf_format_string_", "_MarkAllocaS"]
+            self.sys_incs = get_system_header_path()
+        else:
+            pass
+
 
     def find_tag_recursive(self, p):
         tag = p + "/tags"
@@ -85,26 +107,18 @@ class AutoTags:
         lock.acquire(blocking=True)
         if filename:
             clean_tags(tagfile, filename)
-        process_cmd(cmd, cwd)
+        out, err = process_cmd(cmd, cwd)
         lock.release()
+        logging.info(" ".join(cmd))
+        logging.info("[err] %s" % err)
+        logging.info("[out] %s" % out)
 
     def get_ctags_cmd(self, newtag, filename):
-        tags_cmd = vimpy.vim_ctags_bin()
         matches = self.matches
-        sys_incs = get_system_header_path()
-        cmd = []
+        cmd = None
 
-        hds = ["assert.h", "ctype.h", "errno.h", "float.h", "iso646.h", \
-                "limits.h", "locale.h", "math.h", "setjmp.h", "signal.h", \
-                "stdarg.h", "stdbool.h", "stddef.h", "stdint.h", "stdio.h", \
-                "stdlib.h", "string.h", "time.h", "uchar.h", "wchar.h", \
-                "wctype.h"]
-        igns = ["__THROW", "_Check_return_wat_", "__cdecl", "_ACRTIMP", "_In_", \
-                "_Check_return_", "_Success_", "_In_z_", \
-                "_Inout_", "_CRT_STDIO_INLINE", "__CRTDECL", "_Printf_format_string_"]
-
-        if vimpy.vim_has("win32"):
-            tags_cmd = tags_cmd + ".exe"
+        spec_args = ["--fields=+iaS", "--extras=+q",\
+                    "--c++-kinds=+p", "--tag-relative=always", "-a", "-f", newtag]
 
         if not filename:
             cmd = ["find", "./", "-type", "f"]
@@ -116,22 +130,26 @@ class AutoTags:
                 if e != matches[-1]:
                     cmd.append("-or")
 
-            cmd.extend(["|", "xargs", "-d", "\'\\n\'",\
-                    tags_cmd,\
-                    "--tag-relative=always", "-a", "-f", newtag])
+            cmd.extend(["|", "xargs", "-d", "\'\\n\'", self.tags_cmd])
         else:
-            cmd = [tags_cmd, "--tag-relative=always", "-a", "-f", newtag, filename]
+            cmd = [self.tags_cmd]
 
-        for ig in igns:
-            cmd.append("-I '" + ig + "'")
+        cmd.extend(spec_args)
 
-        for inc in sys_incs:
-            for h in hds:
+        if filename:
+            cmd.append(filename)
+
+        for ig in self.igns:
+            cmd.append("-I")
+            cmd.append("'" + ig + "'")
+
+        for inc in self.sys_incs:
+            for h in self.std_hds:
                 oinc = "%s/%s" % (inc, h)
                 if not path.exists(oinc):
                     continue
 
-                cmd.append("'" + oinc + "'")
+                cmd.append(oinc)
 
         return cmd
 
@@ -148,9 +166,7 @@ class AutoTags:
             filename = filename.replace("\\", "/")
 
             p = path.dirname(filename)
-            tagfile = self.tagfile
-
-            if not self.tagfile or not self.tagfile.startswith(p):
+            if not self.tagfile or not self.tagfile.startswith(p) or not path.exists(self.tagfile):
                 tagfile = self.find_tag_recursive(p)
                 if not tagfile:
                     return

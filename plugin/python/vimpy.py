@@ -2,7 +2,6 @@ import vim
 
 
 def vim_fullname():
-    # return "E:/Codes/REPOSITORY/vim/plugins/vimext/plugin/python/vimpy.c"
     return vim.eval("expand(\"%:p\")")
 
 def vim_ctags_bin():
