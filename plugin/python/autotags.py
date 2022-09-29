@@ -7,7 +7,7 @@ from os import path
 from utils import process_cmd, get_system_header_path
 from threading import Thread, Lock
 
-logging.basicConfig(filename="D:/GreyHound/PRIVATE/TMP/note.log", format="%(message)s", level=logging.INFO)
+logging.basicConfig(format="%(message)s", level=logging.INFO)
 lock = Lock()
 
 maxsize = 100 # mb
