@@ -280,13 +280,13 @@ class CommentParser:
 
         return indent
 
-    def gen_param_str(self, cstr, params):
+    def gen_param_str(self, comment, pattern, params):
         pstr = ""
         for p in params:
-            pstr += (cstr % (p.name))
+            pstr += (pattern % (p.name))
 
         if not pstr:
-            pstr = (cstr % (""))
+            pstr = ("%s\n" % (comment))
 
         return pstr
 
@@ -301,15 +301,15 @@ class CommentParser:
             return None
 
         if lang == FileType.LANG_C:
-            pstr = self.gen_param_str(" * @%s:\n", proto.params)
+            pstr = self.gen_param_str(" *", " * @%s:\n", proto.params)
             comment = c_comment.replace("${func_name}", proto.func_name)\
                     .replace("${param}", pstr)
         elif lang == FileType.LANG_PYTHON:
-            pstr = self.gen_param_str("# @%s:\n", proto.params)
+            pstr = self.gen_param_str("#", "# @%s:\n", proto.params)
             comment = python_comment.replace("${func_name}", proto.func_name)\
                     .replace("${param}", pstr)
         elif lang == FileType.LANG_CSHARP:
-            pstr = self.gen_param_str("/// <param name=\"%s\"></param>\n", proto.params)
+            pstr = self.gen_param_str("///", "/// <param name=\"%s\"></param>\n", proto.params)
             comment = csharp_comment.replace("${func_name}", proto.func_name)\
                     .replace("${param}", pstr)
 
