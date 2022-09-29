@@ -2,18 +2,20 @@ import subprocess
 import sys
 import os
 import json
+import re
 import vimpy
 
 from enum import IntEnum
 
-comment_template = """
+c_comment = """\
 /**
- * ${func_name}
- * @${param}:
+ * ${func_name}:
+${param}\
  *
  * Returns: None
- */
+ */\
 """
+
 vsInfo = None
 
 def process_cmd(cmd, cwd):
@@ -99,11 +101,21 @@ class FileType(IntEnum):
     LANG_PYTHON = 2
     LANG_CSHARP = 3
 
+class FunctionParam:
+    def __init__(self):
+        self.type = 0
+        self.name = ""
+
+class FunctionProto:
+    def __init__(self):
+        self.func_name = ""
+        self.params = []
+
 class CommentParser:
     def __init__(self):
         self.offset = 0
         self.line = None
-
+        self.lang = FileType.LANG_C
     def func_comment(self):
         pass
 
@@ -119,13 +131,26 @@ class CommentParser:
         return self.line[self.offset]
 
     def is_id(self, c):
-        return (c >= '0' and c <= '9') or (c >= 'a' and c <= 'z') or (c >= 'A' and c <= 'Z')
+        return (c >= '0' and c <= '9') or (c >= 'a' and c <= 'z') or (c >= 'A' and c <= 'Z') or (c == '_')
 
-    def seek(self, p):
-        self.offset = p
+    def c(self, p = None):
+        if not p:
+            p = self.offset
+
+        return self.line[p]
+
+    def is_c(self, c):
+        return self.line[self.offset] == c
 
     def seek_c(self, c):
         p = self.line[self.offset:].find(c)
+        return p + self.offset
+
+    def get(self, s, e):
+        return self.line[s:e]
+
+    def seek_c_to(self, c):
+        p = self.seek_c(c)
         if p > -1:
             self.offset = self.offset + p
 
@@ -160,24 +185,61 @@ class CommentParser:
 
         return iden
 
+    def get_right_id(self, s):
+        ns = ""
+        p = 0
+
+        for c in reversed(s):
+            p += 1
+
+            if c == ' ':
+                break
+
+            if not self.is_id(c):
+                continue
+
+            ns += c
+
+        return "".join(reversed(ns)), p
+
+
+    def parse_params(self, sp):
+        params = []
+
+        ep = self.seek_c(')')
+        if ep == -1:
+            return params
+
+        values = self.get(sp + 1, ep)
+        ps = values.split(",")
+
+        for s in ps:
+            param = FunctionParam()
+
+            ns, p = self.get_right_id(s)
+            if not ns:
+                continue
+
+            param.name = ns
+            param.type = re.sub(r" +", " ", s[:-p+1]).replace("\n", "")
+            params.append(param)
+
+        return params
+
     def parse_c_proto(self):
-        iden = None
+        proto = FunctionProto()
 
-        #       return,   name, [params]
-        proto = [None,    None,      None]
-
-        p = self.seek_c("(")
+        p = self.seek_c_to("(")
         if p == -1:
             return
 
-        iden = self.lexer_next(True)
-        proto[1] = iden
+        proto.func_name = self.lexer_next(True)
+        if not proto.func_name: # space
+            proto.func_name = self.lexer_next(True)
 
-        iden = self.lexer_next(True)
-        proto[0] = iden
+        proto.params = self.parse_params(p)
 
-        self.seek(p)
-        iden = self.lexer_next()
+        return proto
 
     def get_filelang(self, filename):
         if filename.endswith(".c"):
@@ -187,11 +249,47 @@ class CommentParser:
         elif filename.endswith(".cs"):
             return FileType.LANG_CSHARP
 
+    def get_indent(self):
+        indent = 0
+        for c in self.line:
+            if c != ' ' and c != '\t':
+                break
+
+            indent += 1
+
+        return indent
+
     def get_comment(self):
-        lang = self.get_filelang(vimpy.vim_fullname())
-
+        filename = vimpy.vim_fullname()
+        lang = self.get_filelang(filename)
+        comment = None
         self.line = vimpy.vim_get_line()
-        if lang == FileType.LANG_C:
-            proto = self.parse_c_proto()
 
-g_comment = CommentParser()
+        proto = self.parse_c_proto()
+        if not proto:
+            return None
+
+        paramstr = ""
+        for p in proto.params:
+            paramstr += " * @%s:\n" % (p.name)
+
+        if not paramstr:
+            paramstr = " *\n"
+
+        comment = c_comment.replace("${func_name}", proto.func_name)\
+                .replace("${param}", paramstr)
+
+        return comment
+
+def get_comment():
+    p = CommentParser()
+    rs = p.get_comment()
+    if not rs:
+        return None
+
+    indent = p.get_indent()
+    lines = rs.split("\n")
+    for i in range(0, len(lines)):
+        lines[i] = (' ' * indent) + lines[i]
+
+    return lines

@@ -1,18 +1,24 @@
-function vimext#autotags#GetCtagsCmd()
-  let l:cmd = py3eval("g_atags.get_ctags_cmd(\"tags\", None)")
-
-  return " ".join(l:cmd)
-endfunction
-
 function vimext#autotags#ReGenCtags()
+  if g:vimext_python == 0
+    return
+  endif
+
   python3 g_atags.regen_tags()
 endfunction
 
 function vimext#autotags#GenCtags()
+  if g:vimext_python == 0
+    return
+  endif
+
   python3 g_atags.gen_tags()
 endfunction
 
 function vimext#autotags#Init()
+  if g:vimext_python == 0
+    return
+  endif
+
   augroup autotag
     au!
     autocmd BufWritePost,FileWritePost * call vimext#autotags#ReGenCtags()

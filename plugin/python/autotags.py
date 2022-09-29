@@ -109,9 +109,6 @@ class AutoTags:
             clean_tags(tagfile, filename)
         out, err = process_cmd(cmd, cwd)
         lock.release()
-        logging.info(" ".join(cmd))
-        logging.info("[err] %s" % err)
-        logging.info("[out] %s" % out)
 
     def get_ctags_cmd(self, newtag, filename):
         matches = self.matches

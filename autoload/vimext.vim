@@ -85,11 +85,6 @@ function vimext#GetCWDPath()
   return l:bpath
 endfunction
 
-function vimext#GetSystemHeaderPath()
-  let l:ipath = py3eval("utils.get_system_header_str()")
-  return l:ipath
-endfunction
-
 function vimext#ManTab(word)
   let l:word = a:word
 
@@ -142,8 +137,4 @@ function vimext#HeaderOrCode()
   endif
 
   call search(l:content, 'c')
-endfunction
-
-function vimext#JsonFormat()
-  exec ":%!".g:python_cmd." -m json.tool"
 endfunction
