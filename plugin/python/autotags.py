@@ -155,6 +155,8 @@ class AutoTags:
 
     def gen_tags(self, is_cmd = True):
         cwd = None
+        tagfile = self.tagfile
+
         if not is_cmd:
             filename = vimpy.vim_fullname()
             if not filename:

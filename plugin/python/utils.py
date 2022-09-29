@@ -12,8 +12,23 @@ c_comment = """\
  * ${func_name}:
 ${param}\
  *
- * Returns: None
+ * Returns: void
  */\
+"""
+
+python_comment = """\
+# ${func_name}:
+${param}\
+#
+# Returns: None\
+"""
+
+csharp_comment = """\
+/// <summary>
+/// ${func_name}:
+/// </summary>
+${param}\
+/// <returns></returns>\
 """
 
 vsInfo = None
@@ -193,6 +208,8 @@ class CommentParser:
             p += 1
 
             if c == ' ':
+                if ns == "":
+                    continue
                 break
 
             if not self.is_id(c):
@@ -214,9 +231,13 @@ class CommentParser:
         ps = values.split(",")
 
         for s in ps:
+            r = s
             param = FunctionParam()
+            equalp = s.find("=")
+            if equalp > -1:
+                r = s[:equalp]
 
-            ns, p = self.get_right_id(s)
+            ns, p = self.get_right_id(r)
             if not ns:
                 continue
 
@@ -259,6 +280,16 @@ class CommentParser:
 
         return indent
 
+    def gen_param_str(self, cstr, params):
+        pstr = ""
+        for p in params:
+            pstr += (cstr % (p.name))
+
+        if not pstr:
+            pstr = (cstr % (""))
+
+        return pstr
+
     def get_comment(self):
         filename = vimpy.vim_fullname()
         lang = self.get_filelang(filename)
@@ -269,15 +300,18 @@ class CommentParser:
         if not proto:
             return None
 
-        paramstr = ""
-        for p in proto.params:
-            paramstr += " * @%s:\n" % (p.name)
-
-        if not paramstr:
-            paramstr = " *\n"
-
-        comment = c_comment.replace("${func_name}", proto.func_name)\
-                .replace("${param}", paramstr)
+        if lang == FileType.LANG_C:
+            pstr = self.gen_param_str(" * @%s:\n", proto.params)
+            comment = c_comment.replace("${func_name}", proto.func_name)\
+                    .replace("${param}", pstr)
+        elif lang == FileType.LANG_PYTHON:
+            pstr = self.gen_param_str("# @%s:\n", proto.params)
+            comment = python_comment.replace("${func_name}", proto.func_name)\
+                    .replace("${param}", pstr)
+        elif lang == FileType.LANG_CSHARP:
+            pstr = self.gen_param_str("/// <param name=\"%s\"></param>\n", proto.params)
+            comment = csharp_comment.replace("${func_name}", proto.func_name)\
+                    .replace("${param}", pstr)
 
         return comment
 
@@ -285,7 +319,7 @@ def get_comment():
     p = CommentParser()
     rs = p.get_comment()
     if not rs:
-        return None
+        return []
 
     indent = p.get_indent()
     lines = rs.split("\n")
