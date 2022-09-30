@@ -22,6 +22,9 @@ def vim_lines_s(s):
 
     return nline
 
+def vim_search(s, flag):
+    vim.eval("search(\"%s\", \"%s\")" % (s, flag))
+
 def vim_msg(msg):
     print(msg)
 

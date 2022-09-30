@@ -346,6 +346,10 @@ class CommentParser:
         if not proto.ret:
             lines = lines[:-2]
 
+        indent = self.get_indent()
+        for i in range(0, len(lines)):
+            lines[i] = (' ' * indent) + lines[i]
+
         return lines
 
 def get_comment():
@@ -353,9 +357,5 @@ def get_comment():
     lines = p.get_comment()
     if not lines:
         return []
-
-    indent = p.get_indent()
-    for i in range(0, len(lines)):
-        lines[i] = (' ' * indent) + lines[i]
 
     return lines

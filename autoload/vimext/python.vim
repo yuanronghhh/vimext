@@ -96,4 +96,5 @@ function vimext#python#GetComment()
 
   let l:comment = py3eval("utils.get_comment()")
   call append(line('.')-1, l:comment)
+  call search("Variable:", "b")
 endfunction
