@@ -113,8 +113,9 @@ def get_system_header_str():
 
 class FileType(IntEnum):
     LANG_C      = 1
-    LANG_PYTHON = 2
-    LANG_CSHARP = 3
+    LANG_JS     = 2
+    LANG_PYTHON = 3
+    LANG_CSHARP = 4
 
 class FunctionParam:
     def __init__(self):
@@ -125,12 +126,14 @@ class FunctionProto:
     def __init__(self):
         self.func_name = ""
         self.params = []
+        self.ret = None
 
 class CommentParser:
     def __init__(self):
         self.offset = 0
         self.line = None
         self.lang = FileType.LANG_C
+
     def func_comment(self):
         pass
 
@@ -156,6 +159,9 @@ class CommentParser:
 
     def is_c(self, c):
         return self.line[self.offset] == c
+
+    def seek_p(self, p):
+        self.offset = p
 
     def seek_c(self, c):
         p = self.line[self.offset:].find(c)
@@ -203,16 +209,19 @@ class CommentParser:
     def get_right_id(self, s):
         ns = ""
         p = 0
+        slen = len(s)
 
         for c in reversed(s):
             p += 1
-
             if c == ' ':
                 if ns == "":
                     continue
                 break
 
             if not self.is_id(c):
+                if c != s[-1] and s[slen - p - 1] != ' ':
+                    if len(ns) > 0:
+                        ns += " "
                 continue
 
             ns += c
@@ -223,6 +232,7 @@ class CommentParser:
     def parse_params(self, sp):
         params = []
 
+        self.seek_p(sp)
         ep = self.seek_c(')')
         if ep == -1:
             return params
@@ -233,13 +243,17 @@ class CommentParser:
         for s in ps:
             r = s
             param = FunctionParam()
-            equalp = s.find("=")
-            if equalp > -1:
-                r = s[:equalp]
+            equal_p = s.find("=")
+            if equal_p > -1:
+                r = s[:equal_p]
 
             ns, p = self.get_right_id(r)
             if not ns:
                 continue
+
+            if self.lang == FileType.LANG_PYTHON:
+                if ns == "self":
+                    continue
 
             param.name = ns
             param.type = re.sub(r" +", " ", s[:-p+1]).replace("\n", "")
@@ -259,6 +273,7 @@ class CommentParser:
             proto.func_name = self.lexer_next(True)
 
         proto.params = self.parse_params(p)
+        proto.ret = "None"
 
         return proto
 
@@ -269,6 +284,8 @@ class CommentParser:
             return FileType.LANG_PYTHON
         elif filename.endswith(".cs"):
             return FileType.LANG_CSHARP
+        elif filename.endswith(".js"):
+            return FileType.LANG_JS
 
     def get_indent(self):
         indent = 0
@@ -294,13 +311,18 @@ class CommentParser:
         filename = vimpy.vim_fullname()
         lang = self.get_filelang(filename)
         comment = None
+
         self.line = vimpy.vim_get_line()
+        self.lang = lang
 
         proto = self.parse_c_proto()
         if not proto:
-            return None
+            proto = FunctionProto()
+            proto.func_name = "Variable"
+            proto.params = []
+            proto.ret = None
 
-        if lang == FileType.LANG_C:
+        if lang == FileType.LANG_C or lang == FileType.LANG_JS:
             pstr = self.gen_param_str(" *", " * @%s:\n", proto.params)
             comment = c_comment.replace("${func_name}", proto.func_name)\
                     .replace("${param}", pstr)
@@ -312,17 +334,22 @@ class CommentParser:
             pstr = self.gen_param_str("///", "/// <param name=\"%s\"></param>\n", proto.params)
             comment = csharp_comment.replace("${func_name}", proto.func_name)\
                     .replace("${param}", pstr)
+        else:
+            pass
 
-        return comment
+        lines = comment.split("\n")
+        if not proto.ret:
+            lines = lines[:-2]
+
+        return lines
 
 def get_comment():
     p = CommentParser()
-    rs = p.get_comment()
-    if not rs:
+    lines = p.get_comment()
+    if not lines:
         return []
 
     indent = p.get_indent()
-    lines = rs.split("\n")
     for i in range(0, len(lines)):
         lines[i] = (' ' * indent) + lines[i]
 
