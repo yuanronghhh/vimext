@@ -138,13 +138,16 @@ class CommentParser:
         pass
 
     def lexer_next_c(self, reverse = False):
-        if reverse:
-            self.offset -= 1
-        else:
-            self.offset += 1
+        toffset = self.offset
 
-        if self.offset <= 0:
+        if reverse:
+            toffset -= 1
+        else:
+            toffset += 1
+
+        if toffset < 0:
             return '\0'
+        self.offset = toffset
 
         return self.line[self.offset]
 
@@ -186,9 +189,8 @@ class CommentParser:
             if c == '\n' or c == '\0':
                 break
 
-            while self.is_id(c):
+            if self.is_id(c):
                 iden += c
-                c = self.lexer_next_c(reverse)
                 continue
 
             if c == '(':
@@ -198,11 +200,7 @@ class CommentParser:
                 break
 
         if reverse:
-            niden = ""
-            for i in reversed(iden):
-                niden += i
-
-            iden = niden
+            iden = "".join(reversed(iden))
 
         return iden
 

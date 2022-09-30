@@ -142,7 +142,7 @@ endfunction
 function vimext#GetLinesEnds(endstr)
   let l:start = line('.')
   let l:end   = search(a:endstr, 'n')
-  let l:lines = getline(l:start - 1, l:end)
+  let l:lines = getline(l:start, l:end)
 
   return l:lines
 endfunction
