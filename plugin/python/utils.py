@@ -183,13 +183,13 @@ class CommentParser:
         while True:
             c = self.lexer_next_c(reverse)
 
+            if c == '\n' or c == '\0':
+                break
+
             while self.is_id(c):
                 iden += c
                 c = self.lexer_next_c(reverse)
                 continue
-
-            if c == '\n' or c == '\0':
-                break
 
             if c == '(':
                 break
@@ -312,7 +312,14 @@ class CommentParser:
         lang = self.get_filelang(filename)
         comment = None
 
-        self.line = vimpy.vim_get_line()
+        if lang in [FileType.LANG_C, FileType.LANG_JS, FileType.LANG_CSHARP]:
+            self.line = vimpy.vim_lines_s("{")
+        elif lang == FileType.LANG_PYTHON:
+            self.line = vimpy.vim_lines_s(":")
+
+        if not self.line:
+            return
+
         self.lang = lang
 
         proto = self.parse_c_proto()

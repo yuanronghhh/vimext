@@ -14,6 +14,14 @@ def vim_get_line():
     line = vim.eval("getline(\".\")")
     return line
 
+def vim_lines_s(s):
+    lines = vim.bindeval("vimext#GetLinesEnds(\"%s\")" % (s))
+    nline = ""
+    for l in lines:
+        nline += l.decode("utf-8")
+
+    return nline
+
 def vim_msg(msg):
     print(msg)
 

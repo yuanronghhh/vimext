@@ -138,3 +138,11 @@ function vimext#HeaderOrCode()
 
   call search(l:content, 'c')
 endfunction
+
+function vimext#GetLinesEnds(endstr)
+  let l:start = line('.')
+  let l:end   = search(a:endstr, 'n')
+  let l:lines = getline(l:start - 1, l:end)
+
+  return l:lines
+endfunction
