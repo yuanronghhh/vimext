@@ -5,6 +5,8 @@ import json
 import re
 import vimpy
 import platform
+import logging
+import vimpy
 
 from enum import IntEnum
 
@@ -36,18 +38,27 @@ vsInfo = None
 
 def process_cmd(cmd, cwd):
     """ Abstract subprocess """
-    use_shell = False
-    if sys.platform == "win32":
-        use_shell = True
 
-    proc = subprocess.Popen(cmd,
+    st = subprocess.STARTUPINFO()
+    st.dwFlags = subprocess.STARTF_USESHOWWINDOW
+    st.wShowWindow = subprocess.SW_HIDE
+
+    cmdstr = "%s" % (" ".join(cmd))
+    rcmd = ["bash", "-c", cmdstr]
+
+    proc = subprocess.Popen(rcmd,
                             cwd=cwd,
-                            shell=use_shell,
+                            shell=False,
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE,
+                            startupinfo=st,
                             universal_newlines=True)
+
     stdout, stderr = proc.communicate()
+    if stderr:
+        logging.error("[err] %s" % (stderr))
+
     return stdout, stderr
 
 
@@ -57,8 +68,8 @@ def get_vs_info():
     if vsInfo:
         return vsInfo
 
-    vswhere = "C:\\Program Files (x86)\\Microsoft Visual Studio\\Installer\\vswhere.exe"
-    cmd = [vswhere, "-format", "json"]
+    cmd = ["\"C:/Program Files (x86)/Microsoft Visual Studio/Installer/vswhere.exe\"",
+           "-format","json"]
 
     out, err = process_cmd(cmd, os.getcwd())
     if err:
@@ -73,7 +84,7 @@ def get_vs_header_path():
     vs = None
     inc_path = None
 
-    if len(vss) == 0:
+    if not vss:
         return None
 
     vs = vss[-1]

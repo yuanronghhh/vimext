@@ -122,12 +122,12 @@ class AutoTags:
 
             for e in matches:
                 cmd.append("-name")
-                cmd.append("'" + e + "'")
+                cmd.append("\"" + e + "\"")
 
                 if e != matches[-1]:
                     cmd.append("-or")
 
-            cmd.extend(["|", "xargs", "-d", "\'\\n\'", self.tags_cmd])
+            cmd.extend(["|", "xargs", "-d", "\"\\n\"", self.tags_cmd])
         else:
             cmd = [self.tags_cmd]
 
@@ -138,11 +138,11 @@ class AutoTags:
 
         for ig in self.igns:
             cmd.append("-I")
-            cmd.append("'" + ig + "'")
+            cmd.append("\"" + ig + "\"")
 
         for inc in self.sys_incs:
             for h in self.std_hds:
-                oinc = "%s/%s" % (inc, h)
+                oinc = "\"%s/%s\"" % (inc, h)
                 if not path.exists(oinc):
                     continue
 
