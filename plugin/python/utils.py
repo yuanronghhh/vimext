@@ -4,6 +4,7 @@ import os
 import json
 import re
 import vimpy
+import platform
 
 from enum import IntEnum
 
@@ -87,27 +88,44 @@ def get_vs_header_path():
 def get_system_header_path():
     incs = None
 
-    if sys.platform == "win32":
+    if platform.system() == "Windows":
         vinc = get_vs_header_path()
         incs = ["C:/Program Files (x86)/Windows Kits/10/Include/10.0.17763.0/um",
                 "C:/Program Files (x86)/Windows Kits/10/Include/10.0.17763.0/ucrt"]
         if vinc:
             incs.append(vinc)
+    elif platform.system() == "Linux":
+        if platform.machine() == "aarch64":
+            p = os.getenv("PREFIX")
+            if not p:
+                return []
 
-    if sys.platform == "unix":
-        incs = ["/usr/include/x86_64-linux-gnu",
-                "/usr/include",
-                "/usr/local/include",
-                "/usr/lib/gcc/x86_64-linux-gnu/9/include",
-                "/usr/include/c++/9",
-                "/usr/include/x86_64-linux-gnu/c++/9",
-                "/usr/include/c++/9/backward"]
+            incs = ["include/x86_64-linux-gnu",
+                    "include",
+                    "local/include",
+                    "lib/gcc/x86_64-linux-gnu/9/include",
+                    "include/c++/9",
+                    "include/x86_64-linux-gnu/c++/9",
+                    "include/c++/9/backward"]
+            for i in range(0, len(incs)):
+                incs[i] = "%s/%s" % (p, incs[i])
+
+        else:
+            incs = ["/usr/include/x86_64-linux-gnu",
+                    "/usr/include",
+                    "/usr/local/include",
+                    "/usr/lib/gcc/x86_64-linux-gnu/9/include",
+                    "/usr/include/c++/9",
+                    "/usr/include/x86_64-linux-gnu/c++/9",
+                    "/usr/include/c++/9/backward"]
 
     return incs
 
-
 def get_system_header_str():
     hds = get_system_header_path()
+    if not hds:
+        return ""
+
     return ",".join(hds).replace(" ", "\\ ")
 
 
