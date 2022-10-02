@@ -39,9 +39,11 @@ vsInfo = None
 def process_cmd(cmd, cwd):
     """ Abstract subprocess """
 
-    st = subprocess.STARTUPINFO()
-    st.dwFlags = subprocess.STARTF_USESHOWWINDOW
-    st.wShowWindow = subprocess.SW_HIDE
+    st = None
+    if platform.system() == "Windows":
+        st = subprocess.STARTUPINFO()
+        st.dwFlags = subprocess.STARTF_USESHOWWINDOW
+        st.wShowWindow = subprocess.SW_HIDE
 
     cmdstr = "%s" % (" ".join(cmd))
     rcmd = ["bash", "-c", cmdstr]
