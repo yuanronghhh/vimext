@@ -24,9 +24,6 @@ def os_pwrite(fp, p, bs, recp):
 def mem_write(lines, bs):
     lines.append(bs)
 
-def binsearch_tag(fp, filename):
-    pass
-
 def clean_tags(tagfile, filename):
     pname = path.dirname(tagfile)
     relpath = filename[len(pname):].lstrip("/")
