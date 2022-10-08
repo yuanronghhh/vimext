@@ -4,6 +4,9 @@ import os
 import json
 import re
 import vimpy
+import platform
+import logging
+import vimpy
 
 from enum import IntEnum
 
@@ -35,18 +38,29 @@ vsInfo = None
 
 def process_cmd(cmd, cwd):
     """ Abstract subprocess """
-    use_shell = False
-    if sys.platform == "win32":
-        use_shell = True
 
-    proc = subprocess.Popen(cmd,
+    st = None
+    if platform.system() == "Windows":
+        st = subprocess.STARTUPINFO()
+        st.dwFlags = subprocess.STARTF_USESHOWWINDOW
+        st.wShowWindow = subprocess.SW_HIDE
+
+    cmdstr = "%s" % (" ".join(cmd))
+    rcmd = ["bash", "-c", cmdstr]
+
+    proc = subprocess.Popen(rcmd,
                             cwd=cwd,
-                            shell=use_shell,
+                            shell=False,
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE,
+                            startupinfo=st,
                             universal_newlines=True)
+
     stdout, stderr = proc.communicate()
+    if stderr:
+        logging.error("[err] %s" % (stderr))
+
     return stdout, stderr
 
 
@@ -56,8 +70,8 @@ def get_vs_info():
     if vsInfo:
         return vsInfo
 
-    vswhere = "C:\\Program Files (x86)\\Microsoft Visual Studio\\Installer\\vswhere.exe"
-    cmd = [vswhere, "-format", "json"]
+    cmd = ["\"C:/Program Files (x86)/Microsoft Visual Studio/Installer/vswhere.exe\"",
+           "-format","json"]
 
     out, err = process_cmd(cmd, os.getcwd())
     if err:
@@ -72,7 +86,7 @@ def get_vs_header_path():
     vs = None
     inc_path = None
 
-    if len(vss) == 0:
+    if not vss:
         return None
 
     vs = vss[-1]
@@ -87,27 +101,44 @@ def get_vs_header_path():
 def get_system_header_path():
     incs = None
 
-    if sys.platform == "win32":
+    if platform.system() == "Windows":
         vinc = get_vs_header_path()
         incs = ["C:/Program Files (x86)/Windows Kits/10/Include/10.0.17763.0/um",
                 "C:/Program Files (x86)/Windows Kits/10/Include/10.0.17763.0/ucrt"]
         if vinc:
             incs.append(vinc)
+    elif platform.system() == "Linux":
+        if platform.machine() == "aarch64":
+            p = os.getenv("PREFIX")
+            if not p:
+                return []
 
-    if sys.platform == "unix":
-        incs = ["/usr/include/x86_64-linux-gnu",
-                "/usr/include",
-                "/usr/local/include",
-                "/usr/lib/gcc/x86_64-linux-gnu/9/include",
-                "/usr/include/c++/9",
-                "/usr/include/x86_64-linux-gnu/c++/9",
-                "/usr/include/c++/9/backward"]
+            incs = ["include/x86_64-linux-gnu",
+                    "include",
+                    "local/include",
+                    "lib/gcc/x86_64-linux-gnu/9/include",
+                    "include/c++/9",
+                    "include/x86_64-linux-gnu/c++/9",
+                    "include/c++/9/backward"]
+            for i in range(0, len(incs)):
+                incs[i] = "%s/%s" % (p, incs[i])
+
+        else:
+            incs = ["/usr/include/x86_64-linux-gnu",
+                    "/usr/include",
+                    "/usr/local/include",
+                    "/usr/lib/gcc/x86_64-linux-gnu/9/include",
+                    "/usr/include/c++/9",
+                    "/usr/include/x86_64-linux-gnu/c++/9",
+                    "/usr/include/c++/9/backward"]
 
     return incs
 
-
 def get_system_header_str():
     hds = get_system_header_path()
+    if not hds:
+        return ""
+
     return ",".join(hds).replace(" ", "\\ ")
 
 
