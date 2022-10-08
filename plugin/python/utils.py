@@ -323,7 +323,7 @@ class CommentParser:
         proto = self.parse_c_proto()
         if not proto:
             proto = FunctionProto()
-            proto.func_name = "Variable"
+            proto.func_name = ""
             proto.params = []
             proto.ret = None
 
