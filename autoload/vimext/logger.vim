@@ -1,7 +1,5 @@
-let s:is_debug = 1
-
 function vimext#logger#Warning(msg) abort
-  if s:is_debug != 1
+  if g:vimext_debug != 1
     return
   endif
 
@@ -11,7 +9,7 @@ function vimext#logger#Warning(msg) abort
 endfunction
 
 function vimext#logger#Error(msg) abort
-  if s:is_debug != 1
+  if g:vimext_debug != 1
     return
   endif
 
@@ -21,7 +19,7 @@ function vimext#logger#Error(msg) abort
 endfunction
 
 function vimext#logger#Info(msg) abort
-  if s:is_debug != 1
+  if g:vimext_debug != 1
     return
   endif
 

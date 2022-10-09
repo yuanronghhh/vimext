@@ -1,3 +1,8 @@
+let g:vimext_python = 0
+let g:vimext_debug = 1
+let g:is_fullscreen = 0
+
+
 function vimext#init()
   let $VIM=substitute($VIM, "\\", "/", "g")
   let $VIMRUNTIME=substitute($VIMRUNTIME, "\\", "/", "g")
@@ -12,7 +17,6 @@ function vimext#init()
     let $vimext_home = g:vim_home."/plugins/vimext"
   endif
 
-  let g:is_fullscreen = 0
   let g:python_cmd = "python3"
   let g:vim_session = g:vim_home."/session"
   let &undodir = g:vim_home."/undodir"
@@ -30,8 +34,6 @@ function vimext#init()
     call vimext#python#Init()
     call vimext#autotags#Init()
   endif
-
-  call vimext#channel#init()
 endfunction
 
 function vimext#LoadPlugin(plugins)

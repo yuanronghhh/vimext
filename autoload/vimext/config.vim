@@ -75,7 +75,7 @@ function vimext#config#LoadConfig()
   let $C_HEADERS=vimext#python#GetSystemHeaderPath()
   set path+=$C_HEADERS
   set grepprg=grep\ -nH
-  "中文字体
+
   if has("unix")
     set clipboard=unnamed
     set guifont=FZFangSong\-Z02S\ bold\ 12
