@@ -34,6 +34,7 @@ ${param}\
 /// <returns></returns>\
 """
 
+vs = None
 vsInfo = None
 
 def process_cmd(cmd, cwd):
@@ -82,18 +83,21 @@ def get_vs_info():
 
 
 def get_vs_header_path():
-    vss = get_vs_info()
-    vs = None
     inc_path = None
 
-    if not vss:
-        return None
+    global vs
+    if not vs:
+        vss = get_vs_info()
+        if not vss:
+            return None
 
-    vs = vss[-1]
+        vs = vss[-1]
 
     # vs 2017
     if vs["installationVersion"].startswith("15."):
         inc_path = "%s/VC/Tools/MSVC/14.16.27023/include" % (vs["installationPath"])
+    else:
+        inc_path = "%s/VC/Tools/MSVC/14.29.30133/include" % (vs["installationPath"])
 
     return inc_path.replace("\\", "/")
 
