@@ -1,6 +1,7 @@
 let g:vimext_python = 0
 let g:vimext_debug = 1
 let g:is_fullscreen = 0
+let g:vimext_c_api = 0
 
 
 function vimext#init()
@@ -34,20 +35,10 @@ function vimext#init()
     call vimext#python#Init()
     call vimext#autotags#Init()
   endif
-endfunction
 
-function vimext#LoadPlugin(plugins)
-  let l:ppath = ""
-
-  for l:p in a:plugins
-    if l:p[1] == ":" || l:p[0] == "/"
-      let l:ppath = l:p
-    else
-      let l:ppath = g:vim_plugin."/".l:p
-    endif
-
-    exec "set rtp+=".l:ppath
-  endfor
+  if has("libcall")
+    let g:vimext_c_api = 1
+  endif
 endfunction
 
 function vimext#FullScreen()

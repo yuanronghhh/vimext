@@ -135,7 +135,7 @@ function vimext#config#LoadConfig()
   let g:pymode_rope_project_root = g:vim_home."/rope"
 
   let l:plugins = ["tagbar","vim-multiple-cursors","supertab","hexmode","emmet-vim","nerdtree"]
-  call vimext#LoadPlugin(l:plugins)
+  call vimext#plugins#LoadPlugin(l:plugins)
 
   command! -nargs=? -complete=custom,vimext#session#SessionCompelete OpenSession :call vimext#session#OpenSession("<args>")
   command! -nargs=? -complete=custom,vimext#session#SessionCompelete SaveSession :call vimext#session#SaveSession("<args>")
