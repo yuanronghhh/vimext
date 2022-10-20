@@ -7,8 +7,8 @@ if exists("syntax_on")
 endif
 
 let g:colors_name="materialtheme"
+
 hi SpecialKey term=bold ctermfg=9 guifg=#ffffff guibg=#263238
-hi link EndOfBuffer NonText
 hi NonText term=bold ctermfg=9 gui=bold guifg=#252525 guibg=#252525
 hi Directory term=bold ctermfg=11 gui=bold guifg=#8a8a8a
 hi ErrorMsg term=standout ctermfg=15 ctermbg=4 gui=bold guifg=#F92672 guibg=#232526
@@ -49,7 +49,6 @@ hi TabLineFill term=reverse cterm=reverse gui=reverse guifg=#1B1D1E guibg=#26323
 hi CursorColumn term=reverse ctermbg=8 guibg=#373737
 hi CursorLine term=underline cterm=underline guibg=#373737
 hi ColorColumn term=reverse ctermbg=4 guifg=#ffffff guibg=#1c1c1c
-hi link QuickFixLine Search
 hi StatusLineTerm term=bold,reverse cterm=bold ctermfg=0 ctermbg=10 gui=bold guifg=bg guibg=LightGreen
 hi StatusLineTermNC term=reverse ctermfg=0 ctermbg=10 guifg=bg guibg=LightGreen
 hi Cursor guifg=#037655 guibg=#ffffff
@@ -79,6 +78,10 @@ hi SyntasticWarning guifg=#fdffdd
 hi SyntasticErrorSign gui=bold guifg=#e57373
 hi SyntasticWarningSign gui=bold guifg=#fdffdd
 hi Error term=reverse ctermfg=15 ctermbg=12 guifg=#E6DB74 guibg=#1E0010
+
+hi link EndOfBuffer NonText
+hi link QuickFixLine Search
+hi link htmlItalic Normal
 hi link cmakeTodo Todo
 hi link cmakeLuaComment Comment
 hi link cmakeComment Comment
