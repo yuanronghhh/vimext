@@ -82,6 +82,38 @@ def get_vs_info():
     return vsInfo
 
 
+def get_gcc_info():
+    global vsInfo
+
+    if vsInfo:
+        return vsInfo
+
+    cmd = ["gcc", "--version"]
+
+    out, err = process_cmd(cmd, os.getcwd())
+    if err:
+        return None
+
+    for line in out.split("\n"):
+        v = line.split(" ")[-1]
+        break
+
+    return v
+
+
+def get_gcc_ver():
+    inc_path = None
+
+    global vs
+    if not vs:
+        vss = get_gcc_info()
+        if not vss:
+            return None
+
+        vs = vss.split(".")[0]
+
+    return int(vs)
+
 def get_vs_header_path():
     inc_path = None
 
@@ -112,30 +144,29 @@ def get_system_header_path():
         if vinc:
             incs.append(vinc)
     elif platform.system() == "Linux":
-        if platform.machine() == "aarch64":
-            p = os.getenv("PREFIX")
-            if not p:
-                return []
+        ver = get_gcc_ver()
+        if not ver:
+            return []
 
-            incs = ["include/x86_64-linux-gnu",
-                    "include",
-                    "local/include",
-                    "lib/gcc/x86_64-linux-gnu/9/include",
-                    "include/c++/9",
-                    "include/x86_64-linux-gnu/c++/9",
-                    "include/c++/9/backward"]
-            for i in range(0, len(incs)):
-                incs[i] = "%s/%s" % (p, incs[i])
+        p = os.getenv("PREFIX")
+        if not p:
+            p = "/usr"
 
-        else:
-            incs = ["/usr/include/x86_64-linux-gnu",
-                    "/usr/include",
-                    "/usr/local/include",
-                    "/usr/lib/gcc/x86_64-linux-gnu/9/include",
-                    "/usr/include/c++/9",
-                    "/usr/include/x86_64-linux-gnu/c++/9",
-                    "/usr/include/c++/9/backward"]
+        incs = ["include/x86_64-linux-gnu",
+                "include",
+                "local/include",
+                "lib/gcc/x86_64-linux-gnu/%d/include",
+                "include/c++/%d",
+                "include/x86_64-linux-gnu/c++/%d",
+                "include/c++/%d/backward"]
+        for i in range(0, len(incs)):
+            inc = incs[i]
+            if inc.find("%d") > -1:
+                incs[i] = incs[i] % (ver)
 
+            incs[i] = "%s/%s" % (p, incs[i])
+
+    print(incs)
     return incs
 
 def get_system_header_str():

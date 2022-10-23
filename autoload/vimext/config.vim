@@ -145,7 +145,7 @@ function vimext#config#LoadConfig()
   command! -nargs=? EditConfig :call vimext#config#Edit()
   command! -nargs=? GenCtags :call vimext#autotags#GenCtags()
   command! -nargs=? GetComment :call vimext#python#GetComment()
-  command! -nargs=? ManTab :call vimext#ManTab("<args>")
+  command! -nargs=? TabMan :call vimext#TabMan("<args>")
   command! -nargs=+ Debug :call vimext#debug#Debug("<args>")
 
   autocmd! BufRead *.vs,*.vert,*.glsl,*.frag,*.comp :set ft=c
