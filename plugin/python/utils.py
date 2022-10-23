@@ -166,7 +166,6 @@ def get_system_header_path():
 
             incs[i] = "%s/%s" % (p, incs[i])
 
-    print(incs)
     return incs
 
 def get_system_header_str():
