@@ -7,8 +7,7 @@ from os import path
 from utils import process_cmd, get_system_header_path
 from threading import Thread, Lock
 
-logging.basicConfig(filename="/home/greyhound/Public/n.txt",
-                    format="%(message)s", level=logging.DEBUG)
+logging.basicConfig(format="%(message)s", level=logging.INFO)
 lock = Lock()
 
 maxsize = 100 # mb
@@ -152,7 +151,6 @@ class AutoTags:
 
                 cmd.append(oinc)
 
-        logging.info(cmd)
         return cmd
 
     def regen_tags(self):
