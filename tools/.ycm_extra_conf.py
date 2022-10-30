@@ -3,9 +3,13 @@ import os.path as p
 import subprocess
 import ycm_core
 import os
+import logging
 
 from distutils.sysconfig import get_python_inc
 from pathlib import Path
+
+logging.basicConfig(filename="/home/greyhound/Public/n.txt",
+                    format="%(message)s", level=logging.DEBUG)
 
 Deps = set()
 oldflags = [
@@ -58,16 +62,6 @@ def GetDependenciesInc(deps):
     inc = libdir.joinpath(h)
     deps.add("-I" + inc.as_posix())
 
-def getProjectIncs(filename, Deps):
-    incs = Path(filename).parent.joinpath("ProjectIncludes.txt")
-
-    Deps.add("-I" + incs.parent.as_posix())
-
-    if incs.exists():
-        with open(incs, "r") as c:
-            for line in c.readlines():
-                Deps.add("-I" + line.strip())
-
 def GetRecursiveHeaderDir(bdir, deps):
     if not p.exists(bdir):
         return
@@ -76,6 +70,7 @@ def GetRecursiveHeaderDir(bdir, deps):
         for f in fns:
             if f.endswith(".h"):
                 deps.add("-I" + Path(dp).joinpath(f).parent.as_posix())
+
 
 def PathToPythonUsedDuringBuild():
   try:
@@ -94,7 +89,7 @@ def Settings( **kwargs ):
   if language == 'cfamily':
     filename = FindCorrespondingSourceFile(kwargs[ 'filename' ])
 
-    getProjectIncs(filename, Deps)
+    GetRecursiveHeaderDir(os.getcwd(), Deps)
     flags.extend(oldflags)
     flags.extend(Deps)
 

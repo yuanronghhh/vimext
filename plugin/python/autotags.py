@@ -7,7 +7,8 @@ from os import path
 from utils import process_cmd, get_system_header_path
 from threading import Thread, Lock
 
-logging.basicConfig(format="%(message)s", level=logging.INFO)
+logging.basicConfig(filename="/home/greyhound/Public/n.txt",
+                    format="%(message)s", level=logging.DEBUG)
 lock = Lock()
 
 maxsize = 100 # mb
@@ -79,9 +80,10 @@ class AutoTags:
                     "_Ret_maybenull_", "_Post_writable_byte_size_", "_CRTALLOCATOR",
                     "_CRT_JIT_INTRINSIC", "_CRTRESTRICT", "_CRT_HYBRIDPATCHABLE" "_CRT_GUARDOVERFLOW",
                     "_Inout_", "_CRT_STDIO_INLINE", "__CRTDECL", "_Printf_format_string_", "_MarkAllocaS"]
-            self.sys_incs = get_system_header_path()
         else:
             pass
+
+        self.sys_incs = get_system_header_path()
 
 
     def find_tag_recursive(self, p):
@@ -137,14 +139,20 @@ class AutoTags:
             cmd.append("-I")
             cmd.append("\"" + ig + "\"")
 
+
         for inc in self.sys_incs:
             for h in self.std_hds:
-                oinc = "\"%s/%s\"" % (inc, h)
+                if sys.platform == "win32":
+                    oinc = "\"%s/%s\"" % (inc, h)
+                else:
+                    oinc = "%s/%s" % (inc, h)
+
                 if not path.exists(oinc):
                     continue
 
                 cmd.append(oinc)
 
+        logging.info(cmd)
         return cmd
 
     def regen_tags(self):

@@ -112,6 +112,7 @@ function vimext#config#LoadConfig()
 
   " for c develop
   nnoremap <leader>c :GetComment<cr>
+  nnoremap <F8>  :YcmCompleter GoTo<cr>
   nnoremap <F9>  :HeaderOrCode<cr>
   nnoremap <F10> :cp<cr>
   nnoremap <F11> :cn<cr>
@@ -133,8 +134,10 @@ function vimext#config#LoadConfig()
   ""let g:hexmode_xxd_options = '-p'
   let g:vimspector_enable_mappings = 'VISUAL_STUDIO'
   let g:pymode_rope_project_root = g:vim_home."/rope"
+  let g:ycm_confirm_extra_conf = 0
+  let g:ycm_global_ycm_extra_conf = $vimext_home."/tools/.ycm_extra_conf.py"
 
-  let l:plugins = ["tagbar","vim-multiple-cursors","supertab","hexmode","emmet-vim","nerdtree"]
+  let l:plugins = ["tagbar","vim-multiple-cursors","supertab","hexmode","emmet-vim","nerdtree", "YouCompleteMe"]
   call vimext#plugins#LoadPlugin(l:plugins)
 
   command! -nargs=? -complete=custom,vimext#session#SessionCompelete OpenSession :call vimext#session#OpenSession("<args>")
