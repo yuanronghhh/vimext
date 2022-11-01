@@ -3,7 +3,6 @@ import sys
 import os
 import json
 import re
-import vimpy
 import platform
 import logging
 import vimpy

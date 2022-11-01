@@ -3,13 +3,10 @@ import os.path as p
 import subprocess
 import ycm_core
 import os
-import logging
 
 from distutils.sysconfig import get_python_inc
 from pathlib import Path
-
-logging.basicConfig(filename="/home/greyhound/Public/n.txt",
-                    format="%(message)s", level=logging.DEBUG)
+from os import path
 
 Deps = set()
 oldflags = [
@@ -62,7 +59,44 @@ def GetDependenciesInc(deps):
     inc = libdir.joinpath(h)
     deps.add("-I" + inc.as_posix())
 
-def GetRecursiveHeaderDir(bdir, deps):
+
+def add_list_dir(layer: list, wk :str):
+    for dn in os.listdir(wk):
+        fullpath = "%s/%s" % (wk, dn)
+
+        if not path.isdir(fullpath):
+            continue
+
+        layer.append(fullpath)
+
+
+def GetBFSHeaderDir(wk, deps:set, maxlevel = 5):
+    level = 0
+    leveldir = []
+    olddir = [wk]
+
+    deps.add("-I%s" % wk)
+    while olddir and level < maxlevel:
+        level += 1
+
+        for o in olddir:
+            add_list_dir(leveldir, o)
+        del olddir
+
+        for dn in leveldir:
+            for fn in os.listdir(dn):
+                fullfn = "%s/%s" % (dn, fn)
+
+                if not path.isfile(fullfn):
+                    continue
+
+                if fn.endswith(".h"):
+                    deps.add("-I%s" % dn)
+
+        olddir = leveldir
+        leveldir = []
+
+def GetRecursiveHeaderDir(bdir, deps, level = 2):
     if not p.exists(bdir):
         return
 
@@ -89,8 +123,13 @@ def Settings( **kwargs ):
   if language == 'cfamily':
     filename = FindCorrespondingSourceFile(kwargs[ 'filename' ])
 
-    GetRecursiveHeaderDir(os.getcwd(), Deps)
+    cwd = os.getcwd()
     flags.extend(oldflags)
+
+    if filename.startswith(cwd):
+        GetBFSHeaderDir(cwd, Deps, 3)
+    else:
+        GetBFSHeaderDir(path.dirname(filename), Deps, 3)
     flags.extend(Deps)
 
     return {
