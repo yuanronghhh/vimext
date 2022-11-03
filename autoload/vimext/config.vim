@@ -137,7 +137,7 @@ function vimext#config#LoadConfig()
   let g:ycm_confirm_extra_conf = 0
   let g:ycm_global_ycm_extra_conf = $vimext_home."/tools/.ycm_extra_conf.py"
 
-  let l:plugins = ["tagbar","vim-multiple-cursors","supertab","hexmode","emmet-vim","nerdtree", "YouCompleteMe"]
+  let l:plugins = ["tagbar","vim-multiple-cursors","supertab","hexmode","emmet-vim","nerdtree"]
   call vimext#plugins#LoadPlugin(l:plugins)
 
   command! -nargs=? -complete=custom,vimext#session#SessionCompelete OpenSession :call vimext#session#OpenSession("<args>")

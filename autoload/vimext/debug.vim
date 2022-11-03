@@ -9,7 +9,11 @@ function vimext#debug#Debug(param) abort
 endfunction
 
 function vimext#debug#DebugInit() abort
-  let l:wins = gettabinfo()[-1]["windows"]
+  let l:cwin = bufwinid(bufnr())
+  let l:wins = vimext#GetWinsTab(l:cwin)
+  if len(l:wins) == 0
+    return
+  endif
 
   let l:sid = l:wins[-1]
   let l:pid = l:wins[0]

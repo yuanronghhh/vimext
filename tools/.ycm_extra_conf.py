@@ -60,8 +60,15 @@ def GetDependenciesInc(deps):
     deps.add("-I" + inc.as_posix())
 
 
+def list_dir(dir: str):
+    try:
+        ls = os.listdir(dir)
+        return ls
+    except PermissionError as err:
+        return []
+
 def add_list_dir(layer: list, wk :str):
-    for dn in os.listdir(wk):
+    for dn in list_dir(wk):
         fullpath = "%s/%s" % (wk, dn)
 
         if not path.isdir(fullpath):
@@ -84,7 +91,7 @@ def GetBFSHeaderDir(wk, deps:set, maxlevel = 5):
         del olddir
 
         for dn in leveldir:
-            for fn in os.listdir(dn):
+            for fn in list_dir(dn):
                 fullfn = "%s/%s" % (dn, fn)
 
                 if not path.isfile(fullfn):

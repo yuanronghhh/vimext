@@ -139,3 +139,18 @@ function vimext#GetLinesEnds(endstr)
 
   return l:lines
 endfunction
+
+function vimext#GetWinsTab(winid)
+  let l:winfo = getwininfo(a:winid)
+  if len(l:winfo) == 0
+    return []
+  endif
+
+  let l:tabnr = l:winfo[0]["tabnr"]
+  let l:tabinfo = gettabinfo(l:tabnr)
+  if len(l:tabinfo) == 0
+    return []
+  endif
+
+  return l:tabinfo[0]["windows"]
+endfunction
