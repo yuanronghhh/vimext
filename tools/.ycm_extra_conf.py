@@ -8,6 +8,7 @@ from distutils.sysconfig import get_python_inc
 from pathlib import Path
 from os import path
 
+
 Deps = set()
 oldflags = [
     '-Wall',
@@ -131,9 +132,10 @@ def Settings( **kwargs ):
     filename = FindCorrespondingSourceFile(kwargs[ 'filename' ])
 
     cwd = os.getcwd()
+    hmpath = path.expanduser("~")
     flags.extend(oldflags)
 
-    if filename.startswith(cwd):
+    if filename.startswith(cwd) and filename != hmpath:
         GetBFSHeaderDir(cwd, Deps, 3)
     else:
         GetBFSHeaderDir(path.dirname(filename), Deps, 3)
