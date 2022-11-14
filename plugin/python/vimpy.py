@@ -27,8 +27,3 @@ def vim_search(s, flag):
 
 def vim_msg(msg):
     print(msg)
-
-def vim_cwd():
-    cwd = vim.eval("getcwd()")
-    cwd = cwd.replace("\\", "/")
-    return cwd
