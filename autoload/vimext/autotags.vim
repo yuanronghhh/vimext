@@ -1,5 +1,15 @@
+let s:changed = 0
+
+function vimext#autotags#Check()
+  let s:changed = &modified
+endfunction
+
 function vimext#autotags#ReGenCtags()
   if g:vimext_python == 0
+    return
+  endif
+
+  if s:changed == 0
     return
   endif
 
@@ -21,7 +31,8 @@ function vimext#autotags#Init()
 
   augroup autotag
     au!
-    autocmd BufWritePost,FileWritePost * call vimext#autotags#ReGenCtags()
+    autocmd BufWritePre * call vimext#autotags#Check()
+    autocmd BufWritePost * call vimext#autotags#ReGenCtags()
   augroup END
 
   python3 from autotags import g_atags
