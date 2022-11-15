@@ -46,7 +46,7 @@ def clean_tags(tagfile, filename):
 
             vs = nv[1].lstrip(b'.').replace(b'\\', b'/').decode('utf-8')
 
-            if vs.endswith(relpath) or vs == filename:
+            if vs == filename:
                 has_match = True
                 continue
 
