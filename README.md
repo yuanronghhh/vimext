@@ -1,13 +1,14 @@
 ## Introduce
 
-Vim config easy to copy.
+Vim config for portable.
+this plugin is my vim config. zero dependencies.
 
-## Recommend, not nessaray
+## Required for feature
 
 1. git-bash installed for windows.
 2. python3 installed.
 
-## How
+## How to install
 
 1. Install vim on `windows/unix` platform.
 2. Copy this plugin to "~/.vim/plugins/" if on linux,
@@ -27,23 +28,26 @@ call vimext#config#LoadConfig()
 ```
 
 3. add "<git-bash-home>/bin" to path environment if on windows for `grep` linux command.
-
-4. execute `:EditConfig` to edit for your custom.
+4. execute `:EditConfig` to edit for your config.
 
 ## Feathers
 
-1. OpenSession && SaveSession for session manage on `<vim_home>/session` directory.
+1. command OpenSession && SaveSession for session manage on `<vim_home>/session` directory.
 2. colorscheme `materialtheme` for gui, `molokai` for no gui vim.
 3. nerdtree, multiple-cursors plugin loaded if exists plugin in `~/plugins` directory.
 4. persistent undo in `<vim_home>/undodir`.
-5. <F9> `HeaderOrCode` command for c programmer jump `.c` to `.h` if the same directory.
+5. command `HeaderOrCode` command for c programmer jump `.c` to `.h` if the same directory.
 
 ## Python feature
-1. comamnd <leader>b will import pdb for python repl debug.
-2. PythonDoc <args> for python doc read.
-3. JsonFormat use for python json.tools format.
+1. comamnd `<leader>b` will import pdb for python repl debug.
+2. command `PythonDoc` for python doc read.
+3. command `JsonFormat` use for python json.tools format.
+4. command `GetComment` generate comment for function only python, c, C#.
+5. command `GenCtags` to generate tags and automatically update tags when saved one file.
+6. command `TabMan` for new tab for man page.
+7. command `Debug` for remote vim8.0 `Termdebug` feature.
 
 ### Window feature
 1. terminal find if add `GitPortable/bin/bash.exe` in path.
-2. `:Fullscreen` command on win10.
+2. command `:Fullscreen` command for win10.
 3. add `ctags.exe` to vim path, see `$vimext_home/tools`.

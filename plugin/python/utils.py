@@ -34,7 +34,10 @@ ${param}\
 """
 
 vs = None
-vsInfo = None
+compilerInfo = None
+
+def getcwd():
+    return os.getcwd().replace("\\", "/")
 
 def process_cmd(cmd, cwd):
     """ Abstract subprocess """
@@ -65,31 +68,31 @@ def process_cmd(cmd, cwd):
 
 
 def get_vs_info():
-    global vsInfo
+    global compilerInfo
 
-    if vsInfo:
-        return vsInfo
+    if compilerInfo:
+        return compilerInfo
 
     cmd = ["\"C:/Program Files (x86)/Microsoft Visual Studio/Installer/vswhere.exe\"",
            "-format","json"]
 
-    out, err = process_cmd(cmd, os.getcwd())
+    out, err = process_cmd(cmd, getcwd())
     if err:
         return None
 
-    vsInfo = json.loads(out)
-    return vsInfo
+    compilerInfo = json.loads(out)
+    return compilerInfo
 
 
 def get_gcc_info():
-    global vsInfo
+    global compilerInfo
 
-    if vsInfo:
-        return vsInfo
+    if compilerInfo:
+        return compilerInfo
 
     cmd = ["gcc", "--version"]
 
-    out, err = process_cmd(cmd, os.getcwd())
+    out, err = process_cmd(cmd, getcwd())
     if err:
         return None
 

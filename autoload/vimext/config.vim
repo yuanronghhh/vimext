@@ -165,6 +165,10 @@ endfunction
 
 function vimext#config#GetWinBash()
   let l:bpath = vimext#GetBinPath("bash.exe")
+  if len(l:bpath) == 0
+    return ""
+  endif
+
   return shellescape(l:bpath)
 endfunction
 

@@ -21,7 +21,7 @@ function vimext#autotags#Init()
 
   augroup autotag
     au!
-    autocmd BufWritePost,FileWritePost * call vimext#autotags#ReGenCtags()
+    autocmd BufWritePost * call vimext#autotags#ReGenCtags()
   augroup END
 
   python3 from autotags import g_atags

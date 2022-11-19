@@ -4,7 +4,7 @@ import vimpy
 import sys
 
 from os import path
-from utils import process_cmd, get_system_header_path
+from utils import process_cmd, get_system_header_path, getcwd
 from threading import Thread, Lock
 
 logging.basicConfig(format="%(message)s", level=logging.INFO)
@@ -187,7 +187,7 @@ class AutoTags:
             cwd = path.dirname(tagfile)
         else:
             tagfile = "tags"
-            cwd = vimpy.vim_cwd()
+            cwd = getcwd()
             filename = None
 
         self.tagfile = tagfile
