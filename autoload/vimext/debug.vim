@@ -5,7 +5,7 @@ endif
 
 function vimext#debug#Debug(param) abort
   exec ":tabnew"
-  exec ":TermdebugCommand ".a:param
+  exec ":Termdebug ".a:param
 endfunction
 
 function vimext#debug#DebugInit() abort
