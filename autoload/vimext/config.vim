@@ -73,7 +73,7 @@ function vimext#config#LoadConfig()
   endif
 
   let $C_HEADERS=vimext#python#GetSystemHeaderPath()
-  set path+=$C_HEADERS
+  "set path+=$C_HEADERS
   set grepprg=grep\ -nH
 
   if has("unix")
