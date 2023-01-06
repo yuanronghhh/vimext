@@ -60,7 +60,7 @@ def clean_tags(tagfile, filename):
 class AutoTags:
     def __init__(self):
         self.tagfile = None
-        self.matches = ['*.vim', '*.c', '*.h' , '*.cpp' , '*.hpp' , '*.py' , '*.cs' , '*.js' , 'CMakeLists.txt', '*.cmake', '*.lua', '*.java', '*.go']
+        self.matches = ['*.vim', '*.c', '*.h' , '*.cc', '*.cpp' , '*.hpp' , '*.py' , '*.cs' , '*.js' , 'CMakeLists.txt', '*.cmake', '*.lua', '*.java', '*.go']
         self.tags_cmd = "ctags"
         self.sys_incs = []
         self.igns = []
