@@ -19,10 +19,12 @@ ${param}\
 """
 
 python_comment = """\
+##
 # ${func_name}:
 ${param}\
 #
-# Returns: None\
+# Returns: None
+##\
 """
 
 csharp_comment = """\

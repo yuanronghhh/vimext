@@ -2,6 +2,7 @@ let g:vimext_python = 0
 let g:vimext_debug = 1
 let g:is_fullscreen = 0
 let g:vimext_c_api = 0
+let g:autosave_session = 1
 
 
 function vimext#init()
@@ -31,6 +32,7 @@ function vimext#init()
     call mkdir(&undodir)
   endif
 
+  call vimext#session#Init()
   if has("python3")
     call vimext#python#Init()
     call vimext#autotags#Init()
