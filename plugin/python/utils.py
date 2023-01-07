@@ -38,6 +38,8 @@ ${param}\
 vs = None
 compilerInfo = None
 
+# logging.basicConfig(filename="D:/GreyHound/PRIVATE/TMP/note.log", format="%(message)s", level=logging.INFO)
+
 def getcwd():
     return os.getcwd().replace("\\", "/")
 

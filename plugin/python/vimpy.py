@@ -18,7 +18,8 @@ def vim_lines_s(s):
     lines = vim.bindeval("vimext#GetLinesEnds(\"%s\")" % (s))
     nline = ""
     for l in lines:
-        nline += l.decode("utf-8")
+        nline += l.decode("utf-8") + "\n"
+    nline = nline[0:-1]
 
     return nline
 
