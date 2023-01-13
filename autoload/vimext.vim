@@ -2,7 +2,7 @@ let g:vimext_python = 0
 let g:vimext_debug = 1
 let g:is_fullscreen = 0
 let g:vimext_c_api = 0
-let g:autosave_session = 1
+let g:autosave_session = 0
 
 
 function vimext#init()
