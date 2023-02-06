@@ -85,7 +85,11 @@ function vimext#config#LoadConfig()
     set makeencoding=gbk
     let g:python_cmd = "python"
     let $BashBin = vimext#config#GetWinBash()
-    set shell=$BashBin
+
+    if len($BashBin) > 0
+      set shell=$BashBin
+    endif
+
     let g:tagbar_ctags_bin = vimext#GetBinPath("ctags.exe")
     command! -nargs=0 FullScreen :call vimext#FullScreen()
     command! -nargs=0 GitBash :call vimext#config#GitBash()
