@@ -54,7 +54,7 @@ hi StatusLineTermNC term=reverse ctermfg=0 ctermbg=10 guifg=bg guibg=LightGreen
 hi Cursor guifg=#037655 guibg=#ffffff
 hi lCursor guifg=bg guibg=fg
 hi MatchParen term=reverse ctermbg=3 gui=bold guifg=#ffb74d guibg=#37473f
-hi Normal guifg=#e0e0e0 guibg=#121212
+hi Normal guifg=#f0f0f0 guibg=#252525
 hi ToolbarLine term=underline ctermbg=8 guibg=Grey50
 hi ToolbarButton cterm=bold ctermfg=0 ctermbg=7 gui=bold guifg=Black guibg=LightGrey
 hi Function guifg=#dfafdf
