@@ -62,7 +62,7 @@ function vimext#config#LoadConfig()
 
   if has("gui_running")
     colorscheme materialtheme
-    set columns=120 lines=35
+    set columns=120 lines=45
   else
     colorscheme molokai
   endif
