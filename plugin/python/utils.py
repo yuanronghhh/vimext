@@ -6,6 +6,7 @@ import re
 import platform
 import logging
 import vimpy
+from os import path
 
 from enum import IntEnum
 
@@ -77,7 +78,11 @@ def get_vs_info():
     if compilerInfo:
         return compilerInfo
 
-    cmd = ["\"C:/Program Files (x86)/Microsoft Visual Studio/Installer/vswhere.exe\"",
+    vscmd = "C:/Program Files (x86)/Microsoft Visual Studio/Installer/vswhere.exe"
+    if not path.exists(vscmd):
+        return
+
+    cmd = ["\"" + vscmd + "\"",
            "-format","json"]
 
     out, err = process_cmd(cmd, getcwd())
