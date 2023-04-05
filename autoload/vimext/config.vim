@@ -158,7 +158,7 @@ function vimext#config#LoadConfig()
   autocmd! BufRead *.vs,*.vert,*.glsl,*.frag,*.comp :set ft=c
   autocmd! BufRead *.vue,*.cshtml :set ft=html
   autocmd! BufRead *.vala :set ft=cpp
-  autocmd! BufRead *.cst :set ft=javascript
+  autocmd! BufRead *.cst :set ft=cs
   autocmd! FileType python :nnoremap <buffer> <leader>b :call vimext#python#Operate(line('.'))<cr>
 
   tnoremap <C-j> <C-W>gt
