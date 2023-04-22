@@ -23,7 +23,7 @@ function vimext#debug#DebugInit() abort
 
   map <F10> :Over<CR>
   map <F11> :Step<CR>
-  map <F8>  :Break<CR>
-  map <F9>  :Until<CR>
+  map <F8>  :Until<CR>
+  map <F9>  :Break<CR>
   map <F5>  :Continue<CR>
 endfunction
