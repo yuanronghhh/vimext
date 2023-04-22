@@ -21,9 +21,6 @@ function vimext#debug#DebugInit() abort
   call win_execute(l:sid, "wincmd H")
   call win_execute(l:pid, "wincmd W")
 
-  map <F10> :Over<CR>
-  map <F11> :Step<CR>
-  map <F8>  :Until<CR>
-  map <F9>  :Break<CR>
-  map <F5>  :Continue<CR>
+  nnoremap <c-b> :Break<CR>
+  nnoremap <F5>  :Continue<CR>
 endfunction
