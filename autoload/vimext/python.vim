@@ -96,3 +96,12 @@ function vimext#python#GetComment()
   let l:comment = py3eval("utils.get_comment()")
   call append(line('.')-1, l:comment)
 endfunction
+
+function vimext#python#GenCGS()
+  if g:vimext_python == 0
+    return 0
+  endif
+
+  let l:str = py3eval("utils.gen_c_getter_setter()")
+  call append(line('.')-1, l:str)
+endfunction

@@ -152,6 +152,7 @@ function vimext#config#LoadConfig()
   command! -nargs=? EditConfig :call vimext#config#Edit()
   command! -nargs=? GenCtags :call vimext#autotags#GenCtags()
   command! -nargs=? GetComment :call vimext#python#GetComment()
+  command! -nargs=? GenCGS :call vimext#python#GenCGS()
   command! -nargs=? TabMan :call vimext#TabMan("<args>")
   command! -nargs=+ Debug :call vimext#debug#Debug("<args>")
 

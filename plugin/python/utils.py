@@ -10,6 +10,39 @@ from os import path
 
 from enum import IntEnum
 
+c_setter_common = """\
+  priv->${prop} = sys_strdup(${prop});
+"""
+
+c_setter_str = """\
+  if(priv->${prop}) {
+    sys_clear_pointer(&priv->${prop}, sys_free);
+  }
+
+  priv->${prop} = ${prop};
+"""
+
+c_getter_setter_template = """\
+SYS_API void ${type_name}_set_${prop}(${TypeName} *self, ${ptype} ${prop});
+SYS_API ${ptype} ${type_name}_get_${prop}(${TypeName} *self);
+
+void ${type_name}_set_${prop}(${TypeName} *self, ${ptype} ${prop}) {
+  sys_return_if_fail(self != NULL);
+
+  ${TypeName}Private *priv = self->priv;
+
+${SetterHandle}\
+}
+
+${ptype} ${type_name}_get_${prop}(${TypeName} *self) {
+  sys_return_val_if_fail(self != NULL, NULL);
+
+  ${TypeName}Private *priv = self->priv;
+
+  return priv->${prop};
+}
+"""
+
 c_comment = """\
 /**
  * ${func_name}:
@@ -435,3 +468,31 @@ def get_comment():
         return []
 
     return lines
+
+
+def gen_c_getter_setter():
+    line = vimpy.vim_get_line()
+    param = line.split(",")
+    if len(param) < 4:
+        return []
+
+    type_name = param[0].strip()
+    TypeName = param[1].strip()
+    prop = param[2].strip()
+    ptype = param[3].strip()
+
+    ntpl = c_getter_setter_template
+    if ptype.find("SysChar *") > -1:
+        ntpl = ntpl\
+                .replace("${SetterHandle}", c_setter_str)
+    else:
+        ntpl = ntpl\
+                .replace("${SetterHandle}", c_setter_common)
+
+    result = ntpl\
+            .replace("${TypeName}", TypeName)\
+            .replace("${type_name}", type_name)\
+            .replace("${prop}", prop)\
+            .replace("${ptype}", ptype)
+
+    return result.split("\n")
