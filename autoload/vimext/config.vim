@@ -77,10 +77,10 @@ function vimext#config#LoadConfig()
   set grepprg=grep\ -nH
 
   if has("unix")
-    set clipboard=unnamed
+    set clipboard=unnamedplus
     set guifont=FZFangSong\-Z02S\ bold\ 12
   elseif has("win32")
-    set clipboard=unnamed
+    set clipboard=unnamedplus
     set guifont=Fixedsys
     set makeencoding=gbk
     let g:python_cmd = "python"
