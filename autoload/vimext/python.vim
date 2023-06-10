@@ -97,7 +97,7 @@ function vimext#python#GetComment()
   call append(line('.')-1, l:comment)
 endfunction
 
-function vimext#python#GenCGS()
+function vimext#python#GenGetter()
   if g:vimext_python == 0
     return 0
   endif
