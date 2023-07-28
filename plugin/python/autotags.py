@@ -59,6 +59,7 @@ def clean_tags(tagfile, filename):
 
 class AutoTags:
     def __init__(self):
+        self.th = None
         self.tagfile = None
         self.matches = ['*.vim', '*.c', '*.h' , '*.cc', '*.cpp' , '*.hpp' , '*.py' , '*.cs' , '*.js' , 'CMakeLists.txt', '*.cmake', '*.lua', '*.java', '*.go']
         self.tags_cmd = "ctags"
@@ -192,7 +193,7 @@ class AutoTags:
 
         self.tagfile = tagfile
 
-        th = Thread(target=self.ctag_update, args=(cwd, tagfile, filename))
-        th.start()
+        self.th = Thread(target=self.ctag_update, args=(cwd, tagfile, filename))
+        self.th.start()
 
 g_atags = AutoTags()

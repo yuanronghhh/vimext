@@ -33,10 +33,6 @@ function vimext#init()
   endif
 
   call vimext#session#Init()
-  if has("python3")
-    call vimext#python#Init()
-    call vimext#autotags#Init()
-  endif
 
   if has("libcall")
     let g:vimext_c_api = 1
