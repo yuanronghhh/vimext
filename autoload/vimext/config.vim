@@ -80,11 +80,12 @@ function vimext#config#LoadConfig()
     set clipboard=unnamedplus
     set guifont=FZFangSong\-Z02S\ bold\ 12
   elseif has("win32")
-    set clipboard=unnamedplus
-    set guifont=Fixedsys
+    set clipboard=unnamed
+    set guifont=consolas:h12
     set makeencoding=gbk
     let g:python_cmd = "python"
     let $BashBin = vimext#config#GetWinBash()
+    set errorformat^=%f(%l\\,%c):\ %t%*[^\ ]\ C%n:\ %m
 
     if len($BashBin) > 0
       set shell=$BashBin
