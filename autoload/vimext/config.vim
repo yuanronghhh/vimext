@@ -72,8 +72,6 @@ function vimext#config#LoadConfig()
     packadd termdebug
   endif
 
-  let $C_HEADERS=vimext#python#GetSystemHeaderPath()
-  "set path+=$C_HEADERS
   set grepprg=grep\ -nH
 
   if has("unix")
@@ -148,12 +146,7 @@ function vimext#config#LoadConfig()
   command! -nargs=? -complete=custom,vimext#session#SessionCompelete OpenSession :call vimext#session#OpenSession("<args>")
   command! -nargs=? -complete=custom,vimext#session#SessionCompelete SaveSession :call vimext#session#SaveSession("<args>")
   command! -nargs=? HeaderOrCode :call vimext#HeaderOrCode()
-  command! -nargs=? PythonDoc :call vimext#python#doc("<args>")
-  command! -nargs=? JsonFormat :call vimext#python#JsonFormat()
   command! -nargs=? EditConfig :call vimext#config#Edit()
-  command! -nargs=? GenCtags :call vimext#autotags#GenCtags()
-  command! -nargs=? GetComment :call vimext#python#GetComment()
-  command! -nargs=? GenCGS :call vimext#python#GenCGS()
   command! -nargs=? TabMan :call vimext#TabMan("<args>")
   command! -nargs=+ Debug :call vimext#debug#Debug("<args>")
 
@@ -161,7 +154,6 @@ function vimext#config#LoadConfig()
   autocmd! BufRead *.vue,*.cshtml :set ft=html
   autocmd! BufRead *.vala :set ft=cpp
   autocmd! BufRead *.cst :set ft=javascript
-  autocmd! FileType python :nnoremap <buffer> <leader>b :call vimext#python#Operate(line('.'))<cr>
 
   tnoremap <C-j> <C-W>gt
   tnoremap <C-k> <C-W>gT
