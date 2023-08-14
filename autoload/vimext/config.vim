@@ -81,8 +81,9 @@ function vimext#config#LoadConfig()
     set clipboard=unnamed
     set guifont=Fixedsys
     set makeencoding=gbk
-    let g:python_cmd = "python"
-    let $BashBin = vimext#config#GetWinBash()
+    let g:python_cmd="python"
+    let $BashBin=vimext#config#GetWinBash()
+    set errorformat^=%f(%l\\,%c):\ %t%*[^\ ]\ C%n:\ %m
 
     if len($BashBin) > 0
       set shell=$BashBin
