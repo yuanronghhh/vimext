@@ -17,7 +17,7 @@ function vimext#config#LoadConfig()
 
   set showmatch
   set guioptions=r
-  set fileformats=unix,dos,mac
+  set fileformats=dos,unix,mac
   set fileencoding=utf-8
   set encoding=utf-8
   set fileencodings=utf-8,gb18030,gb2312,cp936,gbk,ucs-bom,shift-jis
@@ -79,10 +79,10 @@ function vimext#config#LoadConfig()
     set guifont=FZFangSong\-Z02S\ bold\ 12
   elseif has("win32")
     set clipboard=unnamed
-    set guifont=consolas:h12
+    set guifont=Fixedsys
     set makeencoding=gbk
-    let g:python_cmd = "python"
-    let $BashBin = vimext#config#GetWinBash()
+    let g:python_cmd="python"
+    let $BashBin=vimext#config#GetWinBash()
     set errorformat^=%f(%l\\,%c):\ %t%*[^\ ]\ C%n:\ %m
 
     if len($BashBin) > 0
