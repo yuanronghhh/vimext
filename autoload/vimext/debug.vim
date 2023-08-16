@@ -1,3 +1,5 @@
+let s:debug_loaded = 0
+
 function vimext#debug#Debug(param) abort
   exec ":tabnew"
   exec ":Termdebug ".a:param
@@ -47,7 +49,22 @@ function vimext#debug#toggleBreakpoint() abort
   endif
 endfunction
 
+function vimext#debug#Setup() abort
+  if s:debug_loaded == 1
+    return
+  endif
+
+  nnoremap <F5>  :Continue<cr>
+  nnoremap <F6>  :Over<cr>
+  nnoremap <F7>  :Step<cr>
+  nnoremap <F8>  :call vimext#debug#toggleBreakpoint()<cr>
+
+  let s:debug_loaded = 1
+endfunction
+
 function vimext#debug#DebugInit() abort
+  call vimext#debug#Setup()
+
   let l:cwin = bufwinid(bufnr())
   let l:wins = vimext#GetWinsTab(l:cwin)
   if len(l:wins) == 0
@@ -59,11 +76,6 @@ function vimext#debug#DebugInit() abort
 
   call win_execute(l:sid, "wincmd H")
   call win_execute(l:pid, "wincmd W")
-
-  nnoremap <F5>  :Continue<cr>
-  nnoremap <F6>  :Over<cr>
-  nnoremap <F7>  :Step<cr>
-  nnoremap <F8>  :call vimext#debug#toggleBreakpoint()<cr>
 
   exec ":Break main"
   exec ":Run"
