@@ -83,7 +83,9 @@ function vimext#config#LoadConfig()
     set makeencoding=gbk
     let g:python_cmd="python"
     let $BashBin=vimext#config#GetWinBash()
-    set errorformat^=%f(%l\\,%c):\ %t%*[^\ ]\ C%n:\ %m
+    set errorformat^=
+          \%f(%l\\,%c):\ %t%*[^\ ]\ C%n:\ %m,
+          \%f(%l\\,%c):\ fatal\ \ %t%*[^\ ]\ C%n:\ %m
 
     if len($BashBin) > 0
       set shell=$BashBin
@@ -115,7 +117,6 @@ function vimext#config#LoadConfig()
 
   " for c develop
   nnoremap <leader>c :GetComment<cr>
-  nnoremap <F8>  :YcmCompleter GoTo<cr>
   nnoremap <F9>  :HeaderOrCode<cr>
   nnoremap <F10> :cp<cr>
   nnoremap <F11> :cn<cr>

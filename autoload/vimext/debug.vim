@@ -1,8 +1,3 @@
-if has("unix")
-  autocmd! User TermdebugStopPost :tabclose
-  autocmd! User TermdebugStartPost :call vimext#debug#DebugInit()
-endif
-
 function vimext#debug#Debug(param) abort
   exec ":tabnew"
   exec ":Termdebug ".a:param

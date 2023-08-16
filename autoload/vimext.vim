@@ -34,6 +34,12 @@ function vimext#init()
 
   call vimext#session#Init()
 
+  let l:gdb_cmd = exepath("gdb")
+  if len(l:gdb_cmd) != 0
+    autocmd! User TermdebugStopPost :tabclose
+    autocmd! User TermdebugStartPost :call vimext#debug#DebugInit()
+  endif
+
   if has("libcall")
     let g:vimext_c_api = 1
   endif
