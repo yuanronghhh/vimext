@@ -1,10 +1,3 @@
-let s:debug_loaded = 0
-
-function vimext#debug#Debug(param) abort
-  exec ":tabnew"
-  exec ":Termdebug ".a:param
-endfunction
-
 function vimext#debug#GetSigns(lnum) abort
   let l:bks = sign_getplaced("%", { "group": "TermDebug", "lnum": a:lnum })
 
@@ -37,7 +30,7 @@ function vimext#debug#HasBreak(lnum) abort
   return 0
 endfunction
 
-function vimext#debug#toggleBreakpoint() abort
+function vimext#debug#ToggleBreakpoint() abort
   let l:lnum = line(".")
   let l:bks = sign_getplaced("%", { "group": "TermDebug", "lnum": l:lnum })
   let l:has_brk = vimext#debug#HasBreak(l:lnum)
@@ -49,24 +42,17 @@ function vimext#debug#toggleBreakpoint() abort
   endif
 endfunction
 
-function vimext#debug#Setup() abort
-  if s:debug_loaded == 1
-    return
-  endif
-
+function vimext#debug#StartPre() abort
+  exec ":tabnew"
   nnoremap <F5>  :Continue<cr>
   nnoremap <F6>  :Over<cr>
   nnoremap <F7>  :Step<cr>
-  nnoremap <F8>  :call vimext#debug#toggleBreakpoint()<cr>
-
-  let s:debug_loaded = 1
+  nnoremap <F8>  :call vimext#debug#ToggleBreakpoint()<cr>
 endfunction
 
-function vimext#debug#DebugInit() abort
-  call vimext#debug#Setup()
-
+function vimext#debug#StartPost() abort
   let l:cwin = bufwinid(bufnr())
-  let l:wins = vimext#GetWinsTab(l:cwin)
+  let l:wins = vimext#GetTabWins(l:cwin)
   if len(l:wins) == 0
     return
   endif
@@ -79,4 +65,17 @@ function vimext#debug#DebugInit() abort
 
   exec ":Break main"
   exec ":Run"
+endfunction
+
+function vimext#debug#StopPre() abort
+  unmap <F5>
+  unmap <F6>
+  unmap <F7>
+  unmap <F8>
+
+  exec ":tabclose"
+endfunction
+
+function vimext#debug#StopPost() abort
+  let s:debug_loaded = 0
 endfunction

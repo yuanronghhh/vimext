@@ -36,8 +36,10 @@ function vimext#init()
 
   let l:gdb_cmd = exepath("gdb")
   if len(l:gdb_cmd) != 0
-    autocmd! User TermdebugStopPost :tabclose
-    autocmd! User TermdebugStartPost :call vimext#debug#DebugInit()
+    autocmd! User TermdebugStartPre :call vimext#debug#StartPre()
+    autocmd! User TermdebugStartPost :call vimext#debug#StartPost()
+    autocmd! User TermdebugStopPre :call vimext#debug#StopPre()
+    autocmd! User TermdebugStopPost :call vimext#debug#StopPost()
   endif
 
   if has("libcall")
@@ -148,7 +150,7 @@ function vimext#GetLinesEnds(endstr)
   return l:lines
 endfunction
 
-function vimext#GetWinsTab(winid)
+function vimext#GetTabWins(winid)
   let l:winfo = getwininfo(a:winid)
   if len(l:winfo) == 0
     return []
@@ -161,4 +163,14 @@ function vimext#GetWinsTab(winid)
   endif
 
   return l:tabinfo[0]["windows"]
+endfunction
+
+function vimext#GetTabInfo(winid)
+  let l:winfo = getwininfo(a:winid)
+  if len(l:winfo) == 0
+    return []
+  endif
+
+  let l:tabnr = l:winfo[0]["tabnr"]
+  return gettabinfo(l:tabnr)
 endfunction

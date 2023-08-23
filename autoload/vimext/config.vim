@@ -149,7 +149,6 @@ function vimext#config#LoadConfig()
   command! -nargs=? HeaderOrCode :call vimext#HeaderOrCode()
   command! -nargs=? EditConfig :call vimext#config#Edit()
   command! -nargs=? TabMan :call vimext#TabMan("<args>")
-  command! -nargs=+ Debug :call vimext#debug#Debug("<args>")
 
   autocmd! BufRead *.vs,*.vert,*.glsl,*.frag,*.comp :set ft=c
   autocmd! BufRead *.vue,*.cshtml :set ft=html
