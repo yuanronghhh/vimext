@@ -1,6 +1,7 @@
 "
 " some code from python-mode https://github.com/python-mode/python-mode.git
 "
+let g:vimext_python = 0
 
 function python#Init()
 python3 << EOF
