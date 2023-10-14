@@ -37,7 +37,7 @@ void ${type_name}_set_${prop}(${TypeName} *self, ${prop_type} ${prop}) {
 ${SetterHandle}\
 }
 
-${prop_type}${type_name}_get_${prop}(${TypeName} *self) {
+${prop_type} ${type_name}_get_${prop}(${TypeName} *self) {
   sys_return_val_if_fail(self != NULL, NULL);
 
   return self->${prop};
@@ -52,43 +52,6 @@ class GetterGenerator:
         self.line = line
         self.filename = filename
 
-
-    def insert_patch(self, s, ps, ch):
-        if not s:
-            return
-
-        if not ps:
-            return
-
-        nstr = ""
-
-        for i in range(0, len(s)):
-            nstr += s[i]
-            if i in ps:
-                nstr += ch
-
-        return nstr
-
-    def parse_type_name_from_file(self, filename):
-        si = None
-        uidx = []
-
-        if not filename:
-            return
-
-        if not filename[0].isupper():
-            return
-
-        for i in range(1, len(filename)):
-            if filename[i].isupper():
-                uidx.append(i-1)
-
-        filename = filename.lower()
-        filename = self.insert_patch(filename, uidx, '_')
-
-        return filename
-
-
     def parse(self):
         param = self.line.split(",")
         plen = len(param)
@@ -99,15 +62,23 @@ class GetterGenerator:
         self.prop_type = param[0].strip()
         self.prop = param[1].strip()
 
+        if not self.prop_type[0].isupper():
+            return False
+
+        if self.prop.find(" ") > -1:
+            return False
+
         if plen < 3:
-            self.type_name = self.parse_type_name_from_file(utils.get_filename(self.filename))
+            bname = utils.get_filename(self.filename)
+            self.type_name = utils.to_under_line_name(bname)
         else:
             self.type_name = param[2].strip()
 
         if not self.type_name:
             return False
 
-        self.TypeName = self.parse_type_name(self.type_name)
+        self.TypeName = utils.to_camecase_name(self.type_name)
+        logging.info(self.TypeName)
 
         return True
 

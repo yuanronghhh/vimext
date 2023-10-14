@@ -15,6 +15,64 @@ from enum import IntEnum
 vs = None
 compilerInfo = None
 
+
+def insert_patch(s, ps, ch):
+    if not s:
+        return
+
+    if not ps:
+        return
+
+    nstr = ""
+
+    for i in range(0, len(s)):
+        nstr += s[i].lower()
+
+        if i in ps:
+            nstr += ch
+
+    return nstr
+
+def to_under_line_name(TypeName):
+    uidx = []
+
+    if not TypeName:
+        return None
+
+    if not TypeName[0].isupper():
+        return None
+
+    for i in range(0, len(TypeName)):
+        if TypeName[i].isupper():
+            uidx.append(i-1)
+
+    return insert_patch(TypeName, uidx, '_')
+
+
+def update_camecase_patch(s):
+    if not s:
+        return
+
+    nstr = ""
+    for i in range(0, len(s)):
+        if s[i] == '_':
+            continue
+
+        if (i > 0 and s[i-1] == '_') or (i == 0):
+            nstr += s[i].upper()
+        else:
+            nstr += s[i]
+
+    return nstr
+
+def to_camecase_name(type_name):
+    uidx = []
+
+    if not type_name:
+        return None
+
+    return update_camecase_patch(type_name)
+
 def get_filename(file_path):
      basename = path.basename(file_path)
 
