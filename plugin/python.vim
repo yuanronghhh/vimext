@@ -7,10 +7,13 @@ python3 << EOF
 import vim
 sys.path.insert(0, vim.eval("$vimext_home") + "/plugin/python")
 import utils
+import CommentParser, GetterGenerator
 EOF
   let g:vimext_python = 1
   python3 from autotags import g_atags
 
+  nnoremap <leader>c :GetComment<cr>
+  nnoremap <leader>g :GenGetter<cr>
   command! -nargs=? PythonDoc :call python#doc("<args>")
   command! -nargs=? JsonFormat :call python#JsonFormat()
   command! -nargs=? GetComment :call python#GetComment()
@@ -109,7 +112,7 @@ function python#GetComment()
     return 0
   endif
 
-  let l:comment = py3eval("utils.get_comment()")
+  let l:comment = py3eval("CommentParser.get_comment()")
   call append(line('.')-1, l:comment)
 endfunction
 
@@ -118,8 +121,14 @@ function python#GenGetter()
     return 0
   endif
 
-  let l:str = py3eval("utils.gen_c_getter_setter()")
-  call append(line('.')-1, l:str)
+  let l:array = py3eval("GetterGenerator.gen_c_getter_setter()")
+
+  if len(l:array) == 0
+    return 0
+  endif
+
+  call append(line('.')-1, l:array)
+  call deletebufline('%', line('.'))
 endfunction
 
 function python#ReGenCtags()

@@ -114,7 +114,6 @@ function vimext#config#LoadConfig()
   vnoremap X "_X
 
   " for c develop
-  nnoremap <leader>c :GetComment<cr>
   nnoremap <F8>  :YcmCompleter GoTo<cr>
   nnoremap <F9>  :HeaderOrCode<cr>
   nnoremap <F10> :cp<cr>
