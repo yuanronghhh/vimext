@@ -58,8 +58,6 @@ function vimext#config#LoadConfig()
   set cinoptions=l1
   set ssop=blank,buffers,curdir,folds,tabpages
 
-  let $PATH .= ";".$vimext_home."/tools"
-
   if has("gui_running")
     colorscheme materialtheme
     set columns=120 lines=45
@@ -77,7 +75,9 @@ function vimext#config#LoadConfig()
   if has("unix")
     set clipboard=unnamedplus
     set guifont=FZFangSong\-Z02S\ bold\ 12
+    let $PATH .= ":".$vimext_home."/tools"
   elseif has("win32")
+    let $PATH .= ";".$vimext_home."/tools"
     set clipboard=unnamed
     set guifont=Fixedsys
     set makeencoding=gbk
