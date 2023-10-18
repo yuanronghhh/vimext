@@ -1,3 +1,6 @@
+let s:gdb_cfg = g:vim_session."/gdb.cfg"
+let s:gdb_cmd_buf = 0
+
 function vimext#debug#GetSigns(lnum) abort
   let l:bks = sign_getplaced("%", { "group": "TermDebug", "lnum": a:lnum })
 
@@ -10,6 +13,28 @@ function vimext#debug#GetSigns(lnum) abort
   endif
 
   return []
+endfunction
+
+function vimext#debug#SendCmd(cmd) abort
+  if s:gdb_cmd_buf == 0
+    return
+  endif
+
+  call term_sendkeys(s:gdb_cmd_buf, a:cmd."\r")
+endfunction
+
+function vimext#debug#SaveSession() abort
+  let l:cmd = "save breakpoints ".s:gdb_cfg
+  call vimext#debug#SendCmd(l:cmd)
+endfunction
+
+function vimext#debug#OpenSession() abort
+  if !filereadable(s:gdb_cfg)
+    call writefile([], s:gdb_cfg, "w")
+  endif
+
+  call vimext#debug#SendCmd("source ".s:gdb_cfg)
+  exec ":Run"
 endfunction
 
 function vimext#debug#HasBreak(lnum) abort
@@ -40,6 +65,8 @@ function vimext#debug#ToggleBreakpoint() abort
   else
     exec ":Break ".l:lnum
   endif
+
+  call vimext#debug#SaveSession()
 endfunction
 
 function vimext#debug#StartPre() abort
@@ -53,6 +80,7 @@ endfunction
 function vimext#debug#StartPost() abort
   let l:cwin = bufwinid(bufnr())
   let l:wins = vimext#GetTabWins(l:cwin)
+
   if len(l:wins) == 0
     return
   endif
@@ -63,8 +91,9 @@ function vimext#debug#StartPost() abort
   call win_execute(l:sid, "wincmd H")
   call win_execute(l:pid, "wincmd W")
 
-  exec ":Break main"
-  exec ":Run"
+  let s:gdb_cmd_buf = bufnr()
+
+  call vimext#debug#OpenSession()
 endfunction
 
 function vimext#debug#StopPre() abort
@@ -77,5 +106,6 @@ function vimext#debug#StopPre() abort
 endfunction
 
 function vimext#debug#StopPost() abort
+
   let s:debug_loaded = 0
 endfunction
