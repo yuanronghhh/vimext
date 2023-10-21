@@ -1,8 +1,8 @@
 let s:gdb_cfg = g:vim_session."/gdb.cfg"
 let s:gdb_cmd_buf = 0
 
-function vimext#debug#GetSigns(lnum) abort
-  let l:bks = sign_getplaced("%", { "group": "TermDebug", "lnum": a:lnum })
+function vimext#debug#GetSigns(fname, lnum) abort
+  let l:bks = sign_getplaced(a:fname, { "group": "TermDebug", "lnum": a:lnum })
 
   if len(l:bks) > 0
     let l:signs = l:bks[0]["signs"]
@@ -34,11 +34,10 @@ function vimext#debug#OpenSession() abort
   endif
 
   call vimext#debug#SendCmd("source ".s:gdb_cfg)
-  exec ":Run"
 endfunction
 
-function vimext#debug#HasBreak(lnum) abort
-  let l:signs = vimext#debug#GetSigns(a:lnum)
+function vimext#debug#HasBreak(fname, lnum) abort
+  let l:signs = vimext#debug#GetSigns(a:fname, a:lnum)
 
   if len(l:signs) == 0
     return 0
@@ -57,13 +56,14 @@ endfunction
 
 function vimext#debug#ToggleBreakpoint() abort
   let l:lnum = line(".")
+  let l:fname = expand("%:p")
   let l:bks = sign_getplaced("%", { "group": "TermDebug", "lnum": l:lnum })
-  let l:has_brk = vimext#debug#HasBreak(l:lnum)
+  let l:has_brk = vimext#debug#HasBreak(fname, l:lnum)
 
   if l:has_brk
     exec ":Clear"
   else
-    exec ":Break ".l:lnum
+    exec ":Break ".fnameescape(l:fname).":".l:lnum
   endif
 
   call vimext#debug#SaveSession()

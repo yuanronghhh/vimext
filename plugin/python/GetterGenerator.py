@@ -78,7 +78,6 @@ class GetterGenerator:
             return False
 
         self.TypeName = utils.to_camecase_name(self.type_name)
-        logging.info(self.TypeName)
 
         return True
 
