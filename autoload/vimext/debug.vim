@@ -94,6 +94,8 @@ function vimext#debug#StartPost() abort
   let s:gdb_cmd_buf = bufnr()
 
   call vimext#debug#OpenSession()
+  exec ':Break main'
+  exec ':Run'
 endfunction
 
 function vimext#debug#StopPre() abort
@@ -101,11 +103,9 @@ function vimext#debug#StopPre() abort
   unmap <F6>
   unmap <F7>
   unmap <F8>
-
-  exec ":tabclose"
 endfunction
 
 function vimext#debug#StopPost() abort
-
   let s:debug_loaded = 0
+  exec ":tabclose"
 endfunction
