@@ -62,9 +62,6 @@ class GetterGenerator:
         self.prop_type = param[0].strip()
         self.prop = param[1].strip()
 
-        if not self.prop_type[0].isupper():
-            return False
-
         if self.prop.find(" ") > -1:
             return False
 
@@ -78,7 +75,6 @@ class GetterGenerator:
             return False
 
         self.TypeName = utils.to_camecase_name(self.type_name)
-        logging.info(self.TypeName)
 
         return True
 
