@@ -17,7 +17,7 @@ function vimext#config#LoadConfig()
 
   set showmatch
   set guioptions=r
-  set fileformats=unix,dos,mac
+  set fileformats=dos,unix,mac
   set fileencoding=utf-8
   set encoding=utf-8
   set fileencodings=utf-8,gb18030,gb2312,cp936,gbk,ucs-bom,shift-jis
@@ -79,11 +79,13 @@ function vimext#config#LoadConfig()
   elseif has("win32")
     let $PATH .= ";".$vimext_home."/tools"
     set clipboard=unnamed
-    set guifont=consolas:h12
+    set guifont=Fixedsys
     set makeencoding=gbk
-    let g:python_cmd = "python"
-    let $BashBin = vimext#config#GetWinBash()
-    set errorformat^=%f(%l\\,%c):\ %t%*[^\ ]\ C%n:\ %m
+    let g:python_cmd="python"
+    let $BashBin=vimext#config#GetWinBash()
+    set errorformat^=
+          \%f(%l\\,%c):\ %t%*[^\ ]\ C%n:\ %m,
+          \%f(%l\\,%c):\ fatal\ \ %t%*[^\ ]\ C%n:\ %m
 
     if len($BashBin) > 0
       set shell=$BashBin
@@ -114,7 +116,7 @@ function vimext#config#LoadConfig()
   vnoremap X "_X
 
   " for c develop
-  nnoremap <F8>  :YcmCompleter GoTo<cr>
+  nnoremap <leader>c :GetComment<cr>
   nnoremap <F9>  :HeaderOrCode<cr>
   nnoremap <F10> :cp<cr>
   nnoremap <F11> :cn<cr>
@@ -147,7 +149,6 @@ function vimext#config#LoadConfig()
   command! -nargs=? HeaderOrCode :call vimext#HeaderOrCode()
   command! -nargs=? EditConfig :call vimext#config#Edit()
   command! -nargs=? TabMan :call vimext#TabMan("<args>")
-  command! -nargs=+ Debug :call vimext#debug#Debug("<args>")
 
   autocmd! BufRead *.vs,*.vert,*.glsl,*.frag,*.comp :set ft=c
   autocmd! BufRead *.vue,*.cshtml :set ft=html
