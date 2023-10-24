@@ -1,5 +1,4 @@
 let s:gdb_cfg = g:vim_session."/gdb.cfg"
-let s:gdb_cmd_buf = 0
 
 function vimext#debug#GetSigns(fname, lnum) abort
   let l:bks = sign_getplaced(a:fname, { "group": "TermDebug", "lnum": a:lnum })
@@ -15,17 +14,9 @@ function vimext#debug#GetSigns(fname, lnum) abort
   return []
 endfunction
 
-function vimext#debug#SendCmd(cmd) abort
-  if s:gdb_cmd_buf == 0
-    return
-  endif
-
-  call term_sendkeys(s:gdb_cmd_buf, a:cmd."\r")
-endfunction
-
 function vimext#debug#SaveSession() abort
   let l:cmd = "save breakpoints ".s:gdb_cfg
-  call vimext#debug#SendCmd(l:cmd)
+  call TermDebugSendCommand(l:cmd)
 endfunction
 
 function vimext#debug#OpenSession() abort
@@ -33,7 +24,7 @@ function vimext#debug#OpenSession() abort
     call writefile([], s:gdb_cfg, "w")
   endif
 
-  call vimext#debug#SendCmd("source ".s:gdb_cfg)
+  call TermDebugSendCommand("source ".s:gdb_cfg)
 endfunction
 
 function vimext#debug#HasBreak(fname, lnum) abort
@@ -90,8 +81,6 @@ function vimext#debug#StartPost() abort
 
   call win_execute(l:sid, "wincmd H")
   call win_execute(l:pid, "wincmd W")
-
-  let s:gdb_cmd_buf = bufnr()
 
   call vimext#debug#OpenSession()
   exec ':Break main'
