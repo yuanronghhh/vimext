@@ -1,6 +1,6 @@
 let g:vimext_python = 0
 let g:vimext_debug = 1
-let g:is_fullscreen = 0
+let s:is_fullscreen = 0
 let g:vimext_c_api = 0
 let g:autosave_session = 0
 
@@ -48,12 +48,12 @@ function vimext#init()
 endfunction
 
 function vimext#FullScreen()
-  if g:is_fullscreen == 0
+  if s:is_fullscreen == 0
     exec ":simalt ~x"
-    let g:is_fullscreen = 1
+    let s:is_fullscreen = 1
   else
     exec ":simalt ~r"
-    let g:is_fullscreen = 0
+    let s:is_fullscreen = 0
   endif
 endfunction
 

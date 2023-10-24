@@ -21,10 +21,13 @@ endfunction
 
 function vimext#debug#OpenSession() abort
   if !filereadable(s:gdb_cfg)
-    call writefile([], s:gdb_cfg, "w")
+    call writefile(["break main"], s:gdb_cfg, "w")
+    exec ':Break main'
+  else
+    call TermDebugSendCommand("source ".s:gdb_cfg)
   endif
 
-  call TermDebugSendCommand("source ".s:gdb_cfg)
+  exec ':Run'
 endfunction
 
 function vimext#debug#HasBreak(fname, lnum) abort
@@ -83,8 +86,6 @@ function vimext#debug#StartPost() abort
   call win_execute(l:pid, "wincmd W")
 
   call vimext#debug#OpenSession()
-  exec ':Break main'
-  exec ':Run'
 endfunction
 
 function vimext#debug#StopPre() abort
