@@ -118,6 +118,7 @@ function vimext#config#LoadConfig()
   " for c develop
   nnoremap <leader>c :GetComment<cr>
   nnoremap <F9>  :HeaderOrCode<cr>
+
   nnoremap <F10> :cp<cr>
   nnoremap <F11> :cn<cr>
 
@@ -135,10 +136,17 @@ function vimext#config#LoadConfig()
   let g:NERDTreeAutoDeleteBuffer = 1
   let g:NERDTreeBookmarksFile = g:vim_session."/NERDTreeBookmarks"
 
-  ""let g:hexmode_xxd_options = '-p'
-  let g:ale_c_build_dir = "./"
+  "let g:hexmode_xxd_options = '-p'
+  let g:ale_lint_on_text_changed = 'never'
+  let g:ale_c_parse_compile_commands = 1
+  let g:ale_linters_explicit = 1
+  let g:ale_linters =
+        \ {
+        \ 'c': ['clangtidy', 'gcc', 'clangd'],
+        \ 'python': ['pylint']
+        \ }
 
-  let l:plugins = ["tagbar","vim-multiple-cursors","supertab","hexmode","emmet-vim","nerdtree", "ale"]
+  let l:plugins = ["vim-multiple-cursors", "supertab", "nerdtree", "ale"]
   call vimext#plugins#LoadPlugin(l:plugins)
 
   command! -nargs=? -complete=custom,vimext#session#SessionCompelete OpenSession :call vimext#session#OpenSession("<args>")
