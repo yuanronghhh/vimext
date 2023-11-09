@@ -5,7 +5,7 @@ let g:vimext_c_api = 0
 let g:autosave_session = 0
 
 
-function vimext#init()
+function vimext#Init()
   let $VIM=substitute($VIM, "\\", "/", "g")
   let $VIMRUNTIME=substitute($VIMRUNTIME, "\\", "/", "g")
 

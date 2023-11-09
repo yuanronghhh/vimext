@@ -4,7 +4,8 @@ function vimext#config#LoadConfig()
   if g:vimext_loaded == 1
     return
   endif
-  call vimext#init()
+  call vimext#Init()
+  call vimext#prompt#Start("D:/GreyHound/PRIVATE/repository/CSharpData/DotConsole/bin/Debug/net7.0/DotConsole.dll")
 
   set nocompatible
   behave xterm
@@ -137,16 +138,20 @@ function vimext#config#LoadConfig()
   let g:NERDTreeBookmarksFile = g:vim_session."/NERDTreeBookmarks"
 
   "let g:hexmode_xxd_options = '-p'
+
+  let l:plugins = ["vim-multiple-cursors", "supertab", "nerdtree", "TagBar"]
   let g:ale_lint_on_text_changed = 'never'
+  let g:ale_set_loclist = 1
   let g:ale_c_parse_compile_commands = 1
+  let g:ale_c_build_dir = 'build'
   let g:ale_linters_explicit = 1
   let g:ale_linters =
         \ {
+        \ 'cs': ['mcs'],
         \ 'c': ['clangtidy', 'gcc', 'clangd'],
         \ 'python': ['pylint']
         \ }
-
-  let l:plugins = ["vim-multiple-cursors", "supertab", "nerdtree", "ale"]
+  call add(l:plugins, "ale")
   call vimext#plugins#LoadPlugin(l:plugins)
 
   command! -nargs=? -complete=custom,vimext#session#SessionCompelete OpenSession :call vimext#session#OpenSession("<args>")
@@ -159,6 +164,7 @@ function vimext#config#LoadConfig()
   autocmd! BufRead *.vue,*.cshtml :set ft=html
   autocmd! BufRead *.vala :set ft=cpp
   autocmd! BufRead *.cst :set ft=javascript
+  autocmd! BufRead *.cs :set shiftwidth=4
 
   tnoremap <C-j> <C-W>gt
   tnoremap <C-k> <C-W>gT
