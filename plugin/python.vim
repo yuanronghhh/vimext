@@ -23,7 +23,6 @@ EOF
   autocmd! FileType python :nnoremap <buffer> <leader>b :call python#Operate(line('.'))<cr>
 
   augroup autotag
-    au!
     autocmd BufWritePost * call python#ReGenCtags()
   augroup END
 

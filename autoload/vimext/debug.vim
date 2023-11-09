@@ -99,3 +99,28 @@ function vimext#debug#StopPost() abort
   let s:debug_loaded = 0
   exec ":tabclose"
 endfunction
+
+
+function vimext#debug#SetEnv() abort
+  let s:env_cmd = "netcoredbg"
+
+  if exists('s:dbgwin')
+    call s:Echoerr('already running, cannot run two')
+    return
+  endif
+
+  if !executable(s:env_cmd)
+    call s:Echoerr('Cannot execute debugger program "' .. s:env_cmd .. '"')
+    return
+  endif
+
+  if exists('#User#DebugStartPre')
+    doauto <nomodeline> User DebugStartPre
+  endif
+
+  let s:gdb_channel = job_getchannel(s:gdbjob)
+endfunction
+
+function vimext#debug#Init() abort
+  call vimext#debug#SetEnv()
+endfunction

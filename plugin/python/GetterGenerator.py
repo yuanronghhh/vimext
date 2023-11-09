@@ -65,16 +65,22 @@ class GetterGenerator:
         if self.prop.find(" ") > -1:
             return False
 
-        if plen < 3:
+        if plen == 2:
             bname = utils.get_filename(self.filename)
             self.type_name = utils.to_under_line_name(bname)
-        else:
+            self.TypeName = utils.to_camecase_name(self.type_name)
+        elif plen == 3:
             self.type_name = param[2].strip()
+            self.TypeName = utils.to_camecase_name(self.type_name)
+        elif plen == 4:
+            self.type_name = param[2].strip()
+            self.TypeName = param[3].strip()
+        else:
+            return False
 
         if not self.type_name:
             return False
 
-        self.TypeName = utils.to_camecase_name(self.type_name)
 
         return True
 
