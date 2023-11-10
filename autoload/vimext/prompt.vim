@@ -9,7 +9,6 @@ let s:output_stopped = 1
 
 let s:pc_id = 30
 let s:asm_id = 31
-let s:break_id = 32  " copy from termdebug
 
 let s:dbg_win = v:null
 let s:output_win = v:null
@@ -56,6 +55,7 @@ function vimext#prompt#Init() abort
         \ }
 
   if !has('terminal')
+    call vimext#logger#Warning("+terminal not enable in vim")
     return
   endif
 
@@ -76,6 +76,7 @@ function vimext#prompt#Init() abort
   endif
 
   call vimext#prompt#InitHighlight()
+  call vimext#breakpoints#Init()
 endfunction
 
 function vimext#prompt#Start(args) abort
@@ -98,7 +99,6 @@ function vimext#prompt#NetDbgGetCmd() abort
   let l:cmd = ["netcoredbg"]
   let l:cmd += ["--interpreter=cli"]
   let l:cmd += ["--", "dotnet"]
-
   return l:cmd
 endfunction
 
@@ -153,13 +153,6 @@ function vimext#prompt#TestJob(args)
 
   call vimext#prompt#PromptSend("help set")
   call vimext#prompt#PromptSend("help set")
-
-  let s:source_win = vimext#prompt#NewSourceWindow()
-
-  call vimext#logger#Info("win loaded")
-
-  call vimext#prompt#PromptSend("help set")
-  call vimext#prompt#PromptSend("help set")
 endfunction
 
 function vimext#prompt#StartPrompt(args, ...) abort
@@ -211,6 +204,10 @@ function vimext#prompt#PromptExit(job, status) abort
 endfunction
 
 function vimext#prompt#PromptSend(cmd)
+  if s:output_stopped == 0
+    return
+  endif
+
   call ch_sendraw(s:dbg_channel, a:cmd."\n")
 endfunction
 
@@ -320,7 +317,6 @@ endfunction
 
 
 function vimext#prompt#PromptOut(channel, msg) abort
-
   let l:msg = s:dbg_iface["ProcessMsg"](a:channel, a:msg)
   if l:msg == ""
     return
@@ -354,7 +350,6 @@ function vimext#prompt#SignLine(fname, lnum) abort
   call sign_place(s:pc_id, 'DbgDebug', 'DbgPC', a:fname, #{lnum: a:lnum, priority: 110})
 endfunction
 
-
 function vimext#prompt#PromptCallback(cmd) abort
   if s:output_stopped == 0
     return
@@ -362,7 +357,7 @@ function vimext#prompt#PromptCallback(cmd) abort
 
   if s:dbg_iface == s:netdbg_iface && s:source_win != v:null
     " FIXME: bug in netcoredbg cli mode ?
-    call vimext#prompt#PromptSend("help set")
+    " call vimext#prompt#PromptSend("ignored command set")
   endif
 
   call vimext#prompt#PromptSend(a:cmd)

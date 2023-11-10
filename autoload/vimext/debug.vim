@@ -1,7 +1,7 @@
 let s:gdb_cfg = g:vim_session."/gdb.cfg"
 
 function vimext#debug#GetSigns(fname, lnum) abort
-  let l:bks = sign_getplaced(a:fname, { "group": "TermDebug", "lnum": a:lnum })
+  let l:bks = sign_getplaced(a:fname, { "group": "DbgDebug", "lnum": a:lnum })
 
   if len(l:bks) > 0
     let l:signs = l:bks[0]["signs"]
@@ -16,18 +16,22 @@ endfunction
 
 function vimext#debug#SaveSession() abort
   let l:cmd = "save breakpoints ".s:gdb_cfg
-  call TermDebugSendCommand(l:cmd)
+  call vimext#prompt#PromptSend(l:cmd)
 endfunction
 
 function vimext#debug#OpenSession() abort
+  let l:fname = expand("%:p")
+  let l:lnum = line('.')
+
   if !filereadable(s:gdb_cfg)
     call writefile(["break main"], s:gdb_cfg, "w")
-    exec ':Break main'
+    call vimext#breakpoints#Create(l:fname, l:lnum)
   else
-    call TermDebugSendCommand("source ".s:gdb_cfg)
+    call vimext#prompt#PromptSend("source ".s:gdb_cfg)
   endif
 
-  exec ':Run'
+  call vimext#breakpoints#CreateFunc("main")
+  call vimext#prompt#PromptSend("r")
 endfunction
 
 function vimext#debug#HasBreak(fname, lnum) abort
@@ -51,13 +55,13 @@ endfunction
 function vimext#debug#ToggleBreakpoint() abort
   let l:lnum = line(".")
   let l:fname = expand("%:p")
-  let l:bks = sign_getplaced("%", { "group": "TermDebug", "lnum": l:lnum })
+  let l:bks = sign_getplaced("%", { "group": "DbgDebug", "lnum": l:lnum })
   let l:has_brk = vimext#debug#HasBreak(fname, l:lnum)
 
   if l:has_brk
-    exec ":Clear"
+    call vimext#prompt#PromptSend("clear ")
   else
-    exec ":Break ".fnameescape(l:fname).":".l:lnum
+    call vimext#prompt#PromptSend("break ".fnameescape(l:fname).":".l:lnum)
   endif
 
   call vimext#debug#SaveSession()
@@ -65,9 +69,9 @@ endfunction
 
 function vimext#debug#StartPre() abort
   exec ":tabnew"
-  nnoremap <F5>  :Continue<cr>
-  nnoremap <F6>  :Over<cr>
-  nnoremap <F7>  :Step<cr>
+  nnoremap <F5>  :call vimext#prompt#PromptSend("continue")<cr>
+  nnoremap <F6>  :call vimext#prompt#PromptSend("next")<cr>
+  nnoremap <F7>  :call vimext#prompt#PromptSend("step")<cr>
   nnoremap <F8>  :call vimext#debug#ToggleBreakpoint()<cr>
 endfunction
 
@@ -98,29 +102,4 @@ endfunction
 function vimext#debug#StopPost() abort
   let s:debug_loaded = 0
   exec ":tabclose"
-endfunction
-
-
-function vimext#debug#SetEnv() abort
-  let s:env_cmd = "netcoredbg"
-
-  if exists('s:dbgwin')
-    call s:Echoerr('already running, cannot run two')
-    return
-  endif
-
-  if !executable(s:env_cmd)
-    call s:Echoerr('Cannot execute debugger program "' .. s:env_cmd .. '"')
-    return
-  endif
-
-  if exists('#User#DebugStartPre')
-    doauto <nomodeline> User DebugStartPre
-  endif
-
-  let s:gdb_channel = job_getchannel(s:gdbjob)
-endfunction
-
-function vimext#debug#Init() abort
-  call vimext#debug#SetEnv()
 endfunction

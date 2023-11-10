@@ -36,10 +36,10 @@ function vimext#Init()
 
   let l:gdb_cmd = exepath("gdb")
   if len(l:gdb_cmd) != 0
-    autocmd! User TermdebugStartPre :call vimext#debug#StartPre()
-    autocmd! User TermdebugStartPost :call vimext#debug#StartPost()
-    autocmd! User TermdebugStopPre :call vimext#debug#StopPre()
-    autocmd! User TermdebugStopPost :call vimext#debug#StopPost()
+    autocmd! User DbgDebugStartPre :call vimext#debug#StartPre()
+    autocmd! User DbgDebugStartPost :call vimext#debug#StartPost()
+    autocmd! User DbgDebugStopPre :call vimext#debug#StopPre()
+    autocmd! User DbgDebugStopPost :call vimext#debug#StopPost()
   endif
 
   if has("libcall")
