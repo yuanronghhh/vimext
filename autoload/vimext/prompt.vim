@@ -1,6 +1,11 @@
-let s:mode = ""
-let s:iface = {}
-let s:dbg_iface = {}
+"""
+" refactor version of termdbug
+"""
+
+let s:mode = v:null
+let s:dbg_name = v:null
+let s:iface = v:null
+let s:dbg_iface = v:null
 
 let s:prompt_buf = 0
 let s:dbg_channel = v:null
@@ -14,7 +19,8 @@ let s:dbg_win = v:null
 let s:output_win = v:null
 let s:source_win = v:null
 
-function vimext#prompt#Highlight(init, old, new) abort
+
+function s:Highlight(init, old, new) abort
   let default = a:init ? 'default ' : ''
   if a:new ==# 'light' && a:old !=# 'light'
     exe "hi " . default . "dbgPC term=reverse ctermbg=lightblue guibg=lightblue"
@@ -23,41 +29,45 @@ function vimext#prompt#Highlight(init, old, new) abort
   endif
 endfunction
 
-function vimext#prompt#InitHighlight() abort
+function s:InitHighlight() abort
   call sign_define('DbgPC', #{linehl: 'DbgPC'})
-  call vimext#prompt#Highlight(1, '', &background)
+  call s:Highlight(1, '', &background)
 
   hi default dbgBreakpoint term=reverse ctermbg=red guibg=red
   hi default dbgBreakpointDisabled term=reverse ctermbg=gray guibg=gray
 endfunction
 
-function vimext#prompt#Init() abort
-  let s:prompt_iface = {
-        \ "Start": function("vimext#prompt#StartPrompt"),
-        \ "Callback": function("vimext#prompt#PromptCallback"),
-        \ "Interrupt": function("vimext#prompt#PromptInterrupt"),
-        \ "Send": function("vimext#prompt#PromptSend"),
-        \ 'Exit': function('vimext#prompt#PromptExit'),
-        \ 'Out': function('vimext#prompt#PromptOut')
+
+function s:GetDbgByName(name)
+  let s:netdbg_iface = {
+        \ "GetCmd": function("s:NetDbgGetCmd"),
+        \ "DecodeLine": function("s:NetDbgDecodeLine"),
         \ }
 
-  let s:iface = {
+  if a:name == "gdb" && executable("gdb")
+    return s:gdb_iface
+  endif
+
+  if a:name == "netcoredbg" && executable("netcoredbg")
+    return s:netdbg_iface
+  endif
+
+  return v:null
+endfunction
+
+function s:InitIFace()
+  let s:prompt_iface = {
+        \ "Start": function("s:StartPrompt"),
+        \ "Callback": function("s:PromptCallback"),
+        \ "Interrupt": function("s:PromptInterrupt"),
+        \ "Send": function("s:PromptSend"),
+        \ 'Exit': function('s:PromptExit'),
+        \ 'Out': function('s:PromptOut')
         \ }
 
   let s:term_iface = {
-        \ "Start": function("vimext#prompt#StartTerm")
+        \ "Start": function("s:StartTerm")
         \ }
-
-  let s:netdbg_iface = {
-        \ "GetCmd": function("vimext#prompt#NetDbgGetCmd"),
-        \ "DecodeLine": function("vimext#prompt#NetDbgDecodeLine"),
-        \ "ProcessMsg": function("vimext#prompt#NetDbgProcessMsg")
-        \ }
-
-  if !has('terminal')
-    call vimext#logger#Warning("+terminal not enable in vim")
-    return
-  endif
 
   if !has('win32')
     let s:mode = 'terminal'
@@ -67,25 +77,56 @@ function vimext#prompt#Init() abort
     let s:iface = s:prompt_iface
   endif
 
-  if executable("netcoredbg")
-    let s:dbg_iface = s:netdbg_iface
+  let s:dbg_name = "netcoredbg"
+  let s:dbg_iface = s:GetDbgByName(s:dbg_name)
+
+  if s:dbg_iface == v:null
+    call vimext#logger#Error("failed to load debugger ".s:dbg_name)
   endif
+endfunction
+
+function s:InitChannel()
+  let l:cmd = s:dbg_iface["GetCmd"]()
+
+  let s:job = job_start(l:cmd, {
+        \ 'exit_cb': s:iface["Exit"],
+        \ 'out_cb': s:iface["Out"]
+        \ })
+
+  if job_status(s:job) != "run"
+    call vimext#logger#Error('Failed to start '. l:cmd)
+    return 0
+  endif
+
+  let s:dbg_channel = job_getchannel(s:job)
+  return 1
+endfunction
+
+function s:Init() abort
+  if !has('terminal')
+    call vimext#logger#Warning("+terminal not enable in vim")
+    return 0
+  endif
+
+  command -nargs=* -complete=file Dbgdebug call vimext#prompt#Start(<f-args>)
+
+  call s:InitHighlight()
+  call s:InitIFace()
+  call s:InitChannel()
+  call vimext#breakpoints#Init()
 
   if exists('#User#DbgDebugStartPre')
     doauto <nomodeline> User DbgDebugStartPre
   endif
-
-  call vimext#prompt#InitHighlight()
-  call vimext#breakpoints#Init()
 endfunction
 
 function vimext#prompt#Start(args) abort
-  call vimext#prompt#Init()
-
   if s:dbg_win != 0
     call vimext#logger#Error('debugger already running, cannot run again')
     return
   endif
+
+  call s:Init()
 
   call s:iface["Start"](a:args)
 
@@ -95,30 +136,30 @@ function vimext#prompt#Start(args) abort
 endfunction
 
 " netcoredbg debugger
-function vimext#prompt#NetDbgGetCmd() abort
+function s:NetDbgGetCmd() abort
   let l:cmd = ["netcoredbg"]
   let l:cmd += ["--interpreter=cli"]
   let l:cmd += ["--", "dotnet"]
   return l:cmd
 endfunction
 
-function vimext#prompt#NetDbgProcessMsg(channel, text) abort
-  let l:text = ""
+function s:ProcessMsg(channel, text) abort
+  let l:text = v:null
 
   if a:text == '(gdb)' || a:text == '^done' ||
         \ (a:text[0] == '&' && a:text !~ '^&"disassemble')
-    return ""
+    return v:null
   endif
 
   if a:text =~ '^\^error,msg='
-    let l:text = vimext#prompt#DecodeMessage(a:text[11:], v:false)
+    let l:text = s:DecodeMessage(a:text[11:], v:false)
     if exists('s:evalexpr') && text =~ 'A syntax error in expression, near\|No symbol .* in current context'
       " Silently drop evaluation errors.
       unlet s:evalexpr
-      return ""
+      return v:null
     endif
   elseif a:text[0] == '~'
-    let l:text = vimext#prompt#DecodeMessage(a:text[1:], v:false)
+    let l:text = s:DecodeMessage(a:text[1:], v:false)
   else
     return a:text
   endif
@@ -127,7 +168,7 @@ function vimext#prompt#NetDbgProcessMsg(channel, text) abort
 endfunction
 
 " Prompt
-function vimext#prompt#NewSourceWindow() abort
+function s:NewSourceWindow() abort
   if s:source_win != v:null
     return s:source_win
   endif
@@ -139,23 +180,7 @@ function vimext#prompt#NewSourceWindow() abort
   return l:source_win
 endfunction
 
-function vimext#prompt#TestJob(args)
-  let l:cmd = ["netcoredbg"]
-  let l:cmd += ["--interpreter=cli"]
-  let l:cmd += ["--", "dotnet"]
-
-  let s:job = job_start(l:cmd, {
-        \ 'exit_cb': function('vimext#prompt#PromptExit'),
-        \ 'out_cb': function('vimext#prompt#PromptOut')
-        \ })
-
-  let s:dbg_channel = job_getchannel(s:job)
-
-  call vimext#prompt#PromptSend("help set")
-  call vimext#prompt#PromptSend("help set")
-endfunction
-
-function vimext#prompt#StartPrompt(args, ...) abort
+function s:StartPrompt(args) abort
   let s:dbg_win = win_getid()
   let s:output_win = s:dbg_win
   let s:prompt_buf = bufnr('')
@@ -165,72 +190,70 @@ function vimext#prompt#StartPrompt(args, ...) abort
   call prompt_setcallback(s:prompt_buf, s:iface["Callback"])
   call prompt_setinterrupt(s:prompt_buf, s:iface["Interrupt"])
 
-  let l:cmd = s:dbg_iface["GetCmd"]()
-  let s:job = job_start(l:cmd, {
-        \ 'exit_cb': s:iface["Exit"],
-        \ 'out_cb': s:iface["Out"]
-        \ })
-
-  if job_status(s:job) != "run"
-    call vimext#logger#Error('Failed to start '. l:cmd)
-    exe 'bwipe! ' . s:prompt_buf
-    return
-  endif
-
   execute $'au BufUnload <buffer={s:prompt_buf}> ++once ' ..
         \ 'call job_stop(s:job, ''kill'')'
 
-  set modified
-  let s:dbg_channel = job_getchannel(s:job)
   if has("win32")
-    call vimext#prompt#PromptSend('set args '.a:args)
+    call s:PromptSend('set args '.a:args)
   endif
   startinsert
 endfunction
 
-function vimext#prompt#PromptExit(job, status) abort
-  if exists('#User#DbgDebugStopPre')
-    doauto <nomodeline> User DbgDebugStopPre
-  endif
-
+function s:PromptExit(job, status) abort
+  let s:running = 0
   exe 'bwipe! ' . s:prompt_buf
   unlet s:dbg_win
 
-  let s:running = 0
+  if s:source_win != v:null
+    unlet s:source_win
+  endif
 
-  if exists('#User#DebgDebugStopPost')
+  if exists('#User#DbgDebugStopPost')
     doauto <nomodeline> User DbgDebugStopPost
   endif
 endfunction
 
-function vimext#prompt#PromptSend(cmd)
+function s:PromptSend(cmd)
   if s:output_stopped == 0
+    call vimext#logger#Info("Command Drop: ".a:cmd)
     return
   endif
 
+  call vimext#logger#Info("PromptSend: ".a:cmd)
+  " FIXME: NetCoreDbg cli mode will ignore first cmd, is a bug ?
+  call ch_sendraw(s:dbg_channel, " ")
   call ch_sendraw(s:dbg_channel, a:cmd."\n")
 endfunction
 
-function vimext#prompt#LoadSource(fname, lnum) abort
-  if !win_gotoid(s:source_win)
-    let s:source_win = vimext#prompt#NewSourceWindow()
-  endif
+function vimext#prompt#SendCmd(msg)
+  call s:PromptSend(a:msg)
+endfunction
 
+function s:LoadSource(fname, lnum) abort
   if !filereadable(a:fname)
     return
   endif
 
+  let l:cwin = win_getid()
+  if !win_gotoid(s:source_win)
+    let s:source_win = s:NewSourceWindow()
+  endif
+
   if expand("%:p") == a:fname
-    call vimext#prompt#SignLine(a:fname, a:lnum)
+    call s:SignLine(a:fname, a:lnum)
+
+    call win_gotoid(l:cwin)
     return
   endif
 
   exe 'e '.fnameescape(a:fname)
-  call vimext#prompt#SignLine(a:fname, a:lnum)
+  call s:SignLine(a:fname, a:lnum)
   setlocal signcolumn=yes
+
+  call win_gotoid(l:cwin)
 endfunction
 
-function vimext#prompt#NetDbgDecodeLine(msg) abort
+function s:NetDbgDecodeLine(msg) abort
   let l:info = [0, 0, 0, 0]
 
   if a:msg =~ '^stopped, reason: breakpoint'
@@ -247,12 +270,12 @@ function vimext#prompt#NetDbgDecodeLine(msg) abort
     return l:info
   endif
 
-  if a:msg =~ '^stopped, reason: exited, exit-code: 0'
+  if a:msg =~ '^\^stopped, reason: exited, exit-code: 0'
     let l:info[0] = 2
     return l:info
   endif
 
-  if a:msg =~ '^running'
+  if a:msg =~ '^\^running'
     let l:info[0] = 3
     return l:info
   endif
@@ -282,11 +305,16 @@ function vimext#prompt#NetDbgDecodeLine(msg) abort
     return l:info
   endif
 
+  if a:msg =~ '^\^exit'
+    let l:info[0] = 6
+    return l:info
+  endif
+
   return l:info
 endfunction
 
 const s:NullRepl = 'XXXNULLXXX'
-function vimext#prompt#DecodeMessage(quotedText, literal)
+function s:DecodeMessage(quotedText, literal)
   if a:quotedText[0] != '"'
     call vimext#logger#Error('DecodeMessage(): missing quote in ' . a:quotedText)
     return
@@ -303,7 +331,7 @@ function vimext#prompt#DecodeMessage(quotedText, literal)
         "\       but we keep them out for performance-reasons until we actually see
         "\       those in mi-returns
         "\ \ ->substitute('\\0x\(\x\x\)', {-> eval('"\x' .. submatch(1) .. '"')}, 'g')
-        "\ \ ->substitute('\\0x00', vimext#prompt#NullRepl, 'g')
+        "\ \ ->substitute('\\0x00', s:NullRepl, 'g')
         \ ->substitute('\\\\', '\', 'g')
         \ ->substitute(s:NullRepl, '\\000', 'g')
   if !a:literal
@@ -315,34 +343,54 @@ function vimext#prompt#DecodeMessage(quotedText, literal)
   endif
 endfunction
 
-
-function vimext#prompt#PromptOut(channel, msg) abort
-  let l:msg = s:dbg_iface["ProcessMsg"](a:channel, a:msg)
-  if l:msg == ""
+function s:ProcessStop(cmd)
+  if s:running == 0
     return
   endif
 
-  let l:c_win = win_getid()
+  if exists('#User#DbgDebugStopPre')
+    doauto <nomodeline> User DbgDebugStopPre
+  endif
+
+  call vimext#breakpoints#DeInit()
+endfunction
+
+function s:PromptOut(channel, msg) abort
+  call vimext#logger#Info("PromptOut ".a:msg)
+
+  let l:msg = s:ProcessMsg(a:channel, a:msg)
+  if l:msg == v:null
+    return
+  endif
+
   let l:info = s:dbg_iface["DecodeLine"](l:msg)
 
   if info[0] == 1 " hit breakpoints
     let s:output_stopped = 1
-    call vimext#prompt#LoadSource(info[2], info[3])
+    call s:LoadSource(info[2], info[3])
+
+  elseif info[0] == 3 " running
+    let s:running = 1
+    let s:output_stopped = 0
+
   elseif info[0] == 2 " exit normally
     let s:output_stopped = 1
-  elseif info[0] == 5 " exit end stepping range
-    call vimext#prompt#LoadSource(info[1], info[2])
+
+  elseif info[0] == 4 " user set breakpoint
     let s:output_stopped = 1
+
+  elseif info[0] == 5 " exit end stepping range
+    call s:LoadSource(info[1], info[2])
+    let s:output_stopped = 1
+
+  else
+    call win_gotoid(s:output_win)
+    call append(line('$') - 1, l:msg)
+    set modified
   endif
-
-  call win_gotoid(s:output_win)
-  call append(line('$') - 1, l:msg)
-  set modified
-
-  call win_gotoid(l:c_win)
 endfunction
 
-function vimext#prompt#SignLine(fname, lnum) abort
+function s:SignLine(fname, lnum) abort
   exe a:lnum
   normal! zv
 
@@ -350,30 +398,29 @@ function vimext#prompt#SignLine(fname, lnum) abort
   call sign_place(s:pc_id, 'DbgDebug', 'DbgPC', a:fname, #{lnum: a:lnum, priority: 110})
 endfunction
 
-function vimext#prompt#PromptCallback(cmd) abort
+function s:PromptCallback(cmd) abort
   if s:output_stopped == 0
     return
   endif
 
-  if s:dbg_iface == s:netdbg_iface && s:source_win != v:null
-    " FIXME: bug in netcoredbg cli mode ?
-    " call vimext#prompt#PromptSend("ignored command set")
+  if a:cmd == "q" || a:cmd == "quit"
+    call s:ProcessStop(a:cmd)
   endif
 
-  call vimext#prompt#PromptSend(a:cmd)
+  call s:PromptSend(a:cmd)
 endfunction
 
-function vimext#prompt#PromptInterrupt() abort
+function s:PromptInterrupt() abort
   call vimext#logger#Info("PromptInterrupt")
 endfunction
 
 " Term
 let s:term_buf = 0
 
-function vimext#prompt#StartTerm() abort
+function s:StartTerm() abort
   call vimext#logger#Info("StartTerm")
 endfunction
 
-function vimext#prompt#TermSend(cmd) abort
+function s:TermSend(cmd) abort
   call term_sendkeys(s:term_buf, a:cmd . "\r")
 endfunction

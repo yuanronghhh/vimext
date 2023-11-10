@@ -5,7 +5,6 @@ function vimext#config#LoadConfig()
     return
   endif
   call vimext#Init()
-  call vimext#prompt#Start("D:/GreyHound/PRIVATE/repository/CSharpData/DotConsole/bin/Debug/net7.0/DotConsole.dll")
 
   set nocompatible
   behave xterm
@@ -153,6 +152,7 @@ function vimext#config#LoadConfig()
         \ }
   call add(l:plugins, "ale")
   call vimext#plugins#LoadPlugin(l:plugins)
+  call vimext#prompt#Start("E:/Codes/REPOSITORY/TableDataLib/DotConsole/bin/Debug/net7.0/DotConsole.dll")
 
   command! -nargs=? -complete=custom,vimext#session#SessionCompelete OpenSession :call vimext#session#OpenSession("<args>")
   command! -nargs=? -complete=custom,vimext#session#SessionCompelete SaveSession :call vimext#session#SaveSession("<args>")
