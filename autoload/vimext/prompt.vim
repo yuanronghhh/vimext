@@ -146,9 +146,10 @@ endfunction
 function s:ProcessMsg(channel, text) abort
   let l:text = v:null
 
-  if a:text == '(gdb)' || a:text == '^done' ||
-        \ (a:text[0] == '&' && a:text !~ '^&"disassemble')
-    return v:null
+  if a:text == '(gdb)'
+              \ || a:text == '^done'
+              \ || (a:text[0] == '&' && a:text !~ '^&"disassemble')
+      return v:null
   endif
 
   if a:text =~ '^\^error,msg='
@@ -310,6 +311,16 @@ function s:NetDbgDecodeLine(msg) abort
     return l:info
   endif
 
+  if a:msg =~ '^library loaded:'
+              \ || a:msg =~ '^symbols loaded,'
+              \ || a:msg =~ '^no symbols loaded,'
+              \ || a:msg =~ '^breakpoint modified,'
+              \ || a:msg =~ '^thread created,'
+              \ || a:msg =~ '^ '
+      let l:info[0] = 7
+      return l:info
+  endif
+
   return l:info
 endfunction
 
@@ -382,6 +393,8 @@ function s:PromptOut(channel, msg) abort
   elseif info[0] == 5 " exit end stepping range
     call s:LoadSource(info[1], info[2])
     let s:output_stopped = 1
+
+  elseif info[0] == 7 " intercept libarary loaded
 
   else
     call win_gotoid(s:output_win)
