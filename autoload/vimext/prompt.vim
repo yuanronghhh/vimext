@@ -6,18 +6,19 @@ let s:mode = v:null
 let s:dbg_name = v:null
 let s:iface = v:null
 let s:dbg_iface = v:null
-
-let s:prompt_buf = 0
+let s:pc_id = 30
+let s:asm_id = 31
 let s:dbg_channel = v:null
 let s:running = 0
 let s:output_stopped = 1
-
-let s:pc_id = 30
-let s:asm_id = 31
-
 let s:dbg_win = v:null
 let s:output_win = v:null
 let s:source_win = v:null
+
+let s:prompt_pid = 0
+let s:prompt_buf = 0
+
+let s:term_buf = 0
 
 
 function s:Highlight(init, old, new) abort
@@ -32,11 +33,7 @@ endfunction
 function s:InitHighlight() abort
   call sign_define('DbgPC', #{linehl: 'DbgPC'})
   call s:Highlight(1, '', &background)
-
-  hi default dbgBreakpoint term=reverse ctermbg=red guibg=red
-  hi default dbgBreakpointDisabled term=reverse ctermbg=gray guibg=gray
 endfunction
-
 
 function s:GetDbgByName(name)
   let s:netdbg_iface = {
@@ -89,7 +86,7 @@ function s:InitChannel()
   let l:cmd = s:dbg_iface["GetCmd"]()
 
   let s:job = job_start(l:cmd, {
-        \ 'exit_cb': s:iface["Exit"],
+        \ 'exit_cb': function("s:DeInit"),
         \ 'out_cb': s:iface["Out"]
         \ })
 
@@ -108,16 +105,29 @@ function s:Init() abort
     return 0
   endif
 
-  command -nargs=* -complete=file Dbgdebug call vimext#prompt#Start(<f-args>)
+  command -nargs=* -complete=file Dbgdebug call vimext#prompt#Start(<q-args>)
+
+  command Continue call vimext#prompt#SendCmd('continue')
+  command Over call vimext#prompt#SendCmd('next')
+  command Step call vimext#prompt#SendCmd('step')
+  command Stop call vimext#prompt#Interrupt()
 
   call s:InitHighlight()
   call s:InitIFace()
   call s:InitChannel()
-  call vimext#breakpoints#Init()
+  call vimext#breakpoint#Init()
 
   if exists('#User#DbgDebugStartPre')
     doauto <nomodeline> User DbgDebugStartPre
   endif
+endfunction
+
+function s:DeInit(job, status) abort
+  call s:iface["Exit"](a:job, a:status)
+endfunction
+
+function vimext#prompt#Interrupt() abort
+  call s:iface["Interrupt"]()
 endfunction
 
 function vimext#prompt#Start(args) abort
@@ -183,7 +193,6 @@ endfunction
 
 function s:StartPrompt(args) abort
   let s:dbg_win = win_getid()
-  let s:output_win = s:dbg_win
   let s:prompt_buf = bufnr('')
 
   call prompt_setprompt(s:prompt_buf, '(gdb)> ')
@@ -220,14 +229,11 @@ function s:PromptSend(cmd)
     return
   endif
 
-  call vimext#logger#Info("PromptSend: ".a:cmd)
-  " FIXME: NetCoreDbg cli mode will ignore first cmd, is a bug ?
-  call ch_sendraw(s:dbg_channel, " ")
   call ch_sendraw(s:dbg_channel, a:cmd."\n")
 endfunction
 
 function vimext#prompt#SendCmd(msg)
-  call s:PromptSend(a:msg)
+  call s:iface["Send"](a:msg)
 endfunction
 
 function s:LoadSource(fname, lnum) abort
@@ -316,7 +322,6 @@ function s:NetDbgDecodeLine(msg) abort
               \ || a:msg =~ '^no symbols loaded,'
               \ || a:msg =~ '^breakpoint modified,'
               \ || a:msg =~ '^thread created,'
-              \ || a:msg =~ '^ '
       let l:info[0] = 7
       return l:info
   endif
@@ -363,11 +368,18 @@ function s:ProcessStop(cmd)
     doauto <nomodeline> User DbgDebugStopPre
   endif
 
-  call vimext#breakpoints#DeInit()
+  call vimext#breakpoint#DeInit()
 endfunction
 
 function s:PromptOut(channel, msg) abort
-  call vimext#logger#Info("PromptOut ".a:msg)
+  if s:source_win == v:null
+    let s:source_win = s:NewSourceWindow()
+  endif
+
+  call win_gotoid(s:dbg_win)
+  call append(line('$') - 1, a:msg)
+  set modified
+  return
 
   let l:msg = s:ProcessMsg(a:channel, a:msg)
   if l:msg == v:null
@@ -375,8 +387,7 @@ function s:PromptOut(channel, msg) abort
   endif
 
   let l:info = s:dbg_iface["DecodeLine"](l:msg)
-
-  if info[0] == 1 " hit breakpoints
+  if info[0] == 1 " hit breakpoint
     let s:output_stopped = 1
     call s:LoadSource(info[2], info[3])
 
@@ -389,6 +400,7 @@ function s:PromptOut(channel, msg) abort
 
   elseif info[0] == 4 " user set breakpoint
     let s:output_stopped = 1
+    call vimext#breakpoint#Insert(info[1], 1)
 
   elseif info[0] == 5 " exit end stepping range
     call s:LoadSource(info[1], info[2])
@@ -424,14 +436,21 @@ function s:PromptCallback(cmd) abort
 endfunction
 
 function s:PromptInterrupt() abort
-  call vimext#logger#Info("PromptInterrupt")
+  if s:pid == 0
+    call vimext#logger#Error('Cannot interrupt, not find a process ID')
+    return
+  endif
+
+  call debugbreak(s:prompt_pid)
 endfunction
 
 " Term
-let s:term_buf = 0
-
 function s:StartTerm() abort
   call vimext#logger#Info("StartTerm")
+endfunction
+
+function s:TermInterrupt() abort
+  call job_stop(s:job, 'int')
 endfunction
 
 function s:TermSend(cmd) abort

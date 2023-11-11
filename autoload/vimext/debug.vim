@@ -14,7 +14,7 @@ function vimext#debug#StartPre() abort
   nnoremap <F5>  :Continue<cr>
   nnoremap <F6>  :Over<cr>
   nnoremap <F7>  :Step<cr>
-  nnoremap <F8>  :ToggleBreakpoint<cr>
+  nnoremap <F8>  :Break<cr>
 endfunction
 
 function vimext#debug#StartPost() abort
