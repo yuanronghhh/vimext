@@ -33,7 +33,6 @@ function vimext#Init()
   endif
 
   call vimext#session#Init()
-  call vimext#debug#Init()
 
   if has("libcall")
     let g:vimext_c_api = 1

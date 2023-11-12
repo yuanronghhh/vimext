@@ -152,7 +152,7 @@ function vimext#config#LoadConfig()
         \ }
   call add(l:plugins, "ale")
   call vimext#plugins#LoadPlugin(l:plugins)
-  call vimext#prompt#Start("E:/Codes/REPOSITORY/TableDataLib/DotConsole/bin/Debug/net7.0/DotConsole.dll")
+  call vimext#debug#Init()
 
   command! -nargs=? -complete=custom,vimext#session#SessionCompelete OpenSession :call vimext#session#OpenSession("<args>")
   command! -nargs=? -complete=custom,vimext#session#SessionCompelete SaveSession :call vimext#session#SaveSession("<args>")

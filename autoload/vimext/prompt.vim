@@ -129,6 +129,7 @@ function s:SignLine(fname, lnum) abort
 
   call sign_unplace('DbgDebug', #{id: s:pc_id})
   call sign_place(s:pc_id, 'DbgDebug', 'DbgPC', a:fname, #{lnum: a:lnum, priority: 110})
+  call sign_place(s:pc_id, 'DbgDebug', 'DbgPC', a:fname, #{lnum: a:lnum, priority: 110})
 endfunction
 
 function s:ProcessStop(cmd)
@@ -178,13 +179,13 @@ function s:ProcessMsg(channel, text) abort
 endfunction
 
 function s:PromptOut(channel, msg) abort
+  call s:PrintOutput(s:self, a:msg)
   let l:msg = s:ProcessMsg(a:channel, a:msg)
   if l:msg == v:null
     return
   endif
 
   let l:info = s:self.proto.DecodeLine(l:msg)
-  call vimext#logger#Info(l:info)
 
   if info[0] == 1 " hit breakpoint
     call s:LoadSource(s:self, info[1], info[2])
@@ -206,6 +207,9 @@ function s:PromptOut(channel, msg) abort
 
   elseif info[0] == 7 " filter useless msg
 
+  elseif info[0] == 8 " output msg
+
+    call s:PrintOutput(s:self, info[1])
   else
     call s:PrintOutput(s:self, a:msg)
   endif

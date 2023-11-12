@@ -60,7 +60,7 @@ endfunction
 function s:StopPost() abort
   call vimext#logger#Info("StopPost")
 
-  call vimext#runnner#Dispose()
+  call vimext#runner#Dispose()
   :tabclose
 endfunction
 
@@ -72,11 +72,11 @@ function vimext#debug#Init() abort
   autocmd! User DbgDebugStopPre :call s:StopPre()
   autocmd! User DbgDebugStopPost :call s:StopPost()
 
-  command Continue call vimext#runnner#Continue(<q-args>)
-  command Over call vimext#runnner#Next()
-  command Step call vimext#runnner#Step()
-  command Stop call vimext#runnner#Stop()
-  command Break call vimext#runnner#Break(<q-args>)
+  command Continue call vimext#runner#Continue(<q-args>)
+  command Over call vimext#runner#Next()
+  command Step call vimext#runner#Step()
+  command Stop call vimext#runner#Stop()
+  command Break call vimext#runner#Break(<q-args>)
 
   nnoremap <F5>  :Continue<cr>
   nnoremap <F6>  :Over<cr>
