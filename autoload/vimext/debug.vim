@@ -41,7 +41,7 @@ function vimext#debug#NewWindow(name) abort
 endfunction
 
 function s:StartPre() abort
-  silent :tabnew debugger
+  silent :$tabnew debugger
   call vimext#runner#Break("Main")
 endfunction
 
@@ -65,8 +65,6 @@ function s:StopPost() abort
 endfunction
 
 function vimext#debug#Init() abort
-  call vimext#runner#Create("csharp")
-
   autocmd! User DbgDebugStartPre :call s:StartPre()
   autocmd! User DbgDebugStartPost :call s:StartPost()
   autocmd! User DbgDebugStopPre :call s:StopPre()
@@ -83,6 +81,7 @@ function vimext#debug#Init() abort
   nnoremap <F7>  :Step<cr>
   nnoremap <F8>  :Break<cr>
 
-  call vimext#runner#Run("E:/Codes/REPOSITORY/TableDataLib/DotConsole/bin/Debug/net7.0/DotConsole.dll")
+  call vimext#runner#Create("csharp")
+  call vimext#runner#Run("D:/GreyHound/PRIVATE/repository/CSharpData/DotConsole/bin/Debug/net7.0/DotConsole.dll")
 endfunction
 
