@@ -14,8 +14,9 @@ function s:Highlight(init, old, new) abort
     exe "hi " . default . "DbgPC term=reverse ctermbg=darkblue guibg=darkblue"
   endif
 
-  hi default debugBreakpoint term=reverse ctermbg=red guibg=red
-  hi default debugBreakpointDisabled term=reverse ctermbg=gray guibg=gray
+  hi default dbgSignOn term=reverse ctermbg=red guibg=red
+  hi default dbgSignOff term=reverse ctermbg=gray guibg=gray
+
 endfunction
 
 function s:InitHighlight() abort
@@ -27,6 +28,41 @@ function s:GotoWin(win_id)
   if !win_gotoid(a:win_id)
     call vimext#logger#Error("failed")
   endif
+endfunction
+
+function vimext#prompt#RemoveSign(self, buff, id) abort
+  call sign_undefine('DbgSign'.a:id)
+  call sign_unplace("DbgDebug", {
+        \ "buffer": a:buff,
+        \ "id": a:id})
+endfunction
+
+function vimext#prompt#PlaceSign(self, filename, linenum, id, text, flag)
+  let l:hiName = "dbgSignOn"
+  if a:flag == 0
+    let l:hiName = "dbgSignOff"
+  endif
+
+  call sign_define('DbgSign'.a:id, {
+        \ "text": a:text,
+        \ "texthl": l:hiName})
+
+  call sign_place(a:id,
+        \ "DbgDebug",
+        \ "DbgSign" . a:id,
+        \ a:filename,
+        \ #{lnum: a:linenum, priority: 110})
+endfunction
+
+function vimext#prompt#SignLine(fname, lnum, clean) abort
+  exe a:lnum
+  normal! zv
+
+  if a:clean == 1
+    call sign_unplace('DbgDebug', #{id: s:pc_id})
+  endif
+
+  call sign_place(s:pc_id, 'DbgDebug', 'DbgPC', a:fname, #{lnum: a:lnum, priority: 110})
 endfunction
 
 function s:InitChannel(self) abort
@@ -87,25 +123,16 @@ function vimext#prompt#LoadSource(self, fname, lnum) abort
   endif
 
   if expand("%:p") == a:fname
-    call s:SignLine(a:fname, a:lnum)
+    call vimext#prompt#SignLine(a:fname, a:lnum, 1)
     return
   endif
 
   call win_gotoid(a:self.source_win)
   exe 'edit '.a:fname
-  call s:SignLine(a:fname, a:lnum)
+  call vimext#prompt#SignLine(a:fname, a:lnum, 1)
   setlocal signcolumn=yes
 
   call win_gotoid(l:cwin)
-endfunction
-
-function s:SignLine(fname, lnum) abort
-  exe a:lnum
-  normal! zv
-
-  call sign_unplace('DbgDebug', #{id: s:pc_id})
-  call sign_place(s:pc_id, 'DbgDebug', 'DbgPC', a:fname, #{lnum: a:lnum, priority: 110})
-  call sign_place(s:pc_id, 'DbgDebug', 'DbgPC', a:fname, #{lnum: a:lnum, priority: 110})
 endfunction
 
 function vimext#prompt#PrintOutput(self, msg) abort

@@ -46,11 +46,9 @@ function s:StartPre() abort
 endfunction
 
 function s:StartPost() abort
-  call vimext#logger#Info("StartPost")
 endfunction
 
 function s:StopPre() abort
-  call vimext#logger#Info("StopPre")
   unmap <F5>
   unmap <F6>
   unmap <F7>
@@ -58,8 +56,6 @@ function s:StopPre() abort
 endfunction
 
 function s:StopPost() abort
-  call vimext#logger#Info("StopPost")
-
   call vimext#runner#Dispose()
   :tabclose
 endfunction
@@ -70,18 +66,12 @@ function vimext#debug#Init() abort
   autocmd! User DbgDebugStopPre :call s:StopPre()
   autocmd! User DbgDebugStopPost :call s:StopPost()
 
-  command Continue call vimext#runner#Continue(<q-args>)
-  command Over call vimext#runner#Next()
-  command Step call vimext#runner#Step()
-  command Stop call vimext#runner#Stop()
-  command Break call vimext#runner#Break(<q-args>)
-
-  nnoremap <F5>  :Continue<cr>
-  nnoremap <F6>  :Over<cr>
-  nnoremap <F7>  :Step<cr>
-  nnoremap <F8>  :Break<cr>
+  nnoremap <F5>  :call vimext#runner#Continue()<cr>
+  nnoremap <F6>  :call vimext#runner#Next()<cr>
+  nnoremap <F7>  :call vimext#runner#Step()<cr>
+  nnoremap <F8>  :call vimext#runner#Break(line("."))<cr>
 
   call vimext#runner#Create("csharp")
-  call vimext#runner#Run("D:/GreyHound/PRIVATE/repository/CSharpData/DotConsole/bin/Debug/net7.0/DotConsole.dll")
+  "call vimext#runner#Run("E:/Codes/REPOSITORY/TableDataLib/DotConsole/bin/Debug/net7.0/DotConsole.dll")
 endfunction
 

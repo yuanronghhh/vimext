@@ -1,6 +1,5 @@
 let s:gdb_cfg = g:vim_session."/gdb.cfg"
 let s:self = v:null
-let s:breaks = {}
 
 function vimext#runner#Create(lang) abort
   let l:proto = vimext#proto#Create("mi")
@@ -97,33 +96,30 @@ function vimext#runner#Continue() abort
   call s:Call(s:self.proto.Continue, v:null)
 endfunction
 
-function vimext#runner#ParseBreak(args) abort
-  let l:cmd = v:null
-
-  if empty(a:args)
-    let l:cmd = fnameescape(expand('%:p')) . ":" . line(".")
-  else
-    let l:cmd = a:args
-  endif
-
-  return l:cmd
-endfunction
-
 function vimext#runner#Break(args) abort
-  let l:cmd = vimext#runner#ParseBreak(a:args)
-  if l:cmd == v:null
+  let l:info = s:BreakPointParse(a:args)
+  if l:info == v:null
     return
   endif
 
-  call s:Call(s:self.proto.Break, l:cmd)
+  if l:info[0] == 1
+    let l:brk = s:BreakPointGet(s:self, l:info[1], l:info[2])
+    if l:brk != v:null
+      call s:BreakPointDelete(s:self, l:brk)
+    else
+      call s:BreakPointDeleteByFName(s:self, l:info[1], l:info[2])
+    endif
+  else
+    call s:Call(s:self.proto.Break, l:info[1])
+  endif
 endfunction
 
 function vimext#runner#Clear(args) abort
   call s:Call(s:self.proto.Clear, a:args)
 endfunction
 
-function vimext#runner#Delete(args) abort
-  call s:Call(s:self.proto.Delete, a:args)
+function vimext#runner#Delete() abort
+  call s:Call(s:self.proto.Delete, v:null)
 endfunction
 
 function s:PromptExit(job, status) abort
@@ -152,17 +148,91 @@ function s:PromptInput(cmd) abort
   return l:info[1] . " " . l:info[2]
 endfunction
 
-function s:AddBreakPoint(self, info)
+function s:BreakPointParse(args)
+  if a:args == v:null
+    return v:null
+  endif
+
+  let l:info = [0, 0, 0]
+  " type=1,lnum,fname
+  " type=2,func_name
+
+  let l:nameIdx = matchlist(a:args, '^\([^:]\+\):\(\d\+\)$')
+  if len(l:nameIdx) > 0
+    let l:info[0] = 1
+    let l:info[1] = vimext#debug#DecodeMessage('"' . l:nameIdx[1] . '"')
+    let l:info[2] = l:nameIdx[2]
+
+    return l:info
+  endif
+
+  if a:args =~ '^\(\d\+\)$'
+    let l:info[0] = 1
+    let l:info[1] = expand("%:p")
+    let l:info[2] = a:args
+    return l:info
+  endif
+
+  if a:args =~ '^\(\w\+\)'
+    let l:info[0] = 2
+    let l:info[1] = a:args
+    return l:info
+  endif
+
+  return v:null
+endfunction
+
+function s:BreakPointDeleteByFName(self, fname, lnum)
+  let l:brk = s:BreakPointGet(a:self, a:fname, a:lnum)
+  if l:brk == v:null
+    call s:Call(a:self.proto.Break, a:fname . ":" . a:lnum)
+  else
+    call s:BreakPointDelete(a:self, l:brk)
+  endif
+endfunction
+
+function s:BreakPointDelete(self, brk)
+  if a:brk == v:null
+    return
+  endif
+
+  if !has_key(a:self.breaks, a:brk[1])
+    return
+  endif
+
+  call remove(a:self.breaks, a:brk[1])
+  call s:Call(a:self.proto.Clear, a:brk[1])
+  call vimext#prompt#RemoveSign(a:self.prompt, a:brk[7], a:brk[1])
+endfunction
+
+function s:BreakPointGet(self, fname, lnum)
+  for l:brk in values(a:self.breaks)
+    if l:brk[7] == a:fname && l:brk[8] == a:lnum
+      return l:brk
+    endif
+  endfor
+
+  return v:null
+endfunction
+
+function s:BreakPointAdd(self, info)
   if a:info[0] != 4
     call vimext#logger#Warning("break info not correct")
     return
   endif
 
+  let l:bid = a:info[1]
+  call vimext#prompt#PlaceSign(a:self.prompt,
+        \ a:info[7],
+        \ a:info[8],
+        \ l:bid,
+        \ a:info[1],
+        \ 1)
   let a:self.breaks[a:info[1]] = a:info
-  call vimext#logger#Info(a:self.breaks)
 endfunction
 
 function s:PromptOut(channel, msg) abort
+  call vimext#logger#Info(a:msg)
   let l:proto = s:self.proto
   let l:prompt = s:self.prompt
 
@@ -174,7 +244,7 @@ function s:PromptOut(channel, msg) abort
   let l:info = l:proto.DecodeLine(l:msg)
 
   if info[0] == 1 " hit breakpoint
-    call vimext#prompt#LoadSource(l:prompt, info[1], info[2])
+    call vimext#prompt#LoadSource(l:prompt, info[2], info[3])
     call vimext#prompt#SetOutputState(l:prompt, 1)
 
   elseif info[0] == 2 " exit normally
@@ -184,7 +254,7 @@ function s:PromptOut(channel, msg) abort
     call vimext#prompt#SetOutputState(l:prompt, 0)
 
   elseif info[0] == 4 " user set breakpoint
-    call s:AddBreakPoint(s:self, l:info)
+    call s:BreakPointAdd(s:self, l:info)
     call vimext#prompt#SetOutputState(l:prompt, 1)
 
   elseif info[0] == 5 " exit end stepping range
@@ -204,8 +274,4 @@ function s:PromptOut(channel, msg) abort
   else
     call vimext#prompt#PrintOutput(l:prompt, a:msg)
   endif
-endfunction
-
-function vimext#runner#HandleBreak(msg) abort
-  "call sign_define('dbgBreakpoint' .. nr, #{text: strpart(label, 0, 2), texthl: hiName})
 endfunction
