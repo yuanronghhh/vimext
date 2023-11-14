@@ -138,13 +138,19 @@ function s:MIDecodeLine(msg) abort
     return l:info
   endif
 
+  if a:msg =~ '^\*stopped,reason="exited",exit-code="0"'
+    let l:info[0] = 2
+    return l:info
+  endif
+
   if a:msg =~ '^\^running'
     let l:info[0] = 3
     return l:info
   endif
 
-  if a:msg =~ '^\^done,bkpt'
-    let l:nameIdx = matchlist(a:msg, '^done,bkpt={number="\(\d\+\)",type=\(\w\+\),disp="\(\w\+\)",enabled="\(\w\)"},warning=\([^}]*\)}')
+  if a:msg =~ '^\^done,bkpt='
+    call vimext#logger#Info(a:msg)
+    let l:nameIdx = matchlist(a:msg, '^\^done,bkpt={number="\(\d*\)",type=\([^,]\+\),disp=\([^,]\+\),enabled="\(\w\)",warning=\([^}]*\)}')
     if len(l:nameIdx) == 0
       return l:info
     endif
@@ -152,7 +158,7 @@ function s:MIDecodeLine(msg) abort
     let l:info[0] = 4         " user set breakpoint
     let l:info[1] = l:nameIdx[1]  " break number
     let l:info[2] = l:nameIdx[2]  " type
-    let l:info[3] = l:nameIdx[3]  " disp
+    let l:info[3] = fnameescape(expand('%:p'))   " filename
     let l:info[4] = l:nameIdx[4] == "y" ? 1 : 0  " enable
     let l:info[5] = vimext#debug#DecodeMessage(l:nameIdx[5], v:true) " warning
     return l:info
@@ -172,10 +178,6 @@ function s:MIDecodeLine(msg) abort
     return l:info
   endif
 
-  if a:msg =~ '^\^exit'
-    let l:info[0] = 6
-    return l:info
-  endif
 
   if a:msg =~ '^=library-loaded,'
         \ || a:msg =~ '^=symbols-loaded,'

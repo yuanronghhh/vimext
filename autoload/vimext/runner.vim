@@ -27,7 +27,8 @@ function vimext#runner#Create(lang) abort
 
   let l:self = {
         \ "proto": l:proto,
-        \ "prompt": l:prompt
+        \ "prompt": l:prompt,
+        \ "breaks": {}
         \ }
   let s:self = l:self
 
@@ -151,14 +152,19 @@ function s:PromptInput(cmd) abort
   return l:info[1] . " " . l:info[2]
 endfunction
 
-function s:AddBreakPoint(info)
-  let breaks[l:info[1]] = l:info
+function s:AddBreakPoint(self, info)
+  if a:info[0] != 4
+    call vimext#logger#Warning("break info not correct")
+    return
+  endif
+
+  let a:self.breaks[a:info[1]] = a:info
+  call vimext#logger#Info(a:self.breaks)
 endfunction
 
 function s:PromptOut(channel, msg) abort
   let l:proto = s:self.proto
   let l:prompt = s:self.prompt
-  call vimext#prompt#PrintOutput(l:prompt, a:msg)
 
   let l:msg = l:proto.ProcessMsg(a:channel, a:msg)
   if l:msg == v:null
@@ -178,7 +184,7 @@ function s:PromptOut(channel, msg) abort
     call vimext#prompt#SetOutputState(l:prompt, 0)
 
   elseif info[0] == 4 " user set breakpoint
-    call s:AddBreakPoint(breaks, l:info)
+    call s:AddBreakPoint(s:self, l:info)
     call vimext#prompt#SetOutputState(l:prompt, 1)
 
   elseif info[0] == 5 " exit end stepping range
