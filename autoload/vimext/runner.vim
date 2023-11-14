@@ -1,5 +1,6 @@
 let s:gdb_cfg = g:vim_session."/gdb.cfg"
 let s:self = v:null
+let s:breaks = {}
 
 function vimext#runner#Create(lang) abort
   let l:proto = vimext#proto#Create("mi")
@@ -91,14 +92,29 @@ function vimext#runner#Step() abort
   call s:Call(s:self.proto.Step, v:null)
 endfunction
 
-function vimext#runner#Continue(args) abort
-  call s:Call(s:self.proto.Continue, a:args)
+function vimext#runner#Continue() abort
+  call s:Call(s:self.proto.Continue, v:null)
+endfunction
+
+function vimext#runner#ParseBreak(args) abort
+  let l:cmd = v:null
+
+  if empty(a:args)
+    let l:cmd = fnameescape(expand('%:p')) . ":" . line(".")
+  else
+    let l:cmd = a:args
+  endif
+
+  return l:cmd
 endfunction
 
 function vimext#runner#Break(args) abort
-  let l:info = vimext#runner#ParseFileArgs(a:args)
+  let l:cmd = vimext#runner#ParseBreak(a:args)
+  if l:cmd == v:null
+    return
+  endif
 
-  call s:Call(s:self.proto.Break, l:info[0] . ":" . l:info[1])
+  call s:Call(s:self.proto.Break, l:cmd)
 endfunction
 
 function vimext#runner#Clear(args) abort
@@ -107,16 +123,6 @@ endfunction
 
 function vimext#runner#Delete(args) abort
   call s:Call(s:self.proto.Delete, a:args)
-endfunction
-
-function vimext#runner#ParseFileArgs(args) abort
-  let l:info = ["", 0]
-  if empty(a:args)
-    let l:info[0] = fnameescape(expand('%:p'))
-    let l:info[1] = line(".")
-  endif
-
-  return l:info
 endfunction
 
 function s:PromptExit(job, status) abort
@@ -135,7 +141,7 @@ endfunction
 
 function s:PromptInput(cmd) abort
   let l:info = s:self.proto.ProcessInput(s:self.proto, a:cmd)
-  call vimext#logger#Info(l:info)
+
   if l:info[0] == 1 " quit
     if exists('#User#DbgDebugStopPre')
       doauto <nomodeline> User DbgDebugStopPre
@@ -145,9 +151,14 @@ function s:PromptInput(cmd) abort
   return l:info[1] . " " . l:info[2]
 endfunction
 
+function s:AddBreakPoint(info)
+  let breaks[l:info[1]] = l:info
+endfunction
+
 function s:PromptOut(channel, msg) abort
   let l:proto = s:self.proto
   let l:prompt = s:self.prompt
+  call vimext#prompt#PrintOutput(l:prompt, a:msg)
 
   let l:msg = l:proto.ProcessMsg(a:channel, a:msg)
   if l:msg == v:null
@@ -167,6 +178,7 @@ function s:PromptOut(channel, msg) abort
     call vimext#prompt#SetOutputState(l:prompt, 0)
 
   elseif info[0] == 4 " user set breakpoint
+    call s:AddBreakPoint(breaks, l:info)
     call vimext#prompt#SetOutputState(l:prompt, 1)
 
   elseif info[0] == 5 " exit end stepping range

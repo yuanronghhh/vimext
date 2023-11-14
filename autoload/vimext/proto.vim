@@ -37,7 +37,7 @@ function s:ParseInputArgs(cmd)
     return ""
   endif
 
-  return l:nameIdx[1]
+  return l:nameIdx[2]
 endfunction
 
 function s:ProcessInput(self, cmd)
@@ -85,6 +85,14 @@ function s:ProcessInput(self, cmd)
     return l:info
   endif
 
+  if a:cmd =~ "^b "
+        \ || a:cmd =~ "^break "
+    let l:info[0] = 6
+    let l:info[1] = a:self.Break
+    let l:info[2] = s:ParseInputArgs(a:cmd)
+    return l:info
+  endif
+
   return l:info
 endfunction
 
@@ -114,7 +122,7 @@ function s:ProcessMsg(channel, text) abort
 endfunction
 
 function s:MIDecodeLine(msg) abort
-  let l:info = [0, 0, 0, 0, 0]
+  let l:info = [0, 0, 0, 0, 0, 0]
 
   if a:msg =~ '^\*stopped,reason="breakpoint-hit"'
     let l:nameIdx = matchlist(a:msg, '^\*stopped,reason="breakpoint-hit",\S*,bkptno="\(\d\+\)",\S*,fullname=\([^,]*\),line="\(\d\+\)",col="\(\d\+\)"')
@@ -134,6 +142,22 @@ function s:MIDecodeLine(msg) abort
     let l:info[0] = 3
     return l:info
   endif
+
+  if a:msg =~ '^\^done,bkpt'
+    let l:nameIdx = matchlist(a:msg, '^done,bkpt={number="\(\d\+\)",type=\(\w\+\),disp="\(\w\+\)",enabled="\(\w\)"},warning=\([^}]*\)}')
+    if len(l:nameIdx) == 0
+      return l:info
+    endif
+
+    let l:info[0] = 4         " user set breakpoint
+    let l:info[1] = l:nameIdx[1]  " break number
+    let l:info[2] = l:nameIdx[2]  " type
+    let l:info[3] = l:nameIdx[3]  " disp
+    let l:info[4] = l:nameIdx[4] == "y" ? 1 : 0  " enable
+    let l:info[5] = vimext#debug#DecodeMessage(l:nameIdx[5], v:true) " warning
+    return l:info
+  endif
+
 
   if a:msg =~ '^\*stopped,reason="end-stepping-range"'
     let l:nameIdx = matchlist(a:msg, '^\*stopped,reason="end-stepping-range",\S*,fullname=\([^,]*\),line="\(\d\+\)",col="\(\d\+\)"')
