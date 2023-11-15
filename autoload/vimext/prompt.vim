@@ -16,7 +16,6 @@ function s:Highlight(init, old, new) abort
 
   hi default dbgSignOn term=reverse ctermbg=red guibg=red
   hi default dbgSignOff term=reverse ctermbg=gray guibg=gray
-
 endfunction
 
 function s:InitHighlight() abort
@@ -93,7 +92,7 @@ function s:StartPrompt(self) abort
 
   set modified
   set buftype=prompt
-  call prompt_setprompt(a:self.prompt_buf, '(gdb)> ')
+  call prompt_setprompt(a:self.prompt_buf, '(gdb) ')
   call prompt_setcallback(a:self.prompt_buf, a:self["Callback"])
   call prompt_setinterrupt(a:self.prompt_buf, a:self["Interrupt"])
 
@@ -101,10 +100,8 @@ function s:StartPrompt(self) abort
 endfunction
 
 function s:PromptSend(self, cmd) abort
-  call vimext#logger#Info("PromptSend ".a:cmd)
-
   if s:output_stopped == 0
-    call vimext#logger#Info("Command Drop: ".a:cmd)
+    call vimext#logger#Warning("Command Drop: ".a:cmd)
     return
   endif
 
@@ -112,26 +109,23 @@ function s:PromptSend(self, cmd) abort
 endfunction
 
 function vimext#prompt#LoadSource(self, fname, lnum) abort
+  let l:cwin = win_getid()
   if !filereadable(a:fname)
     return
   endif
 
-  let l:cwin = win_getid()
-
   if a:self.source_win == v:null
-    let a:self.source_win = vimext#debug#NewWindow("")
+    let a:self.source_win = vimext#debug#NewWindow("source")
   endif
-
-  if expand("%:p") == a:fname
-    call vimext#prompt#SignLine(a:fname, a:lnum, 1)
-    return
-  endif
-
   call win_gotoid(a:self.source_win)
-  exe 'edit '.a:fname
-  call vimext#prompt#SignLine(a:fname, a:lnum, 1)
-  setlocal signcolumn=yes
 
+  if a:self.source_path != a:fname
+    exe 'edit '.a:fname
+    setlocal signcolumn=yes
+    let a:self.source_path = a:fname
+  endif
+
+  call vimext#prompt#SignLine(a:fname, a:lnum, 1)
   call win_gotoid(l:cwin)
 endfunction
 
@@ -180,6 +174,7 @@ function vimext#prompt#Create(dbg, funcs) abort
         \ "dbg_win": v:null,
         \ "output_win": v:null,
         \ "source_win": v:null,
+        \ "source_path": v:null,
         \ "prompt_pid": 0,
         \ "prompt_buf": 0,
         \ "Start": function("s:StartPrompt"),
@@ -204,6 +199,10 @@ function vimext#prompt#Create(dbg, funcs) abort
   let s:self = l:self
 
   return l:self
+endfunction
+
+function vimext#prompt#GetSourcePath(self)
+  return a:self.source_path
 endfunction
 
 function vimext#prompt#SetOutputState(self, state) abort

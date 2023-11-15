@@ -1,9 +1,10 @@
 function vimext#proto#Create(name) abort
   let s:mi_cmd = {
         \ "name": "mi",
-        \ "Arguments": "-exec-arguments",
         \ "Break": "-break-insert",
         \ "Clear": "-break-delete",
+        \ "Arguments": "-exec-arguments",
+        \ "Abort": "-exec-abort",
         \ "Run": "-exec-run",
         \ "Step": "-exec-step",
         \ "Next": "-exec-next",
@@ -11,21 +12,38 @@ function vimext#proto#Create(name) abort
         \ "Interrupt": "-exec-interrupt",
         \ "Continue": "-exec-continue",
         \ "Until": "-exec-until",
+        \ "Eval": "-var-evaluate-expression",
+        \ "VarCreate": "-var-create",
+        \ "VarChildren": "-var-list-children",
         \ "Frame": "-interpreter-exec mi frame",
         \ "Console": "-interpreter-exec console",
         \ "Source": "source",
         \ "Set": "-gdb-set",
         \ "Exit": "-gdb-exit",
         \ "SaveBreakoints": "save breakpoints",
-        \ "DecodeLine": function("s:MIDecodeLine"),
+        \ "ProcessOutput": function("s:MIProcessOutput"),
         \ "ProcessInput": function("s:ProcessInput"),
         \ "ProcessMsg": function("s:ProcessMsg"),
+        \ "Dispose": function("s:Dispose")
+        \ }
+
+  let s:vscode_cmd = {
+        \ "name": "vscode",
         \ "Dispose": function("s:Dispose")
         \ }
 
   let l:self = v:null
   if a:name == "mi"
     let l:self = s:mi_cmd
+  endif
+
+  if a:name == "mi2"
+    let s:mi_cmd.name = "mi2"
+    let l:self = s:mi_cmd
+  endif
+
+  if a:name == "vscode"
+    let l:self = s:vscode_cmd
   endif
 
   return l:self
@@ -41,62 +59,95 @@ function vimext#proto#ParseInputArgs(cmd)
 endfunction
 
 function s:ProcessInput(self, cmd)
-  let l:info = [0, a:cmd, ""]
+  let l:info = [0, 0, 0, 0]
+  " type,cmd,args,pre-execute-cmd
 
-  if a:cmd == "q"
-        \ || a:cmd == "quit"
-        \ || a:cmd == "exit"
+  let l:cmd = "next"
+
+  if a:cmd != "" && a:cmd != v:null
+    let l:cmd = a:cmd
+  endif
+
+  if l:cmd == "q"
+        \ || l:cmd == "quit"
+        \ || l:cmd == "exit"
     let l:info[0] = 1
     let l:info[1] = a:self.Exit
-    let l:info[2] = vimext#proto#ParseInputArgs(a:cmd)
+    let l:info[2] = vimext#proto#ParseInputArgs(l:cmd)
     return l:info
   endif
 
-  if a:cmd == "s"
-        \ || a:cmd == "step"
+  if l:cmd == "s"
+        \ || l:cmd == "step"
     let l:info[0] = 2
     let l:info[1] = a:self.Step
-    let l:info[2] = vimext#proto#ParseInputArgs(a:cmd)
+    let l:info[2] = vimext#proto#ParseInputArgs(l:cmd)
     return l:info
   endif
 
-  if a:cmd == "fin"
-        \ || a:cmd == "finish"
+  if l:cmd == "fin"
+        \ || l:cmd == "finish"
     return a:self.Finish
     let l:info[0] = 3
     let l:info[1] = a:self.Finish
-    let l:info[2] = vimext#proto#ParseInputArgs(a:cmd)
+    let l:info[2] = vimext#proto#ParseInputArgs(l:cmd)
     return l:info
   endif
 
-  if a:cmd == "c"
-        \ || a:cmd == "continue"
+  if l:cmd == "c"
+        \ || l:cmd == "continue"
     let l:info[0] = 4
     let l:info[1] = a:self.Continue
-    let l:info[2] = vimext#proto#ParseInputArgs(a:cmd)
+    let l:info[2] = vimext#proto#ParseInputArgs(l:cmd)
     return l:info
   endif
 
-  if a:cmd == "r"
-        \ || a:cmd == "run"
+  if l:cmd == "n"
+        \ || l:cmd == "next"
+    let l:info[0] = 4
+    let l:info[1] = a:self.Next
+    let l:info[2] = vimext#proto#ParseInputArgs(l:cmd)
+    return l:info
+  endif
+
+  if l:cmd == "r"
+        \ || l:cmd == "run"
     let l:info[0] = 5
     let l:info[1] = a:self.Run
-    let l:info[2] = vimext#proto#ParseInputArgs(a:cmd)
+    let l:info[2] = vimext#proto#ParseInputArgs(l:cmd)
     return l:info
   endif
 
-  if a:cmd =~ "^b "
-        \ || a:cmd =~ "^break "
+  if l:cmd =~ "^b "
+        \ || l:cmd =~ "^break "
     let l:info[0] = 6
     let l:info[1] = a:self.Break
-    let l:info[2] = vimext#proto#ParseInputArgs(a:cmd)
+    let l:info[2] = vimext#proto#ParseInputArgs(l:cmd)
+
+    return l:info
+  endif
+
+  if l:cmd =~ "^p "
+        \ || l:cmd =~ "^p "
+    let l:args = vimext#proto#ParseInputArgs(l:cmd)
+
+    if stridx(l:args, "*") > -1
+      let l:info[1] = a:self.VarChildren
+      let l:info[2] = "_innervar"
+      let l:info[3] = a:self.VarCreate . " _innervar" . "  " . "\"" . substitute(l:args, "*", "", "g") . "\""
+    else
+      let l:info[1] = a:self.VarCreate
+      let l:info[2] = "_innervar" . "  " . "\"" . l:args . "\""
+    endif
+
+    let l:info[0] = 7
     return l:info
   endif
 
   return l:info
 endfunction
 
-function s:ProcessMsg(channel, text) abort
+function s:ProcessMsg(text) abort
   let l:text = v:null
 
   if a:text =~ '(gdb)'
@@ -105,14 +156,7 @@ function s:ProcessMsg(channel, text) abort
     return v:null
   endif
 
-  if a:text =~ '^\^error,msg='
-    let l:text = vimext#debug#DecodeMessage(a:text[11:], v:false)
-    if exists('s:evalexpr') && text =~ 'A syntax error in expression, near\|No symbol .* in current context'
-      " Silently drop evaluation errors.
-      unlet s:evalexpr
-      return v:null
-    endif
-  elseif a:text[0] == '~'
+  if a:text[0] == '~'
     let l:text = vimext#debug#DecodeMessage(a:text[1:], v:false)
   else
     return a:text
@@ -121,35 +165,40 @@ function s:ProcessMsg(channel, text) abort
   return l:text
 endfunction
 
-function s:MIDecodeLine(msg) abort
+function s:MIProcessOutput(msg) abort
+  let l:msg = s:ProcessMsg(a:msg)
+  if l:msg == v:null
+    return
+  endif
+
   let l:info = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
-  if a:msg =~ '^\*stopped,reason="breakpoint-hit"'
-    let l:nameIdx = matchlist(a:msg, '^\*stopped,reason="breakpoint-hit",\S*,bkptno="\(\d\+\)",\S*,fullname=\([^,]*\),line="\(\d\+\)",col="\(\d\+\)"')
+  if l:msg =~ '^\*stopped,reason="breakpoint-hit"'
+    let l:nameIdx = matchlist(l:msg, '^\*stopped,reason="breakpoint-hit",\S*,bkptno="\(\d\+\)",\S*,fullname=\([^,]*\),line="\(\d\+\)",col="\(\d\+\)"')
     if len(l:nameIdx) == 0
       return l:info
     endif
 
     let l:info[0] = 1
     let l:info[1] = l:nameIdx[1]  " breakpoint
-    let l:info[2] = vimext#debug#DecodeMessage(l:nameIdx[2], v:true)  " filename
+    let l:info[2] = vimext#debug#DecodeMessage(l:nameIdx[2], v:false)  " filename
     let l:info[3] = l:nameIdx[3]  " lineno
     let l:info[4] = l:nameIdx[4]  " col
     return l:info
   endif
 
-  if a:msg =~ '^\*stopped,reason="exited",exit-code="0"'
+  if l:msg =~ '^\*stopped,reason="exited",exit-code="0"'
     let l:info[0] = 2
     return l:info
   endif
 
-  if a:msg =~ '^\^running'
+  if l:msg =~ '^\^running'
     let l:info[0] = 3
     return l:info
   endif
 
-  if a:msg =~ '^\^done,bkpt=\S*,fullname='
-    let l:nameIdx = matchlist(a:msg, '^\^done,bkpt={number="\(\d*\)",type="\([^,]\+\)",disp="\([^,]\+\)",enabled="\(\w\)",func="\([^,]*\)",file="\([^,]\+\)",fullname=\([^,]\+\),line="\(\d\+\)"')
+  if l:msg =~ '^\^done,bkpt=\S*,fullname='
+    let l:nameIdx = matchlist(l:msg, '^\^done,bkpt={number="\(\d*\)",type="\([^,]\+\)",disp="\([^,]\+\)",enabled="\(\w\)",func="\([^,]*\)",file="\([^,]\+\)",fullname=\([^,]\+\),line="\(\d\+\)"')
     if len(l:nameIdx) == 0
       return l:info
     endif
@@ -166,8 +215,8 @@ function s:MIDecodeLine(msg) abort
     return l:info
   endif
 
-  if a:msg =~ '^\*stopped,reason="end-stepping-range"'
-    let l:nameIdx = matchlist(a:msg, '^\*stopped,reason="end-stepping-range",\S*,fullname=\([^,]*\),line="\(\d\+\)",col="\(\d\+\)"')
+  if l:msg =~ '^\*stopped,reason="end-stepping-range"'
+    let l:nameIdx = matchlist(l:msg, '^\*stopped,reason="end-stepping-range",\S*,fullname=\([^,]*\),line="\(\d\+\)",col="\(\d\+\)"')
     if len(l:nameIdx) == 0
       return l:info
     endif
@@ -179,17 +228,17 @@ function s:MIDecodeLine(msg) abort
     return l:info
   endif
 
-  if a:msg =~ '^=library-loaded,'
-        \ || a:msg =~ '^=symbols-loaded,'
-        \ || a:msg =~ '^=no-symbols-loaded,'
-        \ || a:msg =~ '^=breakpoint-modified,'
-        \ || a:msg =~ '^=thread'
+  if l:msg =~ '^=library-loaded,'
+        \ || l:msg =~ '^=symbols-loaded,'
+        \ || l:msg =~ '^=no-symbols-loaded,'
+        \ || l:msg =~ '^=breakpoint-modified,'
+        \ || l:msg =~ '^=thread'
     let l:info[0] = 7
     return l:info
   endif
 
-  if a:msg =~ '^\^done,bkpt=\S*,warning='
-    let l:nameIdx = matchlist(a:msg, '^\^done,bkpt={number="\(\d*\)",type="\([^,]\+\)",disp="\([^,]\+\)",enabled="\(\w\)",warning=\([^}]*\)}')
+  if l:msg =~ '^\^done,bkpt=\S*,warning='
+    let l:nameIdx = matchlist(l:msg, '^\^done,bkpt={number="\(\d*\)",type="\([^,]\+\)",disp="\([^,]\+\)",enabled="\(\w\)",warning=\([^}]*\)}')
     if len(l:nameIdx) == 0
       return l:info
     endif
@@ -202,21 +251,21 @@ function s:MIDecodeLine(msg) abort
     return l:info
   endif
 
-  if a:msg =~ '^=message,'
-    let l:nameIdx = matchlist(a:msg, '^=message,text=\([^,]*\),send-to="\([^,]\+"\)')
+  if l:msg =~ '^=message,'
+    let l:nameIdx = matchlist(l:msg, '^=message,text=\([^,]*\),send-to="\([^,]\+"\)')
     if len(l:nameIdx) == 0
       return l:info
     endif
 
     let l:info[0] = 8
-    let l:info[1] = vimext#debug#DecodeMessage(l:nameIdx[1], v:true)
+    let l:info[1] = vimext#debug#DecodeMessage(l:nameIdx[1], v:false)
     let l:info[2] = l:nameIdx[2]
 
     return l:info
   endif
 
-  if a:msg =~ '^\*stopped,reason="entry-point-hit"'
-    let l:nameIdx = matchlist(a:msg, '^\*stopped,reason="entry-point-hit",\S*,fullname=\([^,]*\),line="\(\d\+\)",col="\(\d\+\)"')
+  if l:msg =~ '^\*stopped,reason="entry-point-hit"'
+    let l:nameIdx = matchlist(l:msg, '^\*stopped,reason="entry-point-hit",\S*,fullname=\([^,]*\),line="\(\d\+\)",col="\(\d\+\)"')
     if len(l:nameIdx) == 0
       return l:info
     endif
@@ -225,6 +274,31 @@ function s:MIDecodeLine(msg) abort
     let l:info[1] = vimext#debug#DecodeMessage(l:nameIdx[1], v:true)  " filename
     let l:info[2] = l:nameIdx[2]  " lineno
     let l:info[3] = l:nameIdx[3]  " col
+    return l:info
+  endif
+
+  "^done,name="_innervar",value="\"cmd.exe\"",attributes="editable",exp="p.StartInfo.FileName",numchild="0",type="string",thread-id="20440"
+  if l:msg =~ '^\^done,name='
+    let l:nameIdx = matchlist(l:msg, '^\^done,name="\([^"]*\)",value=\([^,]*\),attributes="\([^"]*\)",exp="\([^"]*\)"')
+    if len(l:nameIdx) == 0
+      return l:info
+    endif
+
+    let l:info[0] = 8
+    let l:info[1] = l:nameIdx[4] . " = " . vimext#debug#DecodeMessage(l:nameIdx[2], v:false)
+
+    return l:info
+  endif
+
+  if l:msg =~ '^\^error,msg='
+    let l:nameIdx = matchlist(l:msg, '^\^error,msg=\([^$]\+\)')
+    if len(l:nameIdx) == 0
+      return l:info
+    endif
+
+    let l:info[0] = 10
+    let l:info[1] = vimext#debug#DecodeMessage(l:nameIdx[1], v:false)
+
     return l:info
   endif
 

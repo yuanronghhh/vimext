@@ -60,6 +60,18 @@ function s:StopPost() abort
   :tabclose
 endfunction
 
+function s:StartDebug(bang, ...) abort
+  if len(a:000) < 2
+    return
+  endif
+
+  let l:lang = a:000[0]
+  let l:pargs = a:000[1]
+
+  call vimext#runner#Create(l:lang)
+  call vimext#runner#Run(l:pargs)
+endfunction
+
 function vimext#debug#Init() abort
   autocmd! User DbgDebugStartPre :call s:StartPre()
   autocmd! User DbgDebugStartPost :call s:StartPost()
@@ -71,7 +83,6 @@ function vimext#debug#Init() abort
   nnoremap <F7>  :call vimext#runner#Step()<cr>
   nnoremap <F8>  :call vimext#runner#Break(line("."))<cr>
 
-  call vimext#runner#Create("csharp")
-  "call vimext#runner#Run("E:/Codes/REPOSITORY/TableDataLib/DotConsole/bin/Debug/net7.0/DotConsole.dll")
+  command -nargs=* -complete=file -bang DbgDebug call s:StartDebug(<bang>0, <f-args>)
 endfunction
 

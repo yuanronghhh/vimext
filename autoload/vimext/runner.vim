@@ -8,7 +8,7 @@ function vimext#runner#Create(lang) abort
   if a:lang == "csharp"
     let l:dbg = vimext#netcoredbg#Create(l:proto)
   else
-    let l:dbg = vimext#gdb#Create()
+    let l:dbg = vimext#gccdbg#Create(l:proto)
   endif
 
   let l:funcs = {
@@ -48,6 +48,10 @@ function vimext#runner#Create(lang) abort
 endfunction
 
 function s:Call(cmd, args) abort
+  if s:self == v:null
+    return
+  endif
+
   let l:prompt = s:self.prompt
 
   if a:args == v:null
@@ -97,7 +101,7 @@ function vimext#runner#Continue() abort
 endfunction
 
 function vimext#runner#Break(args) abort
-  let l:info = s:BreakPointParse(a:args)
+  let l:info = s:BreakPointParse(s:self, a:args)
   if l:info == v:null
     return
   endif
@@ -123,8 +127,6 @@ function vimext#runner#Delete() abort
 endfunction
 
 function s:PromptExit(job, status) abort
-  call vimext#logger#Info("PromptExit")
-
   call s:self.prompt.Dispose(s:self.prompt)
   call s:self.proto.Dispose(s:self.proto)
 
@@ -145,10 +147,21 @@ function s:PromptInput(cmd) abort
     endif
   endif
 
+  if l:info[0] == 6
+    call vimext#runner#Break(l:info[2])
+    return v:null
+  endif
+
+  if l:info[0] == 7
+    if l:info[3] != 0
+      call s:Call(l:info[3], v:null)
+    endif
+  endif
+
   return l:info[1] . " " . l:info[2]
 endfunction
 
-function s:BreakPointParse(args)
+function s:BreakPointParse(self, args)
   if a:args == v:null
     return v:null
   endif
@@ -168,7 +181,7 @@ function s:BreakPointParse(args)
 
   if a:args =~ '^\(\d\+\)$'
     let l:info[0] = 1
-    let l:info[1] = expand("%:p")
+    let l:info[1] = vimext#prompt#GetSourcePath(a:self.prompt)
     let l:info[2] = a:args
     return l:info
   endif
@@ -232,16 +245,13 @@ function s:BreakPointAdd(self, info)
 endfunction
 
 function s:PromptOut(channel, msg) abort
-  call vimext#logger#Info(a:msg)
   let l:proto = s:self.proto
   let l:prompt = s:self.prompt
 
-  let l:msg = l:proto.ProcessMsg(a:channel, a:msg)
-  if l:msg == v:null
+  let l:info = l:proto.ProcessOutput(a:msg)
+  if l:info == v:null
     return
   endif
-
-  let l:info = l:proto.DecodeLine(l:msg)
 
   if info[0] == 1 " hit breakpoint
     call vimext#prompt#LoadSource(l:prompt, info[2], info[3])
@@ -269,6 +279,10 @@ function s:PromptOut(channel, msg) abort
 
   elseif info[0] == 9 " entry-point-hit
     call vimext#prompt#LoadSource(l:prompt, info[1], info[2])
+    call vimext#prompt#SetOutputState(l:prompt, 1)
+
+  elseif info[0] == 10 " error msg
+    call vimext#prompt#PrintOutput(l:prompt, info[1])
     call vimext#prompt#SetOutputState(l:prompt, 1)
 
   else
