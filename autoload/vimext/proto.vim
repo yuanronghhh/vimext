@@ -59,13 +59,13 @@ function vimext#proto#ParseInputArgs(cmd)
 endfunction
 
 function s:ProcessInput(self, cmd)
-  let l:info = [0, 0, 0, 0]
   " type,cmd,args,pre-execute-cmd
-
+  let l:info = [0, "", "", 0]
   let l:cmd = "next"
 
   if a:cmd != "" && a:cmd != v:null
     let l:cmd = a:cmd
+    let l:info[1] = l:cmd
   endif
 
   if l:cmd == "q"
@@ -150,7 +150,7 @@ endfunction
 function s:ProcessMsg(text) abort
   let l:text = v:null
 
-  if a:text =~ '(gdb)'
+  if a:text =~ '(gdb) '
         \ || a:text == '^done'
         \ || (a:text[0] == '&' && a:text !~ '^&"disassemble')
     return v:null

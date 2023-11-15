@@ -2,13 +2,17 @@ let s:gdb_cfg = g:vim_session."/gdb.cfg"
 let s:self = v:null
 
 function vimext#runner#Create(lang) abort
-  let l:proto = vimext#proto#Create("mi")
   let l:prompt = v:null
+  let l:proto = v:null
 
   if a:lang == "csharp"
+    let l:proto = vimext#proto#Create("mi")
     let l:dbg = vimext#netcoredbg#Create(l:proto)
-  else
+  elseif a:lang == "c"
+    let l:proto = vimext#proto#Create("mi2")
     let l:dbg = vimext#gccdbg#Create(l:proto)
+  else
+    return v:null
   endif
 
   let l:funcs = {

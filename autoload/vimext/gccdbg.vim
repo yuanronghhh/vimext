@@ -11,7 +11,9 @@ function vimext#gccdbg#Create(proto) abort
 endfunction
 
 function s:SetConfig(self, prompt, proto) abort
-  call a:prompt.Send(a:prompt, a:proto.Set . " " . "just-my-code 1")
+  call a:prompt.Send(a:prompt, a:proto.Set . " new-console on")
+  call a:prompt.Send(a:prompt, a:proto.Set . " print pretty on")
+  call a:prompt.Send(a:prompt, a:proto.Set . " breakpoint pending on")
 endfunction
 
 function s:GetCmd(self) abort
