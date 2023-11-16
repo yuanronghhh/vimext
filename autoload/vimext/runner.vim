@@ -31,6 +31,7 @@ function vimext#runner#Create(lang) abort
   let l:self = {
         \ "proto": l:proto,
         \ "prompt": l:prompt,
+        \ "dbg": l:dbg,
         \ "breaks": {}
         \ }
   let s:self = l:self
