@@ -92,6 +92,10 @@ function vimext#runner#Run(args) abort
   call s:Call(l:start, "")
 endfunction
 
+function vimext#runner#Attach(pid) abort
+  call s:Call(s:self.proto.Attach, a:pid)
+endfunction
+
 function vimext#runner#Restore() abort
   if !filereadable(s:gdb_cfg)
     call writefile([], s:gdb_cfg, "w")
@@ -200,7 +204,7 @@ function s:BreakPointParse(self, args)
 
   if a:args =~ '^\(\d\+\)$'
     let l:info[0] = 1
-    let l:info[1] = vimext#prompt#GetSourcePath(a:self.prompt)
+    let l:info[1] = a:self.prompt.GetSouceWinPath(a:self.prompt)
     let l:info[2] = a:args
     return l:info
   endif
@@ -276,6 +280,7 @@ function s:BreakPointAdd(self, info)
 endfunction
 
 function s:PromptOut(channel, msg) abort
+  "call vimext#logger#Info(a:msg)
   let l:proto = s:self.proto
   let l:prompt = s:self.prompt
 

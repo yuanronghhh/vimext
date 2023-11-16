@@ -1,4 +1,14 @@
 const s:NullRepl = 'XXXNULLXXX'
+
+function vimext#debug#DecodeFilePath(quotedText)
+  if a:quotedText[0] != '"'
+    call vimext#logger#Error('DecodeMessage(): missing quote in ' . a:quotedText)
+    return
+  endif
+
+  return vimext#debug#DecodeMessage(a:quotedText, v:false)
+endfunction
+
 function vimext#debug#DecodeMessage(quotedText, literal)
   if a:quotedText[0] != '"'
     call vimext#logger#Error('DecodeMessage(): missing quote in ' . a:quotedText)
@@ -21,6 +31,7 @@ function vimext#debug#DecodeMessage(quotedText, literal)
         \ ->substitute(s:NullRepl, '\\000', 'g')
   if !a:literal
     return msg
+          \ ->substitute('\\r$', "", 'g')
           \ ->substitute('\\t', "\t", 'g')
           \ ->substitute('\\n', '', 'g')
   else
@@ -89,6 +100,6 @@ function vimext#debug#Init() abort
 
   command -nargs=* -complete=file -bang DbgDebug call s:StartDebug(<bang>0, <f-args>)
 
-  "execute ':DbgDebug c D:/GreyHound/PRIVATE/Demo/bin/app.bin'
+  "execute ':DbgDebug csharp "D:/GreyHound/PRIVATE/repository/CSharpData/MvcCore/bin/Debug/net7.0/MvcCore.dll"'
 endfunction
 

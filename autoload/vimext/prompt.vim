@@ -99,7 +99,6 @@ function s:StartPrompt(self) abort
   let a:self.output_win = a:self.dbg_win
 
   set modified
-  set filetype=sh
   set buftype=prompt
   call prompt_setprompt(a:self.prompt_buf, '(gdb) ')
   call prompt_setcallback(a:self.prompt_buf, a:self["Callback"])
@@ -121,6 +120,7 @@ endfunction
 function vimext#prompt#LoadSource(self, fname, lnum) abort
   let l:cwin = win_getid()
   if !filereadable(a:fname)
+    call vimext#logger#Warning("file not readable " . a:fname)
     return
   endif
 
@@ -129,10 +129,10 @@ function vimext#prompt#LoadSource(self, fname, lnum) abort
   endif
   call win_gotoid(a:self.source_win)
 
-  if a:self.source_path != a:fname
+  if a:self.GetSouceWinPath(a:self) != a:fname
     exe 'edit '.a:fname
     setlocal signcolumn=yes
-    let a:self.source_path = a:fname
+    let a:self.source_buff = bufnr("%")
   endif
 
   call vimext#prompt#SignLine(a:fname, a:lnum, 1)
@@ -163,7 +163,7 @@ function s:PromptCallback(cmd) abort
 endfunction
 
 function s:PromptInterrupt() abort
-  call vimext#logger#Info("PromptInterrupt")
+  "call vimext#logger#Info("PromptInterrupt")
 
   if s:pid == 0
     call vimext#logger#Error('Cannot interrupt, not find a process ID')
@@ -187,6 +187,7 @@ function vimext#prompt#Create(dbg, funcs) abort
         \ "source_path": v:null,
         \ "prompt_pid": 0,
         \ "prompt_buf": 0,
+        \ "GetSouceWinPath": function("s:GetSouceWinPath"),
         \ "Start": function("s:StartPrompt"),
         \ "Callback": function("s:PromptCallback"),
         \ "Interrupt": function("s:PromptInterrupt"),
@@ -211,8 +212,9 @@ function vimext#prompt#Create(dbg, funcs) abort
   return l:self
 endfunction
 
-function vimext#prompt#GetSourcePath(self)
-  return a:self.source_path
+function s:GetSouceWinPath(self)
+  let l:bnr = winbufnr(a:self.source_win)
+  return bufname(l:bnr)
 endfunction
 
 function vimext#prompt#SetOutputState(self, state) abort
