@@ -5,6 +5,11 @@ function vimext#runner#Create(lang) abort
   let l:prompt = v:null
   let l:proto = v:null
 
+  if s:self != v:null
+    call vimext#logger#Warning("call not start two debugger")
+    return
+  endif
+
   if a:lang == "csharp"
     let l:proto = vimext#proto#Create("mi")
     let l:dbg = vimext#netcoredbg#Create(l:proto)
@@ -72,10 +77,19 @@ endfunction
 
 function vimext#runner#Run(args) abort
   if a:args != v:null && a:args != ""
-    call s:Call(s:self.proto.Arguments, a:args)
+    if s:self.dbg.name == "gdb"
+      call s:Call("file", a:args)
+    else
+      call s:Call(s:self.proto.Arguments, a:args)
+    endif
+  endif
+  let l:start = s:self.proto.GetStart(s:self.proto)
+
+  if l:start == v:null
+    return
   endif
 
-  call s:Call(s:self.proto.Run, "")
+  call s:Call(l:start, "")
 endfunction
 
 function vimext#runner#Restore() abort
@@ -157,7 +171,7 @@ function s:PromptInput(cmd) abort
     return v:null
   endif
 
-  if l:info[0] == 7
+  if l:info[0] == 7 " print
     if l:info[3] != 0
       call s:Call(l:info[3], v:null)
     endif
@@ -209,6 +223,15 @@ function s:BreakPointDeleteByFName(self, fname, lnum)
   endif
 endfunction
 
+function s:BreakPointDeleteID(self, id)
+  let l:brk = get(a:self.breaks, a:id, v:null)
+  if l:brk == v:null
+    return
+  endif
+
+  call s:BreakPointDelete(a:self, l:brk)
+endfunction
+
 function s:BreakPointDelete(self, brk)
   if a:brk == v:null
     return
@@ -219,7 +242,6 @@ function s:BreakPointDelete(self, brk)
   endif
 
   call remove(a:self.breaks, a:brk[1])
-  call s:Call(a:self.proto.Clear, a:brk[1])
   call vimext#prompt#RemoveSign(a:self.prompt, a:brk[7], a:brk[1])
 endfunction
 
@@ -236,6 +258,10 @@ endfunction
 function s:BreakPointAdd(self, info)
   if a:info[0] != 4
     call vimext#logger#Warning("break info not correct")
+    return
+  endif
+
+  if !bufexists(a:info[7])
     return
   endif
 
@@ -290,7 +316,10 @@ function s:PromptOut(channel, msg) abort
     call vimext#prompt#PrintOutput(l:prompt, info[1])
     call vimext#prompt#SetOutputState(l:prompt, 1)
 
+  elseif info[0] == 11 " breakpoint delete
+    call s:BreakPointDeleteID(s:self, l:info[1])
+
   else
-    call vimext#prompt#PrintOutput(l:prompt, a:msg)
+    call vimext#prompt#PrintOutput(l:prompt, l:info[9])
   endif
 endfunction

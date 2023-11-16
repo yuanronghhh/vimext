@@ -30,6 +30,10 @@ function s:GotoWin(win_id)
 endfunction
 
 function vimext#prompt#RemoveSign(self, buff, id) abort
+  if !bufexists(a:buff)
+    return
+  endif
+
   call sign_undefine('DbgSign'.a:id)
   call sign_unplace("DbgDebug", {
         \ "buffer": a:buff,
@@ -40,6 +44,10 @@ function vimext#prompt#PlaceSign(self, filename, linenum, id, text, flag)
   let l:hiName = "dbgSignOn"
   if a:flag == 0
     let l:hiName = "dbgSignOff"
+  endif
+
+  if !bufexists(a:filename)
+    return
   endif
 
   call sign_define('DbgSign'.a:id, {
@@ -91,6 +99,7 @@ function s:StartPrompt(self) abort
   let a:self.output_win = a:self.dbg_win
 
   set modified
+  set filetype=sh
   set buftype=prompt
   call prompt_setprompt(a:self.prompt_buf, '(gdb) ')
   call prompt_setcallback(a:self.prompt_buf, a:self["Callback"])
@@ -105,6 +114,7 @@ function s:PromptSend(self, cmd) abort
     return
   endif
 
+  "call vimext#logger#Info(a:cmd)
   call ch_sendraw(a:self.dbg_channel, a:cmd."\n")
 endfunction
 

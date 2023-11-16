@@ -42,7 +42,6 @@ endfunction
 
 function s:StartPre() abort
   silent :$tabnew debugger
-  call vimext#runner#Break("Main")
 endfunction
 
 function s:StartPost() abort
@@ -57,18 +56,23 @@ endfunction
 
 function s:StopPost() abort
   call vimext#runner#Dispose()
-  :tabclose
 endfunction
 
 function s:StartDebug(bang, ...) abort
-  if len(a:000) < 2
+  if len(a:000) < 1
+    return
+  endif
+  let l:lang = a:000[0]
+
+  let l:pargs = ""
+  if len(a:000) > 1
+    let l:pargs = a:000[1]
+  endif
+
+  if vimext#runner#Create(l:lang) == v:null
     return
   endif
 
-  let l:lang = a:000[0]
-  let l:pargs = a:000[1]
-
-  call vimext#runner#Create(l:lang)
   call vimext#runner#Run(l:pargs)
 endfunction
 
@@ -84,5 +88,7 @@ function vimext#debug#Init() abort
   nnoremap <F8>  :call vimext#runner#Break(line("."))<cr>
 
   command -nargs=* -complete=file -bang DbgDebug call s:StartDebug(<bang>0, <f-args>)
+
+  "execute ':DbgDebug c D:/GreyHound/PRIVATE/Demo/bin/app.bin'
 endfunction
 
