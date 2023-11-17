@@ -296,6 +296,7 @@ function s:MIProcessOutput(msg) abort
     let l:info[1] = vimext#debug#DecodeFilePath(l:nameIdx[1])  " filename
     let l:info[2] = l:nameIdx[2]  " lineno
     let l:info[3] = l:nameIdx[3]  " col
+    let l:info[4] = 0  " breakid
   elseif l:msg =~ '^\^error,msg='
     let l:nameIdx = matchlist(l:msg, '^\^error,msg=\([^$]\+\)')
     if len(l:nameIdx) == 0

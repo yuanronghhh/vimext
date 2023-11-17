@@ -98,6 +98,12 @@ function vimext#debug#Init() abort
   nnoremap <F7>  :call vimext#runner#Step()<cr>
   nnoremap <F8>  :call vimext#runner#Break(line("."))<cr>
 
+  augroup DbgDebug
+    au BufRead * call vimext#runner#BufferLoad(expand('<afile>:p'))
+    au BufUnload * call vimext#runner#BufUnloaded(expand('<afile>:p'))
+    au OptionSet background call s:Highlight(0, v:option_old, v:option_new)
+  augroup END
+
   command -nargs=* -complete=file -bang DbgDebug call s:StartDebug(<bang>0, <f-args>)
 
   "execute ':DbgDebug csharp "D:/GreyHound/PRIVATE/repository/CSharpData/MvcCore/bin/Debug/net7.0/MvcCore.dll"'

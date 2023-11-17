@@ -3,8 +3,6 @@
 """
 let s:output_stopped = 1 " lock for callback
 let s:self = v:null
-let s:pc_id = 30
-
 
 function s:Highlight(init, old, new) abort
   let default = a:init ? 'default ' : ''
@@ -13,13 +11,9 @@ function s:Highlight(init, old, new) abort
   elseif a:new ==# 'dark' && a:old !=# 'dark'
     exe "hi " . default . "DbgPC term=reverse ctermbg=darkblue guibg=darkblue"
   endif
-
-  hi default dbgSignOn term=reverse ctermbg=red guibg=red
-  hi default dbgSignOff term=reverse ctermbg=gray guibg=gray
 endfunction
 
 function s:InitHighlight() abort
-  call sign_define('DbgPC', #{linehl: 'DbgPC'})
   call s:Highlight(1, '', &background)
 endfunction
 
@@ -27,49 +21,6 @@ function s:GotoWin(win_id)
   if !win_gotoid(a:win_id)
     call vimext#logger#Error("failed")
   endif
-endfunction
-
-function vimext#prompt#RemoveSign(self, buff, id) abort
-  if !bufexists(a:buff)
-    return
-  endif
-
-  call sign_undefine('DbgSign'.a:id)
-  call sign_unplace("DbgDebug", {
-        \ "buffer": a:buff,
-        \ "id": a:id})
-endfunction
-
-function vimext#prompt#PlaceSign(self, filename, linenum, id, text, flag)
-  let l:hiName = "dbgSignOn"
-  if a:flag == 0
-    let l:hiName = "dbgSignOff"
-  endif
-
-  if !bufexists(a:filename)
-    return
-  endif
-
-  call sign_define('DbgSign'.a:id, {
-        \ "text": a:text,
-        \ "texthl": l:hiName})
-
-  call sign_place(a:id,
-        \ "DbgDebug",
-        \ "DbgSign" . a:id,
-        \ a:filename,
-        \ #{lnum: a:linenum, priority: 110})
-endfunction
-
-function vimext#prompt#SignLine(fname, lnum, clean) abort
-  exe a:lnum
-  normal! zv
-
-  if a:clean == 1
-    call sign_unplace('DbgDebug', #{id: s:pc_id})
-  endif
-
-  call sign_place(s:pc_id, 'DbgDebug', 'DbgPC', a:fname, #{lnum: a:lnum, priority: 110})
 endfunction
 
 function s:InitChannel(self) abort
@@ -131,11 +82,10 @@ function vimext#prompt#LoadSource(self, fname, lnum) abort
 
   if a:self.GetSouceWinPath(a:self) != a:fname
     exe 'edit '.a:fname
-    setlocal signcolumn=yes
     let a:self.source_buff = bufnr("%")
   endif
 
-  call vimext#prompt#SignLine(a:fname, a:lnum, 1)
+  call vimext#sign#SignLine(a:fname, a:lnum, 1)
   call win_gotoid(l:cwin)
 endfunction
 

@@ -30,7 +30,7 @@ function vimext#runner#Create(lang) abort
     let l:prompt = vimext#prompt#Create(l:dbg, l:funcs)
   else
   endif
-
+  call vimext#sign#Init()
   call l:dbg.SetConfig(l:dbg, l:prompt, l:proto)
 
   let l:self = {
@@ -56,6 +56,30 @@ function vimext#runner#Create(lang) abort
   call vimext#runner#Restore()
   return l:self
 endfunction
+
+function vimext#runner#BufferLoad(bname)
+  for l:brk in s:self.breaks
+    if l:brk[7] == a:bname
+      let l:bid = a:brk[1]
+      call vimext#prompt#PlaceSign(a:self.prompt,
+            \ a:brk[7],
+            \ a:brk[8],
+            \ l:bid,
+            \ a:brk[1],
+            \ 1)
+    endif
+  endfor
+endfunction
+
+func vimext#runner#BufUnloaded(bname)
+  for [id, entries] in items(s:breakpoints)
+    for [subid, entry] in items(entries)
+      if entry['fname'] == fname
+        let entry['placed'] = 0
+      endif
+    endfor
+  endfor
+endfunc
 
 function s:Call(cmd, args) abort
   if s:self == v:null
@@ -291,6 +315,8 @@ function s:PromptOut(channel, msg) abort
 
   if info[0] == 1 " hit breakpoint
     call vimext#prompt#LoadSource(l:prompt, info[2], info[3])
+    call vimext#sign#NewLine(info[2], info[3], info[1])
+
     call vimext#prompt#SetOutputState(l:prompt, 1)
 
   elseif info[0] == 2 " exit normally
