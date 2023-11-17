@@ -1,6 +1,5 @@
 " Term
 function s:StartTerm() abort
-  "call vimext#logger#Info("StartTerm")
 endfunction
 
 function s:TermInterrupt() abort

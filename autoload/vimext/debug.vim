@@ -52,7 +52,7 @@ function vimext#debug#NewWindow(name) abort
 endfunction
 
 function s:StartPre() abort
-  silent :$tabnew debugger
+  execute "silent :$tabnew debugger"
 endfunction
 
 function s:StartPost() abort
@@ -67,6 +67,7 @@ endfunction
 
 function s:StopPost() abort
   call vimext#runner#Dispose()
+  execute "silent tabclose"
 endfunction
 
 function s:StartDebug(bang, ...) abort
@@ -98,14 +99,8 @@ function vimext#debug#Init() abort
   nnoremap <F7>  :call vimext#runner#Step()<cr>
   nnoremap <F8>  :call vimext#runner#Break(line("."))<cr>
 
-  augroup DbgDebug
-    au BufRead * call vimext#runner#BufferLoad(expand('<afile>:p'))
-    au BufUnload * call vimext#runner#BufUnloaded(expand('<afile>:p'))
-    au OptionSet background call s:Highlight(0, v:option_old, v:option_new)
-  augroup END
-
   command -nargs=* -complete=file -bang DbgDebug call s:StartDebug(<bang>0, <f-args>)
 
-  "execute ':DbgDebug csharp "D:/GreyHound/PRIVATE/repository/CSharpData/MvcCore/bin/Debug/net7.0/MvcCore.dll"'
+  execute ':DbgDebug csharp "E:/Codes/REPOSITORY/TableDataLib/DotConsole/bin/Debug/net7.0/DotConsole.dll"'
 endfunction
 

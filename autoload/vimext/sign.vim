@@ -1,73 +1,101 @@
-let s:gdb_cfg = g:vim_session."/gdb.cfg"
-let s:pc_id = 30
 let s:signs = []
+let s:pc_id = 30
 
 function vimext#sign#Init()
   hi default dbgSignOn term=reverse ctermbg=red guibg=red
   hi default dbgSignOff term=reverse ctermbg=gray guibg=gray
-  call sign_define('DbgPC', #{linehl: 'DbgPC'})
+  call sign_define('DbgPC', {
+        \ "linehl": 'DbgPC'
+        \ })
 endfunction
 
 function vimext#sign#DeInit()
+  call sign_unplace('DbgDebug', {
+        \ "id": s:pc_id
+        \})
+
+  call sign_undefine('DbgPC')
 endfunction
 
-function vimext#sign#Remove(self, buff, id) abort
-  if !bufexists(a:buff)
-    return
-  endif
+function vimext#sign#GetByBreakID(breakid)
+  let l:v = []
 
-  call sign_undefine('DbgSign'.a:id)
-  call sign_unplace("DbgDebug", {
-        \ "buffer": a:buff,
-        \ "id": a:id})
+  for l:sign in s:signs
+    if l:sign == v:null
+      continue
+    endif
+
+    if l:sign.breakid == a:breakid
+      call add(l:v, l:sign)
+    endif
+  endfor
+
+  return l:v
 endfunction
 
-function vimext#sign#NewLine(fname, lnum, brkid)
-endfunction
-
-function vimext#sign#New(buffname, breakid, filename, linenum, text)
-  let l:hiName = "dbgSignOn"
-  if a:flag == 0
-    let l:hiName = "dbgSignOff"
-  endif
-
-  if !bufexists(a:filename)
-    return
-  endif
-
-  let l:nsign = [len(s:signs), a:breakid, a:filename, a:linenum, a:text]
-  return l:nsign
-endfunction
-
-function vimext#sign#PlaceSign(self, filename, linenum, id, text, flag)
-  let l:hiName = "dbgSignOn"
-  if a:flag == 0
-    let l:hiName = "dbgSignOff"
-  endif
-
-  if !bufexists(a:filename)
-    return
-  endif
-
-  call sign_define('DbgSign'.a:id, {
-        \ "text": a:text,
-        \ "texthl": l:hiName})
-
-  call sign_place(a:id,
-        \ "DbgDebug",
-        \ "DbgSign" . a:id,
-        \ a:filename,
-        \ #{lnum: a:linenum, priority: 110})
-endfunction
-
-function vimext#sign#SignLine(sign) abort
+function vimext#sign#Line(fname, lnum)
   exe a:lnum
   normal! zv
 
-  if a:clean == 1
-    call sign_unplace('DbgDebug', #{id: s:pc_id})
+  call sign_unplace('DbgDebug', {
+        \ "id": s:pc_id
+        \})
+  call sign_place(s:pc_id, 'DbgDebug', 'DbgPC', a:fname, {
+        \ "lnum": a:lnum,
+        \ "priority": 110
+        \ })
+endfunction
+
+function vimext#sign#Place(self, filename, linenum)
+  if !bufexists(a:filename)
+    return
   endif
 
-  setlocal signcolumn=yes
-  call sign_place(s:pc_id, 'DbgDebug', 'DbgPC', a:fname, #{lnum: a:lnum, priority: 110})
+  let a:self.filename = a:filename
+  let a:self.linenum = a:linenum
+
+  call sign_place(a:self.id,
+        \ "DbgDebug",
+        \ "DbgSign" . a:self.id,
+        \ a:filename,
+        \ {
+        \ "lnum": a:linenum,
+        \ "priority": 110
+        \ })
+endfunction
+
+function vimext#sign#New(winid, breakid, text, enable)
+  let l:hiName = "dbgSignOn"
+  if a:enable == 0
+    let l:hiName = "dbgSignOff"
+  endif
+
+  let l:id = len(s:signs) + 1
+  let l:nsign = {
+        \ "id": l:id,
+        \ "winid": a:winid,
+        \ "breakid": a:breakid,
+        \ "filename": v:null,
+        \ "linenum": 0,
+        \ }
+
+  call sign_define('DbgSign'.l:id, {
+        \ "text": a:text,
+        \ "texthl": l:hiName})
+  call add(s:signs, l:nsign)
+
+  return l:nsign
+endfunction
+
+function vimext#sign#Dispose(self) abort
+  if !bufexists(a:self.filename)
+    return
+  endif
+
+  call sign_unplace("DbgDebug", {
+        \ "buffer": a:self.filename,
+        \ "id": a:self.id
+        \ })
+  call sign_undefine('DbgSign'.a:self.id)
+  let s:signs[a:self.id - 1] = v:null
 endfunction

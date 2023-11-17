@@ -83,9 +83,10 @@ function vimext#prompt#LoadSource(self, fname, lnum) abort
   if a:self.GetSouceWinPath(a:self) != a:fname
     exe 'edit '.a:fname
     let a:self.source_buff = bufnr("%")
+    setlocal signcolumn=yes
   endif
 
-  call vimext#sign#SignLine(a:fname, a:lnum, 1)
+  call vimext#sign#Line(a:fname, a:lnum)
   call win_gotoid(l:cwin)
 endfunction
 
