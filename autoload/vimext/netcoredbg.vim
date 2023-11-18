@@ -22,5 +22,5 @@ function s:GetCmd(self) abort
   return l:cmd
 endfunction
 
-function s:Dispose(self)
+function s:Dispose(self) abort
 endfunction

@@ -7,7 +7,7 @@ function vimext#runner#Create(lang) abort
 
   if s:self != v:null
     call vimext#logger#Warning("call not start two debugger")
-    return
+    return v:null
   endif
 
   if a:lang == "csharp"
@@ -78,10 +78,7 @@ function vimext#runner#Dispose() abort
   call vimext#sign#DeInit()
   call vimext#breakpoint#DeInit()
 
-  unlet s:self.prompt
-  unlet s:self.proto
-  unlet s:self.dbg
-  unlet s:self
+  let s:self = v:null
 endfunction
 
 function vimext#runner#Run(args) abort
@@ -92,7 +89,7 @@ function vimext#runner#Run(args) abort
       call s:Call(s:self.proto.Arguments, a:args)
     endif
   endif
-  let l:start = s:self.proto.GetStart(s:self.proto)
+  let l:start = vimext#proto#GetStart(s:self.proto)
 
   if l:start == v:null
     return
@@ -139,7 +136,7 @@ function vimext#runner#Break(args) abort
   endif
 
   if l:info[0] == 1
-    let l:info[1] = s:self.prompt.GetSouceWinPath(s:self.prompt)
+    let l:info[1] = vimext#prompt#GetSouceWinPath(s:self.prompt)
 
     let l:brk = vimext#breakpoint#Get(l:info[1], l:info[2])
     if l:brk != v:null
@@ -190,7 +187,7 @@ function s:PromptInput(cmd) abort
   return l:info[1] . " " . l:info[2]
 endfunction
 
-function s:DeleteBreakPointByFName(self, fname, lnum)
+function s:DeleteBreakPointByFName(self, fname, lnum) abort
   let l:brk = vimext#breakpoint#Get(a:fname, a:lnum)
   if l:brk == v:null
     call s:Call(a:self.proto.Break, a:fname . ":" . a:lnum)
@@ -210,9 +207,11 @@ function s:PromptOut(channel, msg) abort
   endif
 
   if info[0] == 1 " hit breakpoint
+    call vimext#logger#ProfileStart("vimext#prompt#LoadSource")
     call vimext#prompt#LoadSource(l:prompt, info[2], info[3])
-    call vimext#sign#Line(info[2], info[3])
+  call vimext#logger#ProfileEnd()
 
+    call vimext#sign#Line(info[2], info[3])
     call vimext#prompt#SetOutputState(l:prompt, 1)
 
   elseif info[0] == 2 " exit normally

@@ -1,7 +1,7 @@
 let s:signs = []
 let s:pc_id = 30
 
-function vimext#sign#Init()
+function vimext#sign#Init() abort
   hi default dbgSignOn term=reverse ctermbg=red guibg=red
   hi default dbgSignOff term=reverse ctermbg=gray guibg=gray
   call sign_define('DbgPC', {
@@ -9,7 +9,7 @@ function vimext#sign#Init()
         \ })
 endfunction
 
-function vimext#sign#DeInit()
+function vimext#sign#DeInit() abort
   call sign_unplace('DbgDebug', {
         \ "id": s:pc_id
         \})
@@ -17,7 +17,7 @@ function vimext#sign#DeInit()
   call sign_undefine('DbgPC')
 endfunction
 
-function vimext#sign#GetByBreakID(breakid)
+function vimext#sign#GetByBreakID(breakid) abort
   let l:v = []
 
   for l:sign in s:signs
@@ -33,7 +33,7 @@ function vimext#sign#GetByBreakID(breakid)
   return l:v
 endfunction
 
-function vimext#sign#Line(fname, lnum)
+function vimext#sign#Line(fname, lnum) abort
   exe a:lnum
   normal! zv
 
@@ -46,7 +46,7 @@ function vimext#sign#Line(fname, lnum)
         \ })
 endfunction
 
-function vimext#sign#Place(self, filename, linenum)
+function vimext#sign#Place(self, filename, linenum) abort
   if !bufexists(a:filename)
     return
   endif
@@ -64,7 +64,7 @@ function vimext#sign#Place(self, filename, linenum)
         \ })
 endfunction
 
-function vimext#sign#New(winid, breakid, text, enable)
+function vimext#sign#New(winid, breakid, text, enable) abort
   let l:hiName = "dbgSignOn"
   if a:enable == 0
     let l:hiName = "dbgSignOff"

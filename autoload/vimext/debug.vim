@@ -1,12 +1,8 @@
 const s:NullRepl = 'XXXNULLXXX'
-
 function vimext#debug#DecodeFilePath(quotedText)
-  if a:quotedText[0] != '"'
-    call vimext#logger#Error('DecodeMessage(): missing quote in ' . a:quotedText)
-    return
-  endif
+  let l:msg = substitute(a:quotedText, "\\", "/", "g")
 
-  return vimext#debug#DecodeMessage(a:quotedText, v:false)
+  return vimext#debug#DecodeMessage(l:msg, v:false)
 endfunction
 
 function vimext#debug#DecodeMessage(quotedText, literal)
@@ -31,7 +27,6 @@ function vimext#debug#DecodeMessage(quotedText, literal)
         \ ->substitute(s:NullRepl, '\\000', 'g')
   if !a:literal
     return msg
-          \ ->substitute('\\r$', "", 'g')
           \ ->substitute('\\t', "\t", 'g')
           \ ->substitute('\\n', '', 'g')
   else
@@ -52,7 +47,12 @@ function vimext#debug#NewWindow(name) abort
 endfunction
 
 function s:StartPre() abort
-  execute "silent :$tabnew debugger"
+  nnoremap <F5>  :call vimext#runner#Continue()<cr>
+  nnoremap <F6>  :call vimext#runner#Next()<cr>
+  nnoremap <F7>  :call vimext#runner#Step()<cr>
+  nnoremap <F8>  :call vimext#runner#Break(line("."))<cr>
+
+  execute "silent tabnew debugger"
 endfunction
 
 function s:StartPost() abort
@@ -67,7 +67,7 @@ endfunction
 
 function s:StopPost() abort
   call vimext#runner#Dispose()
-  execute "silent tabclose"
+  execute ":redraw!"
 endfunction
 
 function s:StartDebug(bang, ...) abort
@@ -94,13 +94,9 @@ function vimext#debug#Init() abort
   autocmd! User DbgDebugStopPre :call s:StopPre()
   autocmd! User DbgDebugStopPost :call s:StopPost()
 
-  nnoremap <F5>  :call vimext#runner#Continue()<cr>
-  nnoremap <F6>  :call vimext#runner#Next()<cr>
-  nnoremap <F7>  :call vimext#runner#Step()<cr>
-  nnoremap <F8>  :call vimext#runner#Break(line("."))<cr>
-
   command -nargs=* -complete=file -bang DbgDebug call s:StartDebug(<bang>0, <f-args>)
-
-  execute ':DbgDebug csharp "E:/Codes/REPOSITORY/TableDataLib/DotConsole/bin/Debug/net7.0/DotConsole.dll"'
 endfunction
 
+function vimext#debug#DeInit() abort
+  delcommand DbgDebug
+endfunction

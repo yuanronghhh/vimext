@@ -4,7 +4,7 @@
 let s:output_stopped = 1 " lock for callback
 let s:self = v:null
 
-function s:Highlight(init, old, new) abort
+function vimext#prompt#Highlight(init, old, new) abort
   let default = a:init ? 'default ' : ''
   if a:new ==# 'light' && a:old !=# 'light'
     exe "hi " . default . "DbgPC term=reverse ctermbg=lightblue guibg=lightblue"
@@ -13,17 +13,11 @@ function s:Highlight(init, old, new) abort
   endif
 endfunction
 
-function s:InitHighlight() abort
-  call s:Highlight(1, '', &background)
+function vimext#prompt#InitHighlight() abort
+  call vimext#prompt#Highlight(1, '', &background)
 endfunction
 
-function s:GotoWin(win_id)
-  if !win_gotoid(a:win_id)
-    call vimext#logger#Error("failed")
-  endif
-endfunction
-
-function s:InitChannel(self) abort
+function vimext#prompt#InitChannel(self) abort
   let l:cmd = a:self.dbg.GetCmd(a:self.dbg)
 
   let l:job = job_start(l:cmd, {
@@ -41,17 +35,13 @@ function s:InitChannel(self) abort
   return 1
 endfunction
 
-function vimext#prompt#Interrupt() abort
-endfunction
-
 function s:StartPrompt(self) abort
   let a:self.dbg_win = win_getid()
   let a:self.prompt_buf = bufnr('%')
   let a:self.output_win = a:self.dbg_win
 
-  set modified
-  set buftype=prompt
   call prompt_setprompt(a:self.prompt_buf, '(gdb) ')
+  setlocal buftype=prompt
   call prompt_setcallback(a:self.prompt_buf, a:self["Callback"])
   call prompt_setinterrupt(a:self.prompt_buf, a:self["Interrupt"])
 
@@ -80,8 +70,8 @@ function vimext#prompt#LoadSource(self, fname, lnum) abort
   endif
   call win_gotoid(a:self.source_win)
 
-  if a:self.GetSouceWinPath(a:self) != a:fname
-    exe 'edit '.a:fname
+  if vimext#prompt#GetSouceWinPath(a:self) != a:fname
+    execute "edit ".a:fname
     let a:self.source_buff = bufnr("%")
     setlocal signcolumn=yes
   endif
@@ -138,7 +128,6 @@ function vimext#prompt#Create(dbg, funcs) abort
         \ "source_path": v:null,
         \ "prompt_pid": 0,
         \ "prompt_buf": 0,
-        \ "GetSouceWinPath": function("s:GetSouceWinPath"),
         \ "Start": function("s:StartPrompt"),
         \ "Callback": function("s:PromptCallback"),
         \ "Interrupt": function("s:PromptInterrupt"),
@@ -146,7 +135,7 @@ function vimext#prompt#Create(dbg, funcs) abort
         \ "HandleInput": get(a:funcs, "HandleInput", v:null),
         \ 'HandleOutput': get(a:funcs, "HandleOutput", v:null),
         \ "Send": function("s:PromptSend"),
-        \ "Dispose": function("s:Dispose")
+        \ "Dispose": function("s:Dispose"),
         \ }
 
   if !has('terminal')
@@ -154,8 +143,8 @@ function vimext#prompt#Create(dbg, funcs) abort
     return v:null
   endif
 
-  call s:InitHighlight()
-  if s:InitChannel(l:self) == 0
+  call vimext#prompt#InitHighlight()
+  if vimext#prompt#InitChannel(l:self) == 0
     return v:null
   endif
   let s:self = l:self
@@ -163,7 +152,7 @@ function vimext#prompt#Create(dbg, funcs) abort
   return l:self
 endfunction
 
-function s:GetSouceWinPath(self)
+function vimext#prompt#GetSouceWinPath(self) abort
   let l:bnr = winbufnr(a:self.source_win)
   return bufname(l:bnr)
 endfunction
@@ -172,28 +161,27 @@ function vimext#prompt#SetOutputState(self, state) abort
   let s:output_stopped = a:state
 endfunction
 
-function s:Dispose(self)
+function s:Dispose(self) abort
+  if a:self == v:null
+    return
+  endif
+
   let l:was_buf = v:null
 
-  if a:self != v:null
-    let a:self.running = 0
+  let a:self.running = 0
+  if a:self.source_win != v:null
+    call win_gotoid(a:self.source_win)
+    let l:was_buf = bufnr()
 
-    if a:self.source_win != v:null
-      call win_gotoid(a:self.source_win)
-      let l:was_buf = bufnr()
-
-      unlet a:self.source_win
-    endif
-
-    set nomodified
-    set buftype=
-    call prompt_setprompt(a:self.prompt_buf, '')
-
-    exe 'bwipe! ' . a:self.prompt_buf
-    call job_stop(a:self.job, "kill")
-
-    unlet a:self.dbg_win
-    unlet a:self.prompt_buf
-    unlet a:self.output_win
+    execute 'bwipe! ' . l:was_buf
+    unlet a:self.source_win
   endif
+
+  execute 'bwipe! ' . a:self.prompt_buf
+  call job_stop(a:self.job, "kill")
+
+  unlet a:self.output_win
+  unlet a:self.dbg_win
+  unlet a:self.prompt_buf
+  let s:self = v:null
 endfunction

@@ -1,6 +1,6 @@
 let g:vimext_c_plugins = []
 
-function vimext#plugins#LoadPlugin(plugins)
+function vimext#plugins#LoadPlugin(plugins) abort
   let l:ppath = ""
 
   for l:p in a:plugins
@@ -14,7 +14,7 @@ function vimext#plugins#LoadPlugin(plugins)
   endfor
 endfunction
 
-function vimext#plugins#LoadCPlugin(plugins)
+function vimext#plugins#LoadCPlugin(plugins) abort
   let l:ppath = ""
   for l:p in a:plugins
     if l:p[1] == ":" || l:p[0] == "/"
@@ -27,7 +27,7 @@ function vimext#plugins#LoadCPlugin(plugins)
   endfor
 endfunction
 
-function vimext#plugins#CallCFunc(pindex, func_name, args)
+function vimext#plugins#CallCFunc(pindex, func_name, args) abort
   if !g:vimext_c_api
     return '<None>'
   endif

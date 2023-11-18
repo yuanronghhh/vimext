@@ -24,16 +24,13 @@ function vimext#proto#Create(name) abort
         \ "SaveBreakoints": "save breakpoints",
         \ "Start": "start",
         \ "Print": "print",
-        \ "GetStart": function("s:GetStart"),
         \ "ProcessOutput": function("s:MIProcessOutput"),
         \ "ProcessInput": function("s:ProcessInput"),
-        \ "ProcessMsg": function("s:ProcessMsg"),
-        \ "Dispose": function("s:Dispose")
+        \ "Dispose": function("s:Dispose"),
         \ }
 
   let s:vscode_cmd = {
         \ "name": "vscode",
-        \ "Dispose": function("s:Dispose")
         \ }
 
   let l:self = v:null
@@ -53,7 +50,7 @@ function vimext#proto#Create(name) abort
   return l:self
 endfunction
 
-function s:GetStart(self)
+function vimext#proto#GetStart(self) abort
   if a:self.name == "mi"
     return a:self.Run
   elseif a:self.name == "mi2"
@@ -63,7 +60,7 @@ function s:GetStart(self)
   endif
 endfunction
 
-function vimext#proto#ParseInputArgs(cmd)
+function vimext#proto#ParseInputArgs(cmd) abort
   let l:nameIdx = matchlist(a:cmd, '\(\S*\) \([^\n]*\)')
   if len(l:nameIdx) <= 2
     return ""
@@ -72,7 +69,7 @@ function vimext#proto#ParseInputArgs(cmd)
   return l:nameIdx[2]
 endfunction
 
-function s:ProcessInput(self, cmd)
+function s:ProcessInput(self, cmd) abort
   " type,cmd,args,pre-execute-cmd
   let l:info = [0, "", "", 0]
   let l:cmd = "next"
