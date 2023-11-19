@@ -30,6 +30,11 @@ function vimext#runner#Create(lang) abort
     let l:prompt = vimext#prompt#Create(l:dbg, l:funcs)
   else
   endif
+
+  if l:prompt == v:null
+    return v:null
+  endif
+
   call vimext#sign#Init()
   call l:dbg.SetConfig(l:dbg, l:prompt, l:proto)
 
@@ -79,6 +84,14 @@ function vimext#runner#Dispose() abort
   call vimext#breakpoint#DeInit()
 
   let s:self = v:null
+endfunction
+
+function vimext#runner#Asm() abort
+  if !vimext#prompt#Asm(s:self.prompt)
+    return
+  endif
+
+  call s:Call(s:self.proto.Disassemble, "$pc")
 endfunction
 
 function vimext#runner#Run(args) abort

@@ -34,18 +34,6 @@ function vimext#debug#DecodeMessage(quotedText, literal)
   endif
 endfunction
 
-function vimext#debug#NewWindow(name) abort
-  let l:cwin = win_getid()
-
-  execute "vertical new ".a:name
-  let l:nwin = win_getid()
-  execute (&columns / 2 - 1) . "wincmd |"
-
-  call win_gotoid(l:cwin)
-
-  return l:nwin
-endfunction
-
 function s:StartPre() abort
   nnoremap <F5>  :call vimext#runner#Continue()<cr>
   nnoremap <F6>  :call vimext#runner#Next()<cr>
@@ -95,6 +83,7 @@ function vimext#debug#Init() abort
   autocmd! User DbgDebugStopPost :call s:StopPost()
 
   command -nargs=* -complete=file -bang DbgDebug call s:StartDebug(<bang>0, <f-args>)
+  command Asm call vimext#runner#Asm()
 endfunction
 
 function vimext#debug#DeInit() abort

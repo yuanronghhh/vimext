@@ -23,6 +23,7 @@ function vimext#proto#Create(name) abort
         \ "Exit": "-gdb-exit",
         \ "SaveBreakoints": "save breakpoints",
         \ "Start": "start",
+        \ "Disassemble": "disassemble",
         \ "Print": "print",
         \ "ProcessOutput": function("s:MIProcessOutput"),
         \ "ProcessInput": function("s:ProcessInput"),
@@ -224,7 +225,19 @@ function s:MIProcessOutput(msg) abort
     let l:info[8] = l:nameIdx[8] " line
   elseif l:msg =~ '^\*stopped,reason="end-stepping-range"'
         \ || l:msg =~ '^\*stopped,reason="function-finished"'
+        \ || l:msg =~ '\*stopped,reason="signal-received"'
     let l:nameIdx = matchlist(l:msg, '^\*stopped,reason=.*,fullname=\([^,]*\),line="\(\d\+\)"')
+    if len(l:nameIdx) == 0
+      return l:info
+    endif
+
+    let l:info[0] = 5
+    let l:info[1] = vimext#debug#DecodeFilePath(l:nameIdx[1])  " filename
+    let l:info[2] = l:nameIdx[2]  " lineno
+    let l:info[3] = l:nameIdx[3]  " col -> only for netcoredbg
+
+  elseif l:msg =~ '^=thread-selected,'
+    let l:nameIdx = matchlist(l:msg, '^=thread-selected,.*,fullname=\([^,]*\),line="\(\d\+\)"')
     if len(l:nameIdx) == 0
       return l:info
     endif
@@ -240,7 +253,8 @@ function s:MIProcessOutput(msg) abort
   elseif l:msg =~ '=library-'
         \ || l:msg =~ '^=symbols-loaded,'
         \ || l:msg =~ '^=no-symbols-loaded,'
-        \ || l:msg =~ '^=thread'
+        \ || l:msg =~ '^=thread-created'
+        \ || l:msg =~ '^=thread-exited'
         \ || l:msg =~ '^*running,thread-id'
     " ignored
     "
@@ -302,6 +316,15 @@ function s:MIProcessOutput(msg) abort
 
     let l:info[0] = 10
     let l:info[1] = vimext#debug#DecodeMessage(l:nameIdx[1], v:false)
+
+  elseif l:msg =~ '\*stopped,reason="exception-received",'
+    let l:nameIdx = matchlist(l:msg, '^\*stopped,reason="exception-received",exception-name="\([^"]\+\)",exception="\([^"]\+\)",')
+    if len(l:nameIdx) == 0
+      return l:info
+    endif
+
+    let l:info[0] = 10
+    let l:info[1] = l:nameIdx[1] . ": " . vimext#debug#DecodeMessage('"' . l:nameIdx[2] . '\"', v:false)
 
   elseif l:msg =~ '^\*stopped,reason="exited",exit-code='
     let l:nameIdx = matchlist(l:msg, '^\*stopped,reason="exited",exit-code="\(\d\+\)"')

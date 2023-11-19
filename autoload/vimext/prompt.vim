@@ -19,14 +19,13 @@ endfunction
 
 function vimext#prompt#InitChannel(self) abort
   let l:cmd = a:self.dbg.GetCmd(a:self.dbg)
-
   let l:job = job_start(l:cmd, {
         \ "exit_cb": a:self.HandleExit,
         \ "out_cb": a:self.HandleOutput
         \ })
 
   if job_status(l:job) != "run"
-    call vimext#logger#Error('Failed to start '. l:cmd)
+    call vimext#logger#Error('Failed to start:'. join(l:cmd, ' '))
     return 0
   endif
 
@@ -58,6 +57,30 @@ function s:PromptSend(self, cmd) abort
   call ch_sendraw(a:self.dbg_channel, a:cmd."\n")
 endfunction
 
+
+function vimext#prompt#CreateAsmWin()
+  let l:win = vimext#buffer#NewWindow("asm")
+
+  setlocal nowrap
+  setlocal number
+  setlocal noswapfile
+  setlocal buftype=nofile
+  setlocal bufhidden=wipe
+  setlocal signcolumn=no
+  setlocal modifiable
+
+  return l:win
+endfunction
+
+function vimext#prompt#Asm(self)
+  if vimext#buffer#WinExists(a:self.asm_win)
+    return v:false
+  endif
+
+  let a:self.asm_win = vimext#prompt#CreateAsmWin()
+  return v:true
+endfunction
+
 function vimext#prompt#LoadSource(self, fname, lnum) abort
   let l:cwin = win_getid()
   if !filereadable(a:fname)
@@ -66,11 +89,11 @@ function vimext#prompt#LoadSource(self, fname, lnum) abort
   endif
 
   if a:self.source_win == v:null
-    let a:self.source_win = vimext#debug#NewWindow("source")
+    let a:self.source_win = vimext#buffer#NewWindow("source")
   endif
   call win_gotoid(a:self.source_win)
 
-  if vimext#prompt#GetSouceWinPath(a:self) != a:fname
+  if vimext#buffer#GetNameByWinID(a:self.source_win) != a:fname
     execute "edit ".a:fname
     let a:self.source_buff = bufnr("%")
     setlocal signcolumn=yes
@@ -118,14 +141,13 @@ function vimext#prompt#Create(dbg, funcs) abort
   let l:self = {
         \ "dbg": a:dbg,
         \ "mode": v:null,
-        \ "asm_id": 31,
+        \ "asm_win": 31,
         \ "dbg_channel": v:null,
         \ "job": v:null,
         \ "running": 0,
         \ "dbg_win": v:null,
         \ "output_win": v:null,
         \ "source_win": v:null,
-        \ "source_path": v:null,
         \ "prompt_pid": 0,
         \ "prompt_buf": 0,
         \ "Start": function("s:StartPrompt"),
@@ -153,8 +175,7 @@ function vimext#prompt#Create(dbg, funcs) abort
 endfunction
 
 function vimext#prompt#GetSouceWinPath(self) abort
-  let l:bnr = winbufnr(a:self.source_win)
-  return bufname(l:bnr)
+  return vimext#buffer#GetNameByWinID(a:self.source_win)
 endfunction
 
 function vimext#prompt#SetOutputState(self, state) abort
@@ -166,18 +187,14 @@ function s:Dispose(self) abort
     return
   endif
 
-  let l:was_buf = v:null
-
   let a:self.running = 0
-  if a:self.source_win != v:null
-    call win_gotoid(a:self.source_win)
-    let l:was_buf = bufnr()
 
-    execute 'bwipe! ' . l:was_buf
+  if a:self.source_win != v:null
+    call vimext#buffer#WipeWin(a:self.source_win)
     unlet a:self.source_win
   endif
 
-  execute 'bwipe! ' . a:self.prompt_buf
+  call vimext#buffer#Wipe(a:self.prompt_buf)
   call job_stop(a:self.job, "kill")
 
   unlet a:self.output_win
