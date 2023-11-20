@@ -33,14 +33,14 @@ function vimext#sign#GetByBreakID(breakid) abort
   return l:v
 endfunction
 
-function vimext#sign#Line(fname, lnum) abort
+function vimext#sign#Line(pc_id, fname, lnum) abort
   exe a:lnum
   normal! zv
 
   call sign_unplace('DbgDebug', {
-        \ "id": s:pc_id
+        \ "id": a:pc_id
         \})
-  call sign_place(s:pc_id, 'DbgDebug', 'DbgPC', a:fname, {
+  call sign_place(a:pc_id, 'DbgDebug', 'DbgPC', a:fname, {
         \ "lnum": a:lnum,
         \ "priority": 110
         \ })

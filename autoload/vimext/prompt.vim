@@ -1,7 +1,7 @@
 """
 " refactor version of termdbug
 """
-let s:output_stopped = 1 " lock for callback
+let s:output_state = 1 " lock for callback
 let s:self = v:null
 
 function vimext#prompt#Highlight(init, old, new) abort
@@ -35,9 +35,7 @@ function vimext#prompt#InitChannel(self) abort
 endfunction
 
 function s:StartPrompt(self) abort
-  let a:self.dbg_win = win_getid()
   let a:self.prompt_buf = bufnr('%')
-  let a:self.output_win = a:self.dbg_win
 
   call prompt_setprompt(a:self.prompt_buf, '(gdb) ')
   setlocal buftype=prompt
@@ -48,8 +46,9 @@ function s:StartPrompt(self) abort
 endfunction
 
 function s:PromptSend(self, cmd) abort
-  if s:output_stopped == 0
+  if s:output_state == 0
     call vimext#logger#Warning("Command Drop: ".a:cmd)
+    let l:output_state = 1
     return
   endif
 
@@ -57,56 +56,14 @@ function s:PromptSend(self, cmd) abort
   call ch_sendraw(a:self.dbg_channel, a:cmd."\n")
 endfunction
 
-
-function vimext#prompt#CreateAsmWin()
-  let l:win = vimext#buffer#NewWindow("asm")
-
-  setlocal nowrap
-  setlocal number
-  setlocal noswapfile
-  setlocal buftype=nofile
-  setlocal bufhidden=wipe
-  setlocal signcolumn=no
-  setlocal modifiable
-
-  return l:win
+function vimext#prompt#GetOutputState(self) abort
+  return s:output_state
 endfunction
 
-function vimext#prompt#Asm(self)
-  if vimext#buffer#WinExists(a:self.asm_win)
-    return v:false
-  endif
-
-  let a:self.asm_win = vimext#prompt#CreateAsmWin()
-  return v:true
-endfunction
-
-function vimext#prompt#LoadSource(self, fname, lnum) abort
-  let l:cwin = win_getid()
-  if !filereadable(a:fname)
-    call vimext#logger#Warning("file not readable " . a:fname)
-    return
-  endif
-
-  if a:self.source_win == v:null
-    let a:self.source_win = vimext#buffer#NewWindow("source")
-  endif
-  call win_gotoid(a:self.source_win)
-
-  if vimext#buffer#GetNameByWinID(a:self.source_win) != a:fname
-    execute "edit ".a:fname
-    let a:self.source_buff = bufnr("%")
-    setlocal signcolumn=yes
-  endif
-
-  call vimext#sign#Line(a:fname, a:lnum)
-  call win_gotoid(l:cwin)
-endfunction
-
-function vimext#prompt#PrintOutput(self, msg) abort
+function vimext#prompt#PrintOutput(self, win, msg) abort
   let l:cwin = win_getid()
 
-  call win_gotoid(a:self.output_win)
+  call win_gotoid(a:win)
   call append(line('$') - 1, a:msg)
 
   call win_gotoid(l:cwin)
@@ -114,7 +71,7 @@ endfunction
 
 " prompt
 function s:PromptCallback(cmd) abort
-  if s:output_stopped == 0
+  if s:output_state == 0
     return
   endif
 
@@ -141,13 +98,8 @@ function vimext#prompt#Create(dbg, funcs) abort
   let l:self = {
         \ "dbg": a:dbg,
         \ "mode": v:null,
-        \ "asm_win": 31,
         \ "dbg_channel": v:null,
         \ "job": v:null,
-        \ "running": 0,
-        \ "dbg_win": v:null,
-        \ "output_win": v:null,
-        \ "source_win": v:null,
         \ "prompt_pid": 0,
         \ "prompt_buf": 0,
         \ "Start": function("s:StartPrompt"),
@@ -174,12 +126,8 @@ function vimext#prompt#Create(dbg, funcs) abort
   return l:self
 endfunction
 
-function vimext#prompt#GetSouceWinPath(self) abort
-  return vimext#buffer#GetNameByWinID(a:self.source_win)
-endfunction
-
 function vimext#prompt#SetOutputState(self, state) abort
-  let s:output_stopped = a:state
+  let s:output_state = a:state
 endfunction
 
 function s:Dispose(self) abort
@@ -187,18 +135,9 @@ function s:Dispose(self) abort
     return
   endif
 
-  let a:self.running = 0
-
-  if a:self.source_win != v:null
-    call vimext#buffer#WipeWin(a:self.source_win)
-    unlet a:self.source_win
-  endif
-
   call vimext#buffer#Wipe(a:self.prompt_buf)
   call job_stop(a:self.job, "kill")
 
-  unlet a:self.output_win
-  unlet a:self.dbg_win
   unlet a:self.prompt_buf
   let s:self = v:null
 endfunction

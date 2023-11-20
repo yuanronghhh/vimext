@@ -1,6 +1,19 @@
-function vimext#buffer#WinExists(win) abort
-  let l:bnr = winbufnr(a:wid)
+function vimext#buffer#WinExists(winid) abort
+  if a:winid == v:null
+    return v:false
+  endif
+
+  let l:bnr = winbufnr(a:winid)
   return bufexists(l:bnr)
+endfunction
+
+function vimext#buffer#ClearWin(winid) abort
+  let l:cwin = win_getid()
+
+  call win_gotoid(a:winid)
+  silent! %delete _
+
+  call win_gotoid(l:cwin)
 endfunction
 
 function vimext#buffer#Wipe(buf) abort
@@ -27,14 +40,21 @@ function vimext#buffer#GetNameByWinID(wid) abort
   return bufname(l:bnr)
 endfunction
 
-function vimext#buffer#NewWindow(name) abort
-  let l:cwin = win_getid()
+function vimext#buffer#NewWindow(name, dr, basewin) abort
+  if a:basewin != v:null
+    call win_gotoid(a:basewin)
+  endif
 
-  execute "vertical new ".a:name
+  if a:dr == 1
+    execute "vertical new ".a:name
+    execute (&columns / 2 - 1) . "wincmd |"
+  elseif a:dr == 2
+    execute "new ".a:name
+
+  elseif a:dr == 3
+    execute "rightbelow new ".a:name
+  endif
   let l:nwin = win_getid()
-  execute (&columns / 2 - 1) . "wincmd |"
-
-  call win_gotoid(l:cwin)
 
   return l:nwin
 endfunction

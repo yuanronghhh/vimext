@@ -41,23 +41,33 @@ function vimext#runner#Create(lang) abort
   let l:self = {
         \ "proto": l:proto,
         \ "prompt": l:prompt,
-        \ "dbg": l:dbg
+        \ "dbg": l:dbg,
+        \ "asm_win": v:null,
+        \ "dbg_win": v:null,
+        \ "pc_id": 31,
+        \ "asm_id": 32,
+        \ "asm_func": v:null,
+        \ "output_win": v:null,
+        \ "source_win": v:null,
         \ }
   let s:self = l:self
-
   if exists('#User#DbgDebugStartPre')
     doauto <nomodeline> User DbgDebugStartPre
   endif
+
   call l:prompt.Start(l:prompt)
+  let l:self.dbg_win = win_getid()
+  let l:self.output_win = l:self.dbg_win
 
   hi default dbgBreakpoint term=reverse ctermbg=red guibg=red
   hi default dbgBreakpointDisabled term=reverse ctermbg=gray guibg=gray
+
+  call vimext#runner#Restore()
 
   if exists('#User#DbgDebugStartPost')
     doauto <nomodeline> User DbgDebugStartPost
   endif
 
-  call vimext#runner#Restore()
   return l:self
 endfunction
 
@@ -83,15 +93,34 @@ function vimext#runner#Dispose() abort
   call vimext#sign#DeInit()
   call vimext#breakpoint#DeInit()
 
+  if s:self.source_win != v:null
+    call vimext#buffer#WipeWin(s:self.source_win)
+    unlet s:self.source_win
+  endif
+
+  if s:self.asm_win != v:null
+    call vimext#buffer#WipeWin(s:self.asm_win)
+    unlet s:self.asm_win
+  endif
+
+  unlet s:self.output_win
+  unlet s:self.dbg_win
+
   let s:self = v:null
 endfunction
 
+function vimext#runner#GetSouceWinPath(self) abort
+  return vimext#buffer#GetNameByWinID(a:self.source_win)
+endfunction
+
 function vimext#runner#Asm() abort
-  if !vimext#prompt#Asm(s:self.prompt)
+  if vimext#buffer#WinExists(s:self.asm_win)
     return
   endif
 
+  let s:self.asm_win = vimext#runner#CreateAsmWin(s:self)
   call s:Call(s:self.proto.Disassemble, "$pc")
+  call win_gotoid(s:self.dbg_win)
 endfunction
 
 function vimext#runner#Run(args) abort
@@ -149,7 +178,7 @@ function vimext#runner#Break(args) abort
   endif
 
   if l:info[0] == 1
-    let l:info[1] = vimext#prompt#GetSouceWinPath(s:self.prompt)
+    let l:info[1] = vimext#runner#GetSouceWinPath(s:self.prompt)
 
     let l:brk = vimext#breakpoint#Get(l:info[1], l:info[2])
     if l:brk != v:null
@@ -209,6 +238,68 @@ function s:DeleteBreakPointByFName(self, fname, lnum) abort
   endif
 endfunction
 
+function vimext#runner#CreateAsmWin(self)
+  let l:win = vimext#buffer#NewWindow("asm", 3, a:self.source_win)
+
+  setlocal nowrap
+  setlocal number
+  setlocal noswapfile
+  setlocal buftype=nofile
+  setlocal filetype=asm
+  setlocal bufhidden=wipe
+  setlocal signcolumn=no
+  setlocal modifiable
+
+  return l:win
+endfunction
+
+function vimext#runner#LoadAsmBreak(self, msg) abort
+  let l:cwin = win_getid()
+
+  call win_gotoid(a:self.asm_win)
+  let l:buff = vimext#buffer#GetNameByWinID(a:self.asm_win)
+
+  call append(line('$') - 1, a:msg)
+  call vimext#sign#Line(a:self.asm_id, l:buff, line("$") - 1)
+
+  call win_gotoid(l:cwin)
+endfunction
+
+function vimext#runner#LoadSource(self, fname, lnum) abort
+  let l:cwin = win_getid()
+  if !filereadable(a:fname)
+    call vimext#logger#Warning("file not readable " . a:fname)
+    return
+  endif
+
+  if a:self.source_win == v:null
+    let a:self.source_win = vimext#buffer#NewWindow("source", 1, v:null)
+  endif
+
+  if vimext#buffer#GetNameByWinID(a:self.source_win) != a:fname
+    execute "edit ".a:fname
+    let a:self.source_buff = bufnr("%")
+    setlocal signcolumn=yes
+  endif
+  call vimext#sign#Line(a:self.pc_id, a:fname, a:lnum)
+  call vimext#prompt#SetOutputState(a:self.prompt, 1)
+
+  if a:self.asm_win != v:null
+    call s:Call(s:self.proto.Disassemble, "$pc")
+  endif
+
+  call win_gotoid(l:cwin)
+endfunction
+
+function vimext#runner#PrintOutput(self, msg) abort
+  if vimext#prompt#GetOutputState(a:self.prompt) == 2 && a:self.asm_win != v:null
+    call vimext#prompt#PrintOutput(a:self.prompt, a:self.asm_win, a:msg)
+  else
+    call vimext#prompt#PrintOutput(a:self.prompt, a:self.output_win, a:msg)
+    call vimext#prompt#SetOutputState(a:self.prompt, 1)
+  endif
+endfunction
+
 function s:PromptOut(channel, msg) abort
   "call vimext#logger#Info(a:msg)
   let l:proto = s:self.proto
@@ -220,12 +311,7 @@ function s:PromptOut(channel, msg) abort
   endif
 
   if info[0] == 1 " hit breakpoint
-    call vimext#logger#ProfileStart("vimext#prompt#LoadSource")
-    call vimext#prompt#LoadSource(l:prompt, info[2], info[3])
-  call vimext#logger#ProfileEnd()
-
-    call vimext#sign#Line(info[2], info[3])
-    call vimext#prompt#SetOutputState(l:prompt, 1)
+    call vimext#runner#LoadSource(s:self, info[2], info[3])
 
   elseif info[0] == 2 " exit normally
     call vimext#prompt#SetOutputState(l:prompt, 1)
@@ -239,27 +325,39 @@ function s:PromptOut(channel, msg) abort
     call vimext#prompt#SetOutputState(l:prompt, 1)
 
   elseif info[0] == 5 " exit end stepping range
-    call vimext#prompt#LoadSource(l:prompt, info[1], info[2])
-    call vimext#prompt#SetOutputState(l:prompt, 1)
+    call vimext#runner#LoadSource(s:self, info[1], info[2])
 
   elseif info[0] == 7 " filter useless msg
 
   elseif info[0] == 8 " output msg
-    call vimext#prompt#PrintOutput(l:prompt, info[1])
-    call vimext#prompt#SetOutputState(l:prompt, 1)
+    call vimext#runner#PrintOutput(s:self, info[1])
 
   elseif info[0] == 9 " entry-point-hit
-    call vimext#prompt#LoadSource(l:prompt, info[1], info[2])
-    call vimext#prompt#SetOutputState(l:prompt, 1)
+    call vimext#runner#LoadSource(s:self, info[1], info[2])
 
   elseif info[0] == 10 " error msg
-    call vimext#prompt#PrintOutput(l:prompt, info[1])
-    call vimext#prompt#SetOutputState(l:prompt, 1)
+    call vimext#runner#PrintOutput(s:self, info[1])
 
   elseif info[0] == 11 " breakpoint delete
     call vimext#breakpoint#DeleteID(l:info[1])
 
+  elseif info[0] == 12 " disassemble
+    "Dump of assembler code for function main:
+    call vimext#prompt#SetOutputState(l:prompt, 2)
+
+  elseif info[0] == 13 " done
+    call vimext#prompt#SetOutputState(l:prompt, 1)
+
+  elseif info[0] == 14 " asm break
+    call vimext#runner#LoadAsmBreak(s:self, l:info[9])
+
+  elseif info[0] == 15 " asm func info
+    if s:self.asm_func != l:info[1]
+      call vimext#buffer#ClearWin(s:self.asm_win)
+    endif
+    call vimext#runner#PrintOutput(s:self, l:info[9])
   else
-    call vimext#prompt#PrintOutput(l:prompt, l:info[9])
+    call vimext#runner#PrintOutput(s:self, l:info[9])
+
   endif
 endfunction

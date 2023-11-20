@@ -167,7 +167,6 @@ function s:ProcessMsg(text) abort
   let l:text = v:null
 
   if a:text =~ '(gdb) '
-        \ || a:text == '^done'
         \ || (a:text[0] == '&' && a:text !~ '^&"disassemble')
     return v:null
   endif
@@ -253,9 +252,9 @@ function s:MIProcessOutput(msg) abort
   elseif l:msg =~ '=library-'
         \ || l:msg =~ '^=symbols-loaded,'
         \ || l:msg =~ '^=no-symbols-loaded,'
-        \ || l:msg =~ '^=thread-created'
-        \ || l:msg =~ '^=thread-exited'
+        \ || l:msg =~ '^=thread'
         \ || l:msg =~ '^*running,thread-id'
+
     " ignored
     "
     let l:info[0] = 7
@@ -343,6 +342,31 @@ function s:MIProcessOutput(msg) abort
 
     let l:info[0] = 11
     let l:info[1] = l:nameIdx[1] " breakpoint id
+
+  elseif l:msg =~ '^&"disassemble'
+    let l:info[0] = 12
+
+  elseif l:msg =~ '^\^done'
+    let l:info[0] = 13
+
+  elseif l:msg =~ '^=>'
+    let l:nameIdx = matchlist(l:msg, '^=>\s\+\(\S\+\) <+\(\d\+\)>')
+    if len(l:nameIdx) == 0
+      return l:info
+    endif
+
+    let l:info[0] = 14
+    let l:info[1] = l:nameIdx[1]
+    let l:info[2] = l:nameIdx[2]
+
+  elseif l:msg =~ 'Dump of assembler code for function '
+    let l:nameIdx = matchlist(l:msg, '^Dump of assembler code for function \([^$]\+\)')
+    if len(l:nameIdx) == 0
+      return l:info
+    endif
+
+    let l:info[0] = 15
+    let l:info[1] = l:nameIdx[1]
   else
 
   endif
