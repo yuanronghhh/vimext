@@ -22,7 +22,7 @@ function vimext#buffer#Wipe(buf) abort
     return
   endif
 
-  execute 'bwipe! ' . a:buf
+  execute ':bwipe! ' . a:buf
 endfunction
 
 function vimext#buffer#WipeWin(win) abort
@@ -41,20 +41,24 @@ function vimext#buffer#GetNameByWinID(wid) abort
 endfunction
 
 function vimext#buffer#NewWindow(name, dr, basewin) abort
+  let l:cwin = win_getid()
+
   if a:basewin != v:null
     call win_gotoid(a:basewin)
   endif
 
   if a:dr == 1
-    execute "vertical new ".a:name
+    execute ":vertical new ".a:name
     execute (&columns / 2 - 1) . "wincmd |"
   elseif a:dr == 2
-    execute "new ".a:name
+    execute ":new ".a:name
 
   elseif a:dr == 3
-    execute "rightbelow new ".a:name
+    execute ":rightbelow new ".a:name
   endif
   let l:nwin = win_getid()
+
+  call win_gotoid(l:cwin)
 
   return l:nwin
 endfunction

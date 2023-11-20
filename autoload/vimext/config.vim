@@ -151,7 +151,7 @@ function vimext#config#LoadConfig()
         \ 'python': ['pylint']
         \ }
   call add(l:plugins, "ale")
-  call vimext#plugins#LoadPlugin(l:plugins)
+  "call vimext#plugins#LoadPlugin(l:plugins)
   call vimext#debug#Init()
 
   command! -nargs=? -complete=custom,vimext#session#SessionCompelete OpenSession :call vimext#session#OpenSession("<args>")

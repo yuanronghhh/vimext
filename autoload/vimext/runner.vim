@@ -1,5 +1,7 @@
 let s:gdb_cfg = g:vim_session."/gdb.cfg"
 let s:self = v:null
+let s:output_state = 1
+
 
 function vimext#runner#Create(lang) abort
   let l:prompt = v:null
@@ -42,13 +44,11 @@ function vimext#runner#Create(lang) abort
         \ "proto": l:proto,
         \ "prompt": l:prompt,
         \ "dbg": l:dbg,
-        \ "asm_win": v:null,
         \ "dbg_win": v:null,
-        \ "pc_id": 31,
-        \ "asm_id": 32,
-        \ "asm_func": v:null,
         \ "output_win": v:null,
-        \ "source_win": v:null,
+        \ "asm_func": v:null,
+        \ "source_viewer": v:null,
+        \ "asm_viewer": v:null
         \ }
   let s:self = l:self
   if exists('#User#DbgDebugStartPre')
@@ -93,14 +93,14 @@ function vimext#runner#Dispose() abort
   call vimext#sign#DeInit()
   call vimext#breakpoint#DeInit()
 
-  if s:self.source_win != v:null
-    call vimext#buffer#WipeWin(s:self.source_win)
-    unlet s:self.source_win
+  if s:self.source_viewer != v:null
+    call s:self.source_viewer.Dispose(s:self.source_viewer)
+    unlet s:self.source_viewer
   endif
 
-  if s:self.asm_win != v:null
-    call vimext#buffer#WipeWin(s:self.asm_win)
-    unlet s:self.asm_win
+  if s:self.asm_viewer != v:null
+    call s:self.asm_viewer.Dispose(s:self.asm_viewer)
+    unlet s:self.asm_viewer
   endif
 
   unlet s:self.output_win
@@ -110,17 +110,20 @@ function vimext#runner#Dispose() abort
 endfunction
 
 function vimext#runner#GetSouceWinPath(self) abort
-  return vimext#buffer#GetNameByWinID(a:self.source_win)
+  let l:winid = vimext#viewer#GetWinID(a:self.source_viewer)
+  return vimext#buffer#GetNameByWinID(l:winid)
 endfunction
 
 function vimext#runner#Asm() abort
-  if vimext#buffer#WinExists(s:self.asm_win)
+  if s:self.asm_viewer != v:null
+    call vimext#viewer#Show(s:self.asm_viewer)
     return
   endif
+  let l:source_win = vimext#viewer#GetWinID(s:self.source_viewer)
+  let s:self.asm_viewer = vimext#runner#CreateAsmViewer(l:source_win)
 
-  let s:self.asm_win = vimext#runner#CreateAsmWin(s:self)
-  call s:Call(s:self.proto.Disassemble, "$pc")
   call win_gotoid(s:self.dbg_win)
+  call s:Call(s:self.proto.Disassemble, "$pc")
 endfunction
 
 function vimext#runner#Run(args) abort
@@ -178,7 +181,7 @@ function vimext#runner#Break(args) abort
   endif
 
   if l:info[0] == 1
-    let l:info[1] = vimext#runner#GetSouceWinPath(s:self.prompt)
+    let l:info[1] = vimext#runner#GetSouceWinPath(s:self)
 
     let l:brk = vimext#breakpoint#Get(l:info[1], l:info[2])
     if l:brk != v:null
@@ -238,9 +241,11 @@ function s:DeleteBreakPointByFName(self, fname, lnum) abort
   endif
 endfunction
 
-function vimext#runner#CreateAsmWin(self)
-  let l:win = vimext#buffer#NewWindow("asm", 3, a:self.source_win)
+function vimext#runner#CreateAsmViewer(basewin) abort
+  let l:viewer = vimext#viewer#CreateTextMode("asm", 3, a:basewin, 32)
+  let l:winid = vimext#viewer#GetWinID(l:viewer)
 
+  call win_gotoid(l:winid)
   setlocal nowrap
   setlocal number
   setlocal noswapfile
@@ -250,58 +255,26 @@ function vimext#runner#CreateAsmWin(self)
   setlocal signcolumn=no
   setlocal modifiable
 
-  return l:win
-endfunction
-
-function vimext#runner#LoadAsmBreak(self, msg) abort
-  let l:cwin = win_getid()
-
-  call win_gotoid(a:self.asm_win)
-  let l:buff = vimext#buffer#GetNameByWinID(a:self.asm_win)
-
-  call append(line('$') - 1, a:msg)
-  call vimext#sign#Line(a:self.asm_id, l:buff, line("$") - 1)
-
-  call win_gotoid(l:cwin)
+  return l:viewer
 endfunction
 
 function vimext#runner#LoadSource(self, fname, lnum) abort
-  let l:cwin = win_getid()
-  if !filereadable(a:fname)
-    call vimext#logger#Warning("file not readable " . a:fname)
-    return
+  if a:self.source_viewer == v:null
+    let a:self.source_viewer = vimext#viewer#CreateFileMode("source", 1, a:self.dbg_win, 31)
   endif
+  call vimext#viewer#LoadByFile(a:self.source_viewer, a:fname, a:lnum)
 
-  if a:self.source_win == v:null
-    let a:self.source_win = vimext#buffer#NewWindow("source", 1, v:null)
-  endif
-
-  if vimext#buffer#GetNameByWinID(a:self.source_win) != a:fname
-    execute "edit ".a:fname
-    let a:self.source_buff = bufnr("%")
-    setlocal signcolumn=yes
-  endif
-  call vimext#sign#Line(a:self.pc_id, a:fname, a:lnum)
-  call vimext#prompt#SetOutputState(a:self.prompt, 1)
-
-  if a:self.asm_win != v:null
+  if a:self.asm_viewer != v:null
     call s:Call(s:self.proto.Disassemble, "$pc")
   endif
-
-  call win_gotoid(l:cwin)
 endfunction
 
 function vimext#runner#PrintOutput(self, msg) abort
-  if vimext#prompt#GetOutputState(a:self.prompt) == 2 && a:self.asm_win != v:null
-    call vimext#prompt#PrintOutput(a:self.prompt, a:self.asm_win, a:msg)
-  else
-    call vimext#prompt#PrintOutput(a:self.prompt, a:self.output_win, a:msg)
-    call vimext#prompt#SetOutputState(a:self.prompt, 1)
-  endif
+  call vimext#prompt#PrintOutput(a:self.prompt, a:self.output_win, a:msg)
 endfunction
 
 function s:PromptOut(channel, msg) abort
-  "call vimext#logger#Info(a:msg)
+  call vimext#logger#ProfileStart("*")
   let l:proto = s:self.proto
   let l:prompt = s:self.prompt
 
@@ -314,15 +287,12 @@ function s:PromptOut(channel, msg) abort
     call vimext#runner#LoadSource(s:self, info[2], info[3])
 
   elseif info[0] == 2 " exit normally
-    call vimext#prompt#SetOutputState(l:prompt, 1)
 
   elseif info[0] == 3 " running
-    call vimext#prompt#SetOutputState(l:prompt, 0)
 
   elseif info[0] == 4 " user set breakpoint
     "brkid,type,disp,enable,func,file,fullname,line
     call vimext#breakpoint#Add(l:info)
-    call vimext#prompt#SetOutputState(l:prompt, 1)
 
   elseif info[0] == 5 " exit end stepping range
     call vimext#runner#LoadSource(s:self, info[1], info[2])
@@ -341,23 +311,27 @@ function s:PromptOut(channel, msg) abort
   elseif info[0] == 11 " breakpoint delete
     call vimext#breakpoint#DeleteID(l:info[1])
 
-  elseif info[0] == 12 " disassemble
-    "Dump of assembler code for function main:
-    call vimext#prompt#SetOutputState(l:prompt, 2)
-
-  elseif info[0] == 13 " done
-    call vimext#prompt#SetOutputState(l:prompt, 1)
-
   elseif info[0] == 14 " asm break
-    call vimext#runner#LoadAsmBreak(s:self, l:info[9])
+    call vimext#viewer#SetSignText(s:self.asm_viewer, l:info[1])
+    call vimext#viewer#AddLine(s:self.asm_viewer, l:info[3])
 
-  elseif info[0] == 15 " asm func info
-    if s:self.asm_func != l:info[1]
-      call vimext#buffer#ClearWin(s:self.asm_win)
-    endif
-    call vimext#runner#PrintOutput(s:self, l:info[9])
+  elseif info[0] == 15 " asm start
+    call vimext#viewer#SetUniqueID(s:self.asm_viewer, l:info[1])
+    call vimext#viewer#AddLine(s:self.asm_viewer, l:info[1] . ":")
+
+    let s:output_state = 2
+  elseif info[0] == 16 " asm end
+    call vimext#viewer#LoadByLines(s:self.asm_viewer)
+    let s:output_state = 1
   else
-    call vimext#runner#PrintOutput(s:self, l:info[9])
+    if s:output_state == 2
+      let l:line = substitute(l:info[9], "^[ ]*", "", "g")
+      call vimext#viewer#AddLine(s:self.asm_viewer, l:line)
 
+    else
+      call vimext#runner#PrintOutput(s:self, l:info[9])
+      let s:output_state = 1
+    endif
   endif
+  call vimext#logger#ProfileEnd()
 endfunction

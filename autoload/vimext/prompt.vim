@@ -1,7 +1,6 @@
 """
 " refactor version of termdbug
 """
-let s:output_state = 1 " lock for callback
 let s:self = v:null
 
 function vimext#prompt#Highlight(init, old, new) abort
@@ -46,18 +45,7 @@ function s:StartPrompt(self) abort
 endfunction
 
 function s:PromptSend(self, cmd) abort
-  if s:output_state == 0
-    call vimext#logger#Warning("Command Drop: ".a:cmd)
-    let l:output_state = 1
-    return
-  endif
-
-  "call vimext#logger#Info(a:cmd)
   call ch_sendraw(a:self.dbg_channel, a:cmd."\n")
-endfunction
-
-function vimext#prompt#GetOutputState(self) abort
-  return s:output_state
 endfunction
 
 function vimext#prompt#PrintOutput(self, win, msg) abort
@@ -71,10 +59,6 @@ endfunction
 
 " prompt
 function s:PromptCallback(cmd) abort
-  if s:output_state == 0
-    return
-  endif
-
   let l:cmd = s:self.HandleInput(a:cmd)
   if l:cmd == v:null
     return
@@ -124,10 +108,6 @@ function vimext#prompt#Create(dbg, funcs) abort
   let s:self = l:self
 
   return l:self
-endfunction
-
-function vimext#prompt#SetOutputState(self, state) abort
-  let s:output_state = a:state
 endfunction
 
 function s:Dispose(self) abort

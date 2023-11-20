@@ -166,8 +166,7 @@ endfunction
 function s:ProcessMsg(text) abort
   let l:text = v:null
 
-  if a:text =~ '(gdb) '
-        \ || (a:text[0] == '&' && a:text !~ '^&"disassemble')
+  if a:text =~ '(gdb) ' || a:text[0] == '&'
     return v:null
   endif
 
@@ -189,7 +188,7 @@ function s:MIProcessOutput(msg) abort
   let l:info = [0, 0, 0, 0, 0, 0, 0, 0, 0, l:msg]
 
   if l:msg =~ '^\*stopped,reason="breakpoint-hit"'
-    let l:nameIdx = matchlist(l:msg, '^\*stopped,reason="breakpoint-hit",\S*,bkptno="\(\d\+\)",\S*,fullname=\([^,]*\),line="\(\d\+\)"')
+    let l:nameIdx = matchlist(l:msg, '^\*stopped,reason="breakpoint-hit",\S*,bkptno="\(\d*\)",.*,fullname=\([^,]*\),line="\(\d\+\)"')
     if len(l:nameIdx) == 0
       return l:info
     endif
@@ -203,11 +202,11 @@ function s:MIProcessOutput(msg) abort
   elseif l:msg == '*stopped,reason="exited",exit-code="0"'
         \ || l:msg == '*stopped,reason="exited-normally"'
     let l:info[0] = 2
-  elseif l:msg =~ '^\^running'
+  elseif l:msg == '^running'
     let l:info[0] = 3
-  elseif l:msg =~ '^\^done,bkpt=\S*,fullname='
-        \ || l:msg =~ '^=breakpoint-created,bkpt'
+  elseif l:msg =~ '^=breakpoint-created,bkpt'
         \ || l:msg =~ '^=breakpoint-modified,bkpt'
+        \ || l:msg =~ '^\^done,bkpt=\S*,fullname='
     let l:nameIdx = matchlist(l:msg, '^[^,]\+,bkpt={number="\(\d*\)",type="\([^,]\+\)",disp="\([^,]\+\)",enabled="\(\w\)"\S*,func="\([^,]*\)",file="\([^,]*\)",fullname=\([^,]*\),line="\(\d\+\)"')
     if len(l:nameIdx) == 0
       return l:info
@@ -225,6 +224,8 @@ function s:MIProcessOutput(msg) abort
   elseif l:msg =~ '^\*stopped,reason="end-stepping-range"'
         \ || l:msg =~ '^\*stopped,reason="function-finished"'
         \ || l:msg =~ '\*stopped,reason="signal-received"'
+
+    ""*stopped,reason="end-stepping-range",frame={addr="0x00007ff8c315a890",func="ntdll!RtlEnterCriticalSection",args=[],from="C:\\Windows\\SYSTEM32\\ntdll.dll",arch="i386:x86-64"},thread-id="1",stopped-threads="all"
     let l:nameIdx = matchlist(l:msg, '^\*stopped,reason=.*,fullname=\([^,]*\),line="\(\d\+\)"')
     if len(l:nameIdx) == 0
       return l:info
@@ -236,7 +237,7 @@ function s:MIProcessOutput(msg) abort
     let l:info[3] = l:nameIdx[3]  " col -> only for netcoredbg
 
   elseif l:msg =~ '^=thread-selected,'
-    let l:nameIdx = matchlist(l:msg, '^=thread-selected,.*,fullname=\([^,]*\),line="\(\d\+\)"')
+    let l:nameIdx = matchlist(l:msg, '^=thread-selected,.*,fullname=\([^,]\+\),line="\(\d\+\)"')
     if len(l:nameIdx) == 0
       return l:info
     endif
@@ -253,8 +254,9 @@ function s:MIProcessOutput(msg) abort
         \ || l:msg =~ '^=symbols-loaded,'
         \ || l:msg =~ '^=no-symbols-loaded,'
         \ || l:msg =~ '^=thread'
+        \ || l:msg =~ '^\^done'
+        \ || l:msg =~ '\*stopped,reason='
         \ || l:msg =~ '^*running,thread-id'
-
     " ignored
     "
     let l:info[0] = 7
@@ -343,12 +345,6 @@ function s:MIProcessOutput(msg) abort
     let l:info[0] = 11
     let l:info[1] = l:nameIdx[1] " breakpoint id
 
-  elseif l:msg =~ '^&"disassemble'
-    let l:info[0] = 12
-
-  elseif l:msg =~ '^\^done'
-    let l:info[0] = 13
-
   elseif l:msg =~ '^=>'
     let l:nameIdx = matchlist(l:msg, '^=>\s\+\(\S\+\) <+\(\d\+\)>')
     if len(l:nameIdx) == 0
@@ -358,15 +354,19 @@ function s:MIProcessOutput(msg) abort
     let l:info[0] = 14
     let l:info[1] = l:nameIdx[1]
     let l:info[2] = l:nameIdx[2]
+    let l:info[3] = substitute(l:info[9], "^=>[ ]*", "", "")
 
   elseif l:msg =~ 'Dump of assembler code for function '
-    let l:nameIdx = matchlist(l:msg, '^Dump of assembler code for function \([^$]\+\)')
+    let l:nameIdx = matchlist(l:msg, '^Dump of assembler code for function \([^$]\+\):')
     if len(l:nameIdx) == 0
       return l:info
     endif
 
     let l:info[0] = 15
     let l:info[1] = l:nameIdx[1]
+
+  elseif l:msg == 'End of assembler dump.'
+    let l:info[0] = 16
   else
 
   endif
