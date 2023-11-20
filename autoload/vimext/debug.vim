@@ -83,7 +83,7 @@ function vimext#debug#Init() abort
   autocmd! User DbgDebugStopPost :call s:StopPost()
 
   command -nargs=* -complete=file -bang DbgDebug call s:StartDebug(<bang>0, <f-args>)
-  command Asm call vimext#runner#Asm()
+  command DbgAsm call vimext#runner#Asm()
 endfunction
 
 function vimext#debug#DeInit() abort
