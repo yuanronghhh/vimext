@@ -46,7 +46,6 @@ function vimext#runner#Create(lang) abort
         \ "dbg": l:dbg,
         \ "dbg_win": v:null,
         \ "output_win": v:null,
-        \ "asm_func": v:null,
         \ "source_viewer": v:null,
         \ "asm_viewer": v:null
         \ }
@@ -115,6 +114,12 @@ function vimext#runner#GetSouceWinPath(self) abort
 endfunction
 
 function vimext#runner#Asm() abort
+  if s:self.proto.name == "mi2" && s:self.dbg.name == "gdb"
+  else
+    return
+  endif
+
+
   if s:self.asm_viewer != v:null
     call vimext#viewer#Show(s:self.asm_viewer)
     return
@@ -264,7 +269,7 @@ function vimext#runner#LoadSource(self, fname, lnum) abort
   endif
   call vimext#viewer#LoadByFile(a:self.source_viewer, a:fname, a:lnum)
 
-  if a:self.asm_viewer != v:null
+  if vimext#viewer#IsShow(a:self.asm_viewer)
     call s:Call(s:self.proto.Disassemble, "$pc")
   endif
 endfunction
@@ -274,7 +279,6 @@ function vimext#runner#PrintOutput(self, msg) abort
 endfunction
 
 function s:PromptOut(channel, msg) abort
-  call vimext#logger#ProfileStart("*")
   let l:proto = s:self.proto
   let l:prompt = s:self.prompt
 
@@ -333,5 +337,4 @@ function s:PromptOut(channel, msg) abort
       let s:output_state = 1
     endif
   endif
-  call vimext#logger#ProfileEnd()
 endfunction

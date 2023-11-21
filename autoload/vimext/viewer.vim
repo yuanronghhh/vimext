@@ -7,7 +7,6 @@ function vimext#viewer#Create(name, dr, basewin, sign_id, mode) abort
         \ "basewin": a:basewin,
         \ "lines": v:null,
         \ "winid": 0,
-        \ "signline": 0,
         \ "sign_id": a:sign_id,
         \ "sign_text": v:null,
         \ "Dispose": function("s:Dispose")
@@ -83,6 +82,10 @@ function vimext#viewer#SignByText(self, text) abort
 endfunction
 
 function vimext#viewer#AddLine(self, line) abort
+  if !a:self.dirty
+    return
+  endif
+
   call add(a:self.lines, a:line)
 endfunction
 
@@ -115,8 +118,30 @@ function vimext#viewer#LoadByLines(self) abort
   call win_gotoid(l:cwin)
 endfunction
 
+function vimext#viewer#IsShow(self) abort
+  if a:self == v:null
+    return v:false
+  endif
+
+  return vimext#buffer#WinExists(a:self.winid)
+endfunction
+
 function s:Dispose(self) abort
   if a:self.winid != v:null
     call vimext#buffer#WipeWin(a:self.winid)
   endif
+
+  if a:self.mode == 1
+    unlet a:self.name
+    unlet a:self.unique_id
+  else
+    unlet a:self.dirty
+    unlet a:self.lines
+    unlet a:self.sign_id
+    unlet a:self.sign_text
+  endif
+
+  unlet a:self.winid
+  unlet a:self.basewin
+  unlet a:self.mode
 endfunction
