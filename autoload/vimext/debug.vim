@@ -5,6 +5,15 @@ function vimext#debug#DecodeFilePath(quotedText)
   return vimext#debug#DecodeMessage(l:msg, v:false)
 endfunction
 
+function vimext#debug#Highlight(init, old, new) abort
+  let default = a:init ? 'default ' : ''
+  if a:new ==# 'light' && a:old !=# 'light'
+    exe "hi " . default . "DbgPC term=reverse ctermbg=lightblue guibg=lightblue"
+  elseif a:new ==# 'dark' && a:old !=# 'dark'
+    exe "hi " . default . "DbgPC term=reverse ctermbg=darkblue guibg=darkblue"
+  endif
+endfunction
+
 function vimext#debug#DecodeMessage(quotedText, literal)
   if a:quotedText[0] != '"'
     call vimext#logger#Error('DecodeMessage(): missing quote in ' . a:quotedText)

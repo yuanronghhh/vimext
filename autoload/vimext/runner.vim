@@ -4,7 +4,7 @@ let s:output_state = 1
 
 
 function vimext#runner#Create(lang) abort
-  let l:prompt = v:null
+  let l:bridge = v:null
   let l:proto = v:null
 
   if s:self != v:null
@@ -28,21 +28,17 @@ function vimext#runner#Create(lang) abort
         \ 'HandleOutput': function("s:PromptOut")
         \ }
 
-  if has("win32")
-    let l:prompt = vimext#prompt#Create(l:dbg, l:funcs)
-  else
-  endif
-
-  if l:prompt == v:null
+  let l:bridge = vimext#bridge#Create(l:dbg, l:funcs)
+  if l:bridge == v:null
     return v:null
   endif
 
   call vimext#sign#Init()
-  call l:dbg.SetConfig(l:dbg, l:prompt, l:proto)
+  call l:dbg.SetConfig(l:dbg, l:bridge, l:proto)
 
   let l:self = {
         \ "proto": l:proto,
-        \ "prompt": l:prompt,
+        \ "bridge": l:bridge,
         \ "dbg": l:dbg,
         \ "dbg_win": v:null,
         \ "output_win": v:null,
@@ -54,7 +50,7 @@ function vimext#runner#Create(lang) abort
     doauto <nomodeline> User DbgDebugStartPre
   endif
 
-  call l:prompt.Start(l:prompt)
+  call l:bridge.Start(l:bridge)
   let l:self.dbg_win = win_getid()
   let l:self.output_win = l:self.dbg_win
 
@@ -75,17 +71,17 @@ function s:Call(cmd, args) abort
     return
   endif
 
-  let l:prompt = s:self.prompt
+  let l:bridge = s:self.bridge
 
   if a:args == v:null
-    call l:prompt.Send(l:prompt, a:cmd)
+    call l:bridge.Send(l:bridge, a:cmd)
   else
-    call l:prompt.Send(l:prompt, a:cmd . " " . a:args)
+    call l:bridge.Send(l:bridge, a:cmd . " " . a:args)
   endif
 endfunction
 
 function vimext#runner#Dispose() abort
-  call s:self.prompt.Dispose(s:self.prompt)
+  call s:self.bridge.Dispose(s:self.bridge)
   call s:self.proto.Dispose(s:self.proto)
   call s:self.dbg.Dispose(s:self.dbg)
 
@@ -275,12 +271,12 @@ function vimext#runner#LoadSource(self, fname, lnum) abort
 endfunction
 
 function vimext#runner#PrintOutput(self, msg) abort
-  call vimext#prompt#PrintOutput(a:self.prompt, a:self.output_win, a:msg)
+  call vimext#bridge#PrintOutput(a:self.bridge, a:self.output_win, a:msg)
 endfunction
 
 function s:PromptOut(channel, msg) abort
   let l:proto = s:self.proto
-  let l:prompt = s:self.prompt
+  let l:bridge = s:self.bridge
 
   let l:info = l:proto.ProcessOutput(a:msg)
   if l:info == v:null

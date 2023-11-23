@@ -40,13 +40,7 @@ function vimext#buffer#GetNameByWinID(wid) abort
   return bufname(l:bnr)
 endfunction
 
-function vimext#buffer#NewWindow(name, dr, basewin) abort
-  let l:cwin = win_getid()
-
-  if a:basewin != v:null
-    call win_gotoid(a:basewin)
-  endif
-
+function vimext#buffer#NewWindowLayout(name, dr) abort
   if a:dr == 1
     execute ":vertical new ".a:name
     execute (&columns / 2 - 1) . "wincmd |"
@@ -56,10 +50,20 @@ function vimext#buffer#NewWindow(name, dr, basewin) abort
   elseif a:dr == 3
     execute ":rightbelow new ".a:name
   endif
-  let l:nwin = win_getid()
+
+  return win_getid()
+endfunction
+
+function vimext#buffer#NewWindow(name, dr, basewin) abort
+  let l:cwin = win_getid()
+
+  if a:basewin != v:null
+    call win_gotoid(a:basewin)
+  endif
+
+  let l:nwin = vimext#buffer#NewWindowLayout(a:name, a:dr)
 
   call win_gotoid(l:cwin)
 
   return l:nwin
 endfunction
-

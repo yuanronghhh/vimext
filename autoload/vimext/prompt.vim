@@ -3,19 +3,6 @@
 """
 let s:self = v:null
 
-function vimext#prompt#Highlight(init, old, new) abort
-  let default = a:init ? 'default ' : ''
-  if a:new ==# 'light' && a:old !=# 'light'
-    exe "hi " . default . "DbgPC term=reverse ctermbg=lightblue guibg=lightblue"
-  elseif a:new ==# 'dark' && a:old !=# 'dark'
-    exe "hi " . default . "DbgPC term=reverse ctermbg=darkblue guibg=darkblue"
-  endif
-endfunction
-
-function vimext#prompt#InitHighlight() abort
-  call vimext#prompt#Highlight(1, '', &background)
-endfunction
-
 function vimext#prompt#InitChannel(self) abort
   let l:cmd = a:self.dbg.GetCmd(a:self.dbg)
   let l:job = job_start(l:cmd, {
@@ -101,7 +88,6 @@ function vimext#prompt#Create(dbg, funcs) abort
     return v:null
   endif
 
-  call vimext#prompt#InitHighlight()
   if vimext#prompt#InitChannel(l:self) == 0
     return v:null
   endif
