@@ -9,23 +9,19 @@ function vimext#term#New(cmd, opts) abort
         \ "tty": v:null,
         \ }
 
-  let l:info.buf = term_start(cmd, opts)
+  let l:info.buf = term_start(a:cmd, a:opts)
   if l:info.buf == 0
     return v:null
   endif
 
   let l:info.winid = win_getid()
-  let l:info.job = term_getjob(l:term_buf)
-  let l:info.tty = job_info(l:info[2])['tty_out']
+  let l:info.job = term_getjob(l:info.buf)
+  let l:info.tty = job_info(l:info.job)['tty_out']
 
   return l:info
 endfunction
 
-
-
 function vimext#term#InitTerm(self) abort
-  let l:cmd = a:self.dbg.GetCmd(a:self.dbg)
-
   " start buffer
   let l:term = vimext#term#New("None", {
         \ 'term_name': 'term debugger',
@@ -47,8 +43,14 @@ function vimext#term#InitTerm(self) abort
     return 0
   endif
 
+  return 1
+endfunction
+
+function s:StartTerm(self) abort
+  let l:cmd = a:self.dbg.GetCmd(a:self.dbg)
+
   let l:dbg_term = vimext#term#New(l:cmd, {
-        \ 'term_finish': 'close'
+        \ 'term_finish': 'close',
         \ 'exit_cb': a:self.HandleExit
         \ })
   if l:dbg_term == v:null
@@ -62,13 +64,10 @@ function vimext#term#InitTerm(self) abort
   endif
   set filetype=termdebug
 
-  return 1
-endfunction
-
-function s:StartTerm(self) abort
 endfunction
 
 function s:TermSend(self, cmd) abort
+  call vimext#logger#Info("cmd: ". a:cmd)
   call term_sendkeys(a:self.cmd_buf, a:cmd . "\r")
 endfunction
 

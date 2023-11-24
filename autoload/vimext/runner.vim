@@ -2,7 +2,6 @@ let s:gdb_cfg = g:vim_session."/gdb.cfg"
 let s:self = v:null
 let s:output_state = 1
 
-
 function vimext#runner#Create(lang) abort
   let l:bridge = v:null
   let l:proto = v:null
@@ -19,6 +18,10 @@ function vimext#runner#Create(lang) abort
     let l:proto = vimext#proto#Create("mi2")
     let l:dbg = vimext#gccdbg#Create(l:proto)
   else
+    return v:null
+  endif
+
+  if l:dbg == v:null || l:proto == v:null
     return v:null
   endif
 
