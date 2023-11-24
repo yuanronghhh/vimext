@@ -2,6 +2,7 @@
 " refactor version of termdbug
 """
 let s:self = v:null
+let s:parent = v:null
 
 function vimext#prompt#InitChannel(self) abort
   let l:cmd = a:self.dbg.GetCmd(a:self.dbg)
@@ -28,7 +29,7 @@ function s:StartPrompt(self) abort
   call prompt_setcallback(a:self.prompt_buf, a:self["Callback"])
   call prompt_setinterrupt(a:self.prompt_buf, a:self["Interrupt"])
 
-  startinsert
+  call s:parent.Start(s:parent)
 endfunction
 
 function s:PromptSend(self, cmd) abort
@@ -92,6 +93,7 @@ function vimext#prompt#Create(dbg, funcs) abort
     return v:null
   endif
   let s:self = l:self
+  let s:parent = vimext#bridge#Ref()
 
   return l:self
 endfunction

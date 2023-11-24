@@ -150,7 +150,7 @@ function vimext#config#LoadConfig()
         \ 'c': ['clangtidy', 'gcc', 'clangd'],
         \ 'python': ['pylint']
         \ }
-  call add(l:plugins, "ale")
+  "call add(l:plugins, "ale")
   call vimext#plugins#LoadPlugin(l:plugins)
   call vimext#debug#Init()
 

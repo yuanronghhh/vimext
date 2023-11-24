@@ -1,15 +1,12 @@
 let s:self = v:null
-let s:parent = v:null
 
 " bridge
 function s:StartBridge(self) abort
-  "call s:parent.Start(s:parent)
-
   startinsert
 endfunction
 
 function s:BridgeSend(self, cmd) abort
-  call bridge_sendkeys(a:self.cmd_buf, a:cmd . "\r")
+  call term_sendkeys(a:self.cmd_buf, a:cmd . "\r")
 endfunction
 
 function vimext#bridge#PrintOutput(self, win, msg) abort
@@ -42,8 +39,15 @@ function s:BridgeInterrupt() abort
   call debugbreak(s:bridge_pid)
 endfunction
 
+function vimext#bridge#Ref() abort
+  return s:self
+endfunction
+
 function vimext#bridge#Create(dbg, funcs) abort
-  let l:self = v:null
+  let l:self = {
+        \ "Start": function("s:StartBridge")
+        \ }
+  let s:self = l:self
 
   call vimext#debug#Highlight(1, '', &background)
   if has("win32")
@@ -51,14 +55,14 @@ function vimext#bridge#Create(dbg, funcs) abort
   else
     let l:self = vimext#term#Create(a:dbg, a:funcs)
   endif
+  if l:self == v:null
+    return v:null
+  endif
 
   if !has('terminal')
     call vimext#logger#Error("+terminal not enabled in vim")
     return v:null
   endif
-  let l:self.Start = function("s:StartBridge")
-
-  let s:self = l:self
 
   return l:self
 endfunction

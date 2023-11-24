@@ -1,4 +1,5 @@
 let s:self = v:null
+let s:parent = v:null
 
 " term
 function vimext#term#New(cmd, opts) abort
@@ -101,6 +102,10 @@ function s:TermInterrupt() abort
   call debugbreak(s:term_pid)
 endfunction
 
+function vimext#term#Ref() abort
+  return s:self
+endfunction
+
 function vimext#term#Create(dbg, funcs) abort
   let l:self = {
         \ "dbg": a:dbg,
@@ -125,6 +130,7 @@ function vimext#term#Create(dbg, funcs) abort
     return v:null
   endif
   let s:self = l:self
+  let s:parent = vimext#bridge#Ref()
 
   return l:self
 endfunction
