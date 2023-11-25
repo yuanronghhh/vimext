@@ -119,7 +119,7 @@ function vimext#viewer#LoadByLines(self) abort
 endfunction
 
 function vimext#viewer#IsShow(self) abort
-  if a:self == v:null
+  if a:self is v:null
     return v:false
   endif
 

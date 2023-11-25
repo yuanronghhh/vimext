@@ -27,7 +27,7 @@ function vimext#term#InitTerm(self) abort
         \ 'term_name': 'term debugger',
         \ 'vertical': 1,
         \ })
-  if l:term == v:null
+  if l:term is v:null
     call vimext#logger#Error('Failed to start debugger term')
     return 0
   endif
@@ -38,7 +38,7 @@ function vimext#term#InitTerm(self) abort
         \ 'out_cb': a:self.HandleOutput,
         \ 'hidden': 1,
         \ })
-  if l:cmd_term == v:null
+  if l:cmd_term is v:null
     call vimext#logger#Error('Failed to start cmd term')
     return 0
   endif
@@ -53,7 +53,7 @@ function s:StartTerm(self) abort
         \ 'term_finish': 'close',
         \ 'exit_cb': a:self.HandleExit
         \ })
-  if l:dbg_term == v:null
+  if l:dbg_term is v:null
     call vimext#logger#Error('Failed to start dbg term')
     return 0
   endif
@@ -83,7 +83,7 @@ endfunction
 " term
 function s:TermCallback(cmd) abort
   let l:cmd = s:self.HandleInput(a:cmd)
-  if l:cmd == v:null
+  if l:cmd is v:null
     return
   endif
 
@@ -130,7 +130,7 @@ function vimext#term#Create(dbg, funcs) abort
 endfunction
 
 function s:Dispose(self) abort
-  if a:self == v:null
+  if a:self is v:null
     return
   endif
 

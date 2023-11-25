@@ -21,7 +21,7 @@ function vimext#runner#Create(lang) abort
     return v:null
   endif
 
-  if l:dbg == v:null || l:proto == v:null
+  if l:dbg is v:null || l:proto is v:null
     return v:null
   endif
 
@@ -32,7 +32,7 @@ function vimext#runner#Create(lang) abort
         \ }
 
   let l:bridge = vimext#bridge#Create(l:dbg, l:funcs)
-  if l:bridge == v:null
+  if l:bridge is v:null
     return v:null
   endif
 
@@ -70,13 +70,13 @@ function vimext#runner#Create(lang) abort
 endfunction
 
 function s:Call(cmd, args) abort
-  if s:self == v:null
+  if s:self is v:null
     return
   endif
 
   let l:bridge = s:self.bridge
 
-  if a:args == v:null
+  if a:args is v:null
     call l:bridge.Send(l:bridge, a:cmd)
   else
     call l:bridge.Send(l:bridge, a:cmd . " " . a:args)
@@ -140,7 +140,7 @@ function vimext#runner#Run(args) abort
   endif
   let l:start = vimext#proto#GetStart(s:self.proto)
 
-  if l:start == v:null
+  if l:start is v:null
     return
   endif
 
@@ -180,7 +180,7 @@ endfunction
 
 function vimext#runner#Break(args) abort
   let l:info = vimext#breakpoint#Parse(a:args)
-  if l:info == v:null
+  if l:info is v:null
     return
   endif
 
@@ -238,7 +238,7 @@ endfunction
 
 function s:DeleteBreakPointByFName(self, fname, lnum) abort
   let l:brk = vimext#breakpoint#Get(a:fname, a:lnum)
-  if l:brk == v:null
+  if l:brk is v:null
     call s:Call(a:self.proto.Break, a:fname . ":" . a:lnum)
   else
     call vimext#breakpoint#Delete(l:brk)
@@ -263,7 +263,7 @@ function vimext#runner#CreateAsmViewer(basewin) abort
 endfunction
 
 function vimext#runner#LoadSource(self, fname, lnum) abort
-  if a:self.source_viewer == v:null
+  if a:self.source_viewer is v:null
     let a:self.source_viewer = vimext#viewer#CreateFileMode("source", 1, a:self.dbg_win, 31)
   endif
   call vimext#viewer#LoadByFile(a:self.source_viewer, a:fname, a:lnum)
@@ -282,7 +282,7 @@ function s:PromptOut(channel, msg) abort
   let l:bridge = s:self.bridge
 
   let l:info = l:proto.ProcessOutput(a:msg)
-  if l:info == v:null
+  if l:info is v:null
     return
   endif
 

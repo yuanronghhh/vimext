@@ -1,7 +1,7 @@
 let s:breaks = {}
 
 function vimext#breakpoint#Parse(args)
-  if a:args == v:null
+  if a:args is v:null
     return v:null
   endif
 
@@ -36,7 +36,7 @@ endfunction
 
 function vimext#breakpoint#DeleteID(id)
   let l:brk = get(s:breaks, a:id, v:null)
-  if l:brk == v:null
+  if l:brk is v:null
     return
   endif
 
@@ -44,7 +44,7 @@ function vimext#breakpoint#DeleteID(id)
 endfunction
 
 function vimext#breakpoint#Delete(brk)
-  if a:brk == v:null
+  if a:brk is v:null
     return
   endif
 

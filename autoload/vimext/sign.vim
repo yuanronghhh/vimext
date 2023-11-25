@@ -21,7 +21,7 @@ function vimext#sign#GetByBreakID(breakid) abort
   let l:v = []
 
   for l:sign in s:signs
-    if l:sign == v:null
+    if l:sign is v:null
       continue
     endif
 
