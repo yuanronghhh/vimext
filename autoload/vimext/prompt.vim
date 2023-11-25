@@ -48,7 +48,7 @@ endfunction
 " prompt
 function s:PromptCallback(cmd) abort
   let l:cmd = s:self.HandleInput(a:cmd)
-  if l:cmd == v:null
+  if l:cmd is v:null
     return
   endif
 
@@ -99,7 +99,7 @@ function vimext#prompt#Create(dbg, funcs) abort
 endfunction
 
 function s:Dispose(self) abort
-  if a:self == v:null
+  if a:self is v:null
     return
   endif
 

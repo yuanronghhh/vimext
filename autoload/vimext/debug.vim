@@ -78,7 +78,7 @@ function s:StartDebug(bang, ...) abort
     let l:pargs = a:000[1]
   endif
 
-  if vimext#runner#Create(l:lang) == v:null
+  if vimext#runner#Create(l:lang) is v:null
     return
   endif
 

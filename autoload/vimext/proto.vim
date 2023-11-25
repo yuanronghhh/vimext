@@ -181,7 +181,7 @@ endfunction
 
 function s:MIProcessOutput(msg) abort
   let l:msg = s:ProcessMsg(a:msg)
-  if l:msg == v:null || l:msg == ""
+  if l:msg is v:null || l:msg == ""
     return
   endif
 
