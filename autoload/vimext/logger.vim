@@ -27,7 +27,7 @@ function vimext#logger#Info(msg) abort
 endfunction
 
 function vimext#logger#ProfileStart(funcname) abort
-  execute ':profile start E:/Codes/REPOSITORY/TableDataLib/DotConsole/bin/Debug/net7.0/e.log'
+  execute ':profile start vim-profile.log'
   execute ':profile func '. a:funcname
 endfunction
 

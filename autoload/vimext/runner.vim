@@ -6,7 +6,7 @@ function vimext#runner#Create(lang) abort
   let l:bridge = v:null
   let l:proto = v:null
 
-  if s:self != v:null
+  if s:self isnot v:null
     call vimext#logger#Warning("call not start two debugger")
     return v:null
   endif
@@ -43,19 +43,21 @@ function vimext#runner#Create(lang) abort
         \ "proto": l:proto,
         \ "bridge": l:bridge,
         \ "dbg": l:dbg,
-        \ "dbg_win": v:null,
-        \ "output_win": v:null,
+        \ "dbg_term": v:null,
+        \ "output_term": v:null,
         \ "source_viewer": v:null,
         \ "asm_viewer": v:null
         \ }
   let s:self = l:self
+
   if exists('#User#DbgDebugStartPre')
     doauto <nomodeline> User DbgDebugStartPre
   endif
 
+  let l:self.dbg_term = l:bridge.NewDebug(l:bridge)
+  let l:self.output_term = l:bridge.NewCmd(l:bridge)
+
   call l:bridge.Start(l:bridge)
-  let l:self.dbg_win = win_getid()
-  let l:self.output_win = l:self.dbg_win
 
   hi default dbgBreakpoint term=reverse ctermbg=red guibg=red
   hi default dbgBreakpointDisabled term=reverse ctermbg=gray guibg=gray
@@ -101,8 +103,8 @@ function vimext#runner#Dispose() abort
     unlet s:self.asm_viewer
   endif
 
-  unlet s:self.output_win
-  unlet s:self.dbg_win
+  call s:self.output_term.Dispose(s:self.output_term)
+  call s:self.dbg_term.Dispose(s:self.dbg_term)
 
   let s:self = v:null
 endfunction
@@ -118,7 +120,6 @@ function vimext#runner#Asm() abort
     return
   endif
 
-
   if s:self.asm_viewer != v:null
     call vimext#viewer#Show(s:self.asm_viewer)
     return
@@ -126,7 +127,7 @@ function vimext#runner#Asm() abort
   let l:source_win = vimext#viewer#GetWinID(s:self.source_viewer)
   let s:self.asm_viewer = vimext#runner#CreateAsmViewer(l:source_win)
 
-  call win_gotoid(s:self.dbg_win)
+  call s:self.dbg_term.GoTerm(s:self.dbg_term)
   call s:Call(s:self.proto.Disassemble, "$pc")
 endfunction
 
@@ -157,7 +158,7 @@ function vimext#runner#Restore() abort
   else
     if s:self.proto.name == "mi"
     else
-      call s:Call(s:self.proto.SaveBreakoints, s:gdb_cfg)
+      call s:Call(s:self.proto.Source, s:gdb_cfg)
     endif
   endif
 endfunction
@@ -264,7 +265,9 @@ endfunction
 
 function vimext#runner#LoadSource(self, fname, lnum) abort
   if a:self.source_viewer is v:null
-    let a:self.source_viewer = vimext#viewer#CreateFileMode("source", 1, a:self.dbg_win, 31)
+    let l:dbg_win = a:self.dbg_term.GetWinID(a:self.dbg_term)
+
+    let a:self.source_viewer = vimext#viewer#CreateFileMode("source", 1, l:dbg_win, 31)
   endif
   call vimext#viewer#LoadByFile(a:self.source_viewer, a:fname, a:lnum)
 

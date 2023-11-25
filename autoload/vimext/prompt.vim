@@ -4,6 +4,36 @@
 let s:self = v:null
 let s:parent = v:null
 
+function s:NewPrompt() abort
+  let l:self = {
+        \ "GetWinID": function("s:GetWinID"),
+        \ "GoTerm": function("s:GoPrompt"),
+        \ "Dispose": function("s:Destroy")
+        \ "winid": win_getid()
+        \ }
+
+  return l:self
+endfunction
+
+function s:GoPrompt(self) abort
+  return win_gotoid(a:self.winid)
+endfunction
+
+function s:GetWinID(self) abort
+  return a:self.winid
+endfunction
+
+function s:NewCmd(self) abort
+  return s:NewPrompt()
+endfunction
+
+function s:NewDebug(self) abort
+  return s:NewPrompt()
+endfunction
+
+function s:Destroy(self) abort
+endfunction
+
 function vimext#prompt#InitChannel(self) abort
   let l:cmd = a:self.dbg.GetCmd(a:self.dbg)
   let l:job = job_start(l:cmd, {
@@ -66,6 +96,7 @@ function s:PromptInterrupt() abort
   call debugbreak(s:prompt_pid)
 endfunction
 
+" prompt manager
 function vimext#prompt#Create(dbg, funcs) abort
   let l:self = {
         \ "dbg": a:dbg,
@@ -75,6 +106,8 @@ function vimext#prompt#Create(dbg, funcs) abort
         \ "prompt_pid": 0,
         \ "prompt_buf": 0,
         \ "Start": function("s:StartPrompt"),
+        \ "NewCmd": function("s:NewCmd"),
+        \ "NewDebug": function("s:NewDebug"),
         \ "Callback": function("s:PromptCallback"),
         \ "Interrupt": function("s:PromptInterrupt"),
         \ 'HandleExit': get(a:funcs, "HandleExit", v:null),

@@ -55,7 +55,7 @@ function vimext#bridge#Create(dbg, funcs) abort
   else
     let l:self = vimext#term#Create(a:dbg, a:funcs)
   endif
-  if l:self == v:null
+  if l:self is v:null
     return v:null
   endif
 

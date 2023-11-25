@@ -49,7 +49,7 @@ function s:StartPre() abort
   nnoremap <F7>  :call vimext#runner#Step()<cr>
   nnoremap <F8>  :call vimext#runner#Break(line("."))<cr>
 
-  execute ":silent tabnew debugger"
+  "execute ":silent tabnew debugger"
 endfunction
 
 function s:StartPost() abort

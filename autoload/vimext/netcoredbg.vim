@@ -15,7 +15,7 @@ function s:SetConfig(self, prompt, proto) abort
   "call a:prompt.Send(a:prompt, a:proto.Set . " " . "step-filtering 1")
 endfunction
 
-function s:GetCmd(self) abort
+function s:GetCmd(self, param) abort
   let l:cmd = ["netcoredbg"]
   let l:cmd += ["--interpreter=" . a:self.proto.name]
   let l:cmd += ["--", "dotnet"]
