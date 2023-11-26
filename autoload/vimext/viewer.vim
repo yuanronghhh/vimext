@@ -2,18 +2,34 @@ function vimext#viewer#Create(name, dr, basewin, sign_id, mode) abort
   let l:self = {
         \ "name": a:name,
         \ "mode": a:mode,
+        \ "dr": a:dr,
         \ "unique_id": v:null,
         \ "dirty": v:false,
         \ "basewin": a:basewin,
         \ "lines": v:null,
         \ "winid": 0,
+        \ "buff": v:null,
         \ "sign_id": a:sign_id,
         \ "sign_text": v:null,
         \ "Dispose": function("s:Dispose")
         \ }
-  let l:self.winid = vimext#buffer#NewWindow(a:name, a:dr, a:basewin)
+
+  call vimext#viewer#NewBuffer(l:self)
 
   return l:self
+endfunction
+
+function vimext#viewer#NewBuffer(self) abort
+  let l:winid = vimext#buffer#NewWindow(a:self.name, a:self.dr, a:self.basewin)
+
+  if a:self.mode == 1
+    let a:self.buff = v:null
+  else
+    let a:self.buff = winbufnr(l:winid)
+  endif
+
+  let a:self.winid = l:winid
+  let a:self.unique_id = v:null
 endfunction
 
 function vimext#viewer#CreateFileMode(name, dr, basewin, sign_id) abort
@@ -32,13 +48,16 @@ function vimext#viewer#GetWinID(self) abort
   return a:self.winid
 endfunction
 
+function vimext#viewer#Go(self) abort
+  return win_gotoid(a:self.winid)
+endfunction
+
 function vimext#viewer#SignByNum(self, lnum) abort
-  let l:buff = vimext#buffer#GetNameByWinID(a:self.winid)
-  call vimext#sign#Line(a:self.sign_id, l:buff, a:lnum)
+  call vimext#sign#Line(a:self.sign_id, a:self.buff, a:lnum)
 endfunction
 
 function vimext#viewer#Show(self) abort
-  return
+  call vimext#viewer#NewBuffer(a:self)
 endfunction
 
 function vimext#viewer#Clear(self) abort
@@ -55,8 +74,8 @@ function vimext#viewer#LoadByFile(self, fname, lnum) abort
 
   if a:self.unique_id != a:fname
     execute ":e ".a:fname
-    let a:self.source_buff = bufnr("%")
-    setlocal signcolumn=yes
+    let a:self.buff = bufnr("%")
+    :setlocal signcolumn=yes
     let a:self.unique_id = a:fname
   endif
   call vimext#viewer#SignByNum(a:self, a:lnum)
@@ -75,8 +94,7 @@ function vimext#viewer#SignByText(self, text) abort
     return
   endif
 
-  let l:buff = vimext#buffer#GetNameByWinID(a:self.winid)
-  call vimext#sign#Line(a:self.sign_id, l:buff, l:lnum)
+  call vimext#viewer#SignByNum(a:self, l:lnum)
 
   call win_gotoid(l:cwin)
 endfunction
@@ -127,7 +145,7 @@ function vimext#viewer#IsShow(self) abort
 endfunction
 
 function s:Dispose(self) abort
-  if a:self.winid != v:null
+  if a:self.winid isnot v:null
     call vimext#buffer#WipeWin(a:self.winid)
   endif
 

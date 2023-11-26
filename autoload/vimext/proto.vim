@@ -75,7 +75,7 @@ function s:ProcessInput(self, cmd) abort
   let l:info = [0, "", "", 0]
   let l:cmd = "next"
 
-  if a:cmd != "" && a:cmd != v:null
+  if a:cmd != "" && a:cmd isnot v:null
     let l:cmd = a:cmd
     let l:info[1] = l:cmd
   endif
@@ -188,7 +188,7 @@ function s:MIProcessOutput(msg) abort
   let l:info = [0, 0, 0, 0, 0, 0, 0, 0, 0, l:msg]
 
   if l:msg =~ '^\*stopped,reason="breakpoint-hit"'
-    let l:nameIdx = matchlist(l:msg, '^\*stopped,reason="breakpoint-hit",\S*,bkptno="\(\d*\)",.*,fullname=\([^,]*\),line="\(\d\+\)"')
+    let l:nameIdx = matchlist(l:msg, '^\*stopped,reason="breakpoint-hit",disp="[^,]\+",bkptno="\(\d*\)",\S*,fullname=\([^,]*\),line="\(\d\+\)"')
     if len(l:nameIdx) == 0
       return l:info
     endif
@@ -255,7 +255,6 @@ function s:MIProcessOutput(msg) abort
         \ || l:msg =~ '^=no-symbols-loaded,'
         \ || l:msg =~ '^=thread'
         \ || l:msg =~ '^\^done'
-        \ || l:msg =~ '\*stopped,reason='
         \ || l:msg =~ '^*running,thread-id'
     " ignored
     "

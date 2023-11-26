@@ -49,6 +49,9 @@ function vimext#buffer#NewWindowLayout(name, dr) abort
 
   elseif a:dr == 3
     execute ":rightbelow new ".a:name
+
+  elseif a:dr == 4
+    execute ":topleft new ".a:name
   endif
 
   return win_getid()
@@ -57,7 +60,7 @@ endfunction
 function vimext#buffer#NewWindow(name, dr, basewin) abort
   let l:cwin = win_getid()
 
-  if a:basewin != v:null
+  if a:basewin isnot v:null
     call win_gotoid(a:basewin)
   endif
 

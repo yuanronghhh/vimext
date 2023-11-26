@@ -1,9 +1,21 @@
 let s:signs = []
 let s:pc_id = 30
 
+function s:Highlight(init, old, new) abort
+  let default = a:init ? 'default ' : ''
+  if a:new ==# 'light' && a:old !=# 'light'
+    exe "hi " . default . "DbgPC term=reverse ctermbg=lightgray guibg=lightgray"
+  elseif a:new ==# 'dark' && a:old !=# 'dark'
+    exe "hi " . default . "DbgPC term=reverse ctermbg=darkgray guibg=darkgray"
+  endif
+endfunction
+
 function vimext#sign#Init() abort
+  call vimext#logger#Info("init sign")
+  call s:Highlight(1, '', &background)
   hi default dbgSignOn term=reverse ctermbg=red guibg=red
   hi default dbgSignOff term=reverse ctermbg=gray guibg=gray
+
   call sign_define('DbgPC', {
         \ "linehl": 'DbgPC'
         \ })

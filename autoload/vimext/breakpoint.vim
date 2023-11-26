@@ -88,6 +88,11 @@ function vimext#breakpoint#Add(info)
   call vimext#sign#Place(l:sign, a:info[7], a:info[8])
 endfunction
 
+function vimext#breakpoint#Init()
+  hi default dbgBreakpoint term=reverse ctermbg=red guibg=red
+  hi default dbgBreakpointDisabled term=reverse ctermbg=gray guibg=gray
+endfunction
+
 function vimext#breakpoint#DeInit()
   for l:brk in values(s:breaks)
     call vimext#breakpoint#Delete(l:brk)

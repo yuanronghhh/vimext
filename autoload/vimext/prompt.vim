@@ -6,8 +6,6 @@ let s:parent = v:null
 
 function s:NewPrompt() abort
   let l:self = {
-        \ "GetWinID": function("s:GetWinID"),
-        \ "GoTerm": function("s:GoPrompt"),
         \ "Dispose": function("s:Destroy")
         \ "winid": win_getid()
         \ }
@@ -15,19 +13,11 @@ function s:NewPrompt() abort
   return l:self
 endfunction
 
-function s:GoPrompt(self) abort
-  return win_gotoid(a:self.winid)
-endfunction
-
-function s:GetWinID(self) abort
-  return a:self.winid
-endfunction
-
-function s:NewCmd(self) abort
+function s:NewDbg(self) abort
   return s:NewPrompt()
 endfunction
 
-function s:NewDebug(self) abort
+function s:NewProg(self) abort
   return s:NewPrompt()
 endfunction
 
@@ -51,7 +41,7 @@ function vimext#prompt#InitChannel(self) abort
   return 1
 endfunction
 
-function s:StartPrompt(self) abort
+function s:StartPrompt(self, param) abort
   let a:self.prompt_buf = bufnr('%')
 
   call prompt_setprompt(a:self.prompt_buf, '(gdb) ')
@@ -106,8 +96,8 @@ function vimext#prompt#Create(dbg, funcs) abort
         \ "prompt_pid": 0,
         \ "prompt_buf": 0,
         \ "Start": function("s:StartPrompt"),
-        \ "NewCmd": function("s:NewCmd"),
-        \ "NewDebug": function("s:NewDebug"),
+        \ "NewDbg": function("s:NewDbg"),
+        \ "NewProg": function("s:NewProg"),
         \ "Callback": function("s:PromptCallback"),
         \ "Interrupt": function("s:PromptInterrupt"),
         \ 'HandleExit': get(a:funcs, "HandleExit", v:null),

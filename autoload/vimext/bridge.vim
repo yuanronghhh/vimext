@@ -1,21 +1,8 @@
 let s:self = v:null
 
 " bridge
-function s:StartBridge(self) abort
+function s:StartBridge(self, output_term) abort
   startinsert
-endfunction
-
-function s:BridgeSend(self, cmd) abort
-  call term_sendkeys(a:self.cmd_buf, a:cmd . "\r")
-endfunction
-
-function vimext#bridge#PrintOutput(self, win, msg) abort
-  let l:cwin = win_getid()
-
-  call win_gotoid(a:win)
-  call append(line('$') - 1, a:msg)
-
-  call win_gotoid(l:cwin)
 endfunction
 
 " bridge
@@ -44,17 +31,13 @@ function vimext#bridge#Ref() abort
 endfunction
 
 function vimext#bridge#Create(dbg, funcs) abort
-  let l:self = {
-        \ "Start": function("s:StartBridge")
-        \ }
-  let s:self = l:self
-
-  call vimext#debug#Highlight(1, '', &background)
+  let l:self = v:null
   if has("win32")
-    let l:self = vimext#prompt#Create(a:dbg, a:funcs)
+    let l:self = vimext#prompt#Create(a:funcs)
   else
-    let l:self = vimext#term#Create(a:dbg, a:funcs)
+    let l:self = vimext#term#Create(a:funcs)
   endif
+
   if l:self is v:null
     return v:null
   endif
@@ -68,13 +51,4 @@ function vimext#bridge#Create(dbg, funcs) abort
 endfunction
 
 function s:Dispose(self) abort
-  if a:self is v:null
-    return
-  endif
-
-  call job_stop(a:self.job, "kill")
-  call vimext#buffer#Wipe(a:self.bridge_buf)
-
-  unlet a:self.bridge_buf
-  let s:self = v:null
 endfunction
