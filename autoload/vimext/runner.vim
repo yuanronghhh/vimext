@@ -117,6 +117,12 @@ function vimext#runner#GetSouceWinPath(self) abort
 endfunction
 
 function vimext#runner#Asm() abort
+  if s:self is v:null
+        \ || s:self.proto is v:null
+        \ || s:self.dbg is v:null
+    return
+  endif
+
   if s:self.proto.name == "mi2" && s:self.dbg.name == "gdb"
   else
     return
