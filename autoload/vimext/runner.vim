@@ -323,13 +323,13 @@ function s:PromptOut(channel, msg) abort
     call vimext#runner#LoadSource(s:self, info[2], info[3])
 
   elseif info[0] == 2 " exit normally
-    call vimext#runner#SaveBrks(s:self)
 
   elseif info[0] == 3 " running
 
   elseif info[0] == 4 " user set breakpoint
     "brkid,type,disp,enable,func,file,fullname,line
-    call vimext#breakpoint#Add(l:info)
+    call vimext#logger#Info(l:info)
+    call vimext#breakpoint#Add(l:info[0:8])
 
   elseif info[0] == 5 " exit end stepping range
     call vimext#runner#LoadSource(s:self, info[1], info[2])

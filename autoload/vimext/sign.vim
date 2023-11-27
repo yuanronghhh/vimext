@@ -59,6 +59,7 @@ endfunction
 
 function vimext#sign#Place(self, filename, linenum) abort
   if !bufexists(a:filename)
+    call vimext#logger#Warning("filename not correct: " . a:filename)
     return
   endif
 
@@ -76,11 +77,14 @@ function vimext#sign#Place(self, filename, linenum) abort
 endfunction
 
 function vimext#sign#New(winid, breakid, text, enable) abort
+  if len(a:text) > 2
+    return v:null
+  endif
+
   let l:hiName = "dbgSignOn"
   if a:enable == 0
     let l:hiName = "dbgSignOff"
   endif
-
   let l:id = len(s:signs) + 1
   let l:nsign = {
         \ "id": l:id,

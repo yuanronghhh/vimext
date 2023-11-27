@@ -41,8 +41,8 @@ function vimext#breakpoint#DeleteID(id)
     return
   endif
 
-  call remove(s:breaks, a:brk[1])
-  let l:signs = vimext#sign#GetByBreakID(a:brk[1])
+  call remove(s:breaks, l:brk[1])
+  let l:signs = vimext#sign#GetByBreakID(l:brk[1])
 
   for l:sign in l:signs
     call vimext#sign#Dispose(l:sign)
@@ -55,7 +55,7 @@ function vimext#breakpoint#Delete(brk)
     return
   endif
 
-  call vimext#breakpoint#DeleteID(l:brk[1])
+  call vimext#breakpoint#DeleteID(a:brk[1])
 endfunction
 
 function vimext#breakpoint#Get(fname, lnum)
@@ -83,7 +83,9 @@ function vimext#breakpoint#Add(info)
 
   let l:winid = win_getid()
   let l:sign = vimext#sign#New(l:winid, a:info[1], a:info[1], 1)
-  call vimext#sign#Place(l:sign, a:info[7], a:info[8])
+  if l:sign isnot v:null
+    call vimext#sign#Place(l:sign, a:info[7], a:info[8])
+  endif
 endfunction
 
 function vimext#breakpoint#Init()
