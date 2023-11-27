@@ -163,10 +163,10 @@ function s:ProcessInput(self, cmd) abort
   return l:info
 endfunction
 
-function s:ProcessMsg(text) abort
+function vimext#proto#ProcessMsg(text) abort
   let l:text = v:null
 
-  if a:text =~ '(gdb) ' || a:text == '^done' || a:text[0] == '&'
+  if a:text =~ '(gdb)' || a:text[0] == '&' || a:text == ""
     return v:null
   endif
 
@@ -180,7 +180,7 @@ function s:ProcessMsg(text) abort
 endfunction
 
 function s:MIProcessOutput(msg) abort
-  let l:msg = s:ProcessMsg(a:msg)
+  let l:msg = vimext#proto#ProcessMsg(a:msg)
   if l:msg is v:null || l:msg == ""
     return
   endif
@@ -188,7 +188,7 @@ function s:MIProcessOutput(msg) abort
   let l:info = [0, 0, 0, 0, 0, 0, 0, 0, 0, l:msg]
 
   if l:msg =~ '^\*stopped,reason="breakpoint-hit"'
-    let l:nameIdx = matchlist(l:msg, '^\*stopped,reason="breakpoint-hit",disp="[^,]\+",bkptno="\(\d*\)",\S*,fullname=\([^,]*\),line="\(\d\+\)"')
+    let l:nameIdx = matchlist(l:msg, '^\*stopped,reason="breakpoint-hit",\S*,bkptno="\(\d*\)",\S*,fullname=\([^,]*\),line="\(\d\+\)"')
     if len(l:nameIdx) == 0
       return l:info
     endif
@@ -250,15 +250,6 @@ function s:MIProcessOutput(msg) abort
   elseif l:msg =~ '^\^exit'
     let l:info[0] = 6
 
-  elseif l:msg =~ '=library-'
-        \ || l:msg =~ '^=symbols-loaded,'
-        \ || l:msg =~ '^=no-symbols-loaded,'
-        \ || l:msg =~ '^=thread'
-        \ || l:msg =~ '^\^done'
-        \ || l:msg =~ '^*running,thread-id'
-    " ignored
-    "
-    let l:info[0] = 7
   elseif l:msg =~ '^\^done,bkpt=\S*,warning='
     let l:nameIdx = matchlist(l:msg, '^\^done,bkpt={number="\(\d*\)",type="\([^,]\+\)",disp="\([^,]\+\)",enabled="\(\w\)",warning=\([^}]*\)}')
     if len(l:nameIdx) == 0
@@ -289,6 +280,7 @@ function s:MIProcessOutput(msg) abort
     let l:info[1] = l:nameIdx[1] . " " . l:nameIdx[2]
 
   elseif l:msg =~ '^\^done,name='
+    call vimext#logger#Info("ok")
     let l:nameIdx = matchlist(l:msg, '^\^done,name="\([^"]*\)",value=\([^,]*\),attributes="\([^"]*\)",exp="\([^"]*\)"')
     if len(l:nameIdx) == 0
       return l:info
@@ -366,6 +358,16 @@ function s:MIProcessOutput(msg) abort
 
   elseif l:msg == 'End of assembler dump.'
     let l:info[0] = 16
+
+  elseif l:msg =~ '=library-'
+        \ || l:msg =~ '^=symbols-loaded,'
+        \ || l:msg =~ '^=no-symbols-loaded,'
+        \ || l:msg =~ '^=thread'
+        \ || l:msg == '^done'
+        \ || l:msg =~ '^*running,thread-id'
+    " ignored
+    "
+    let l:info[0] = 7
   else
 
   endif

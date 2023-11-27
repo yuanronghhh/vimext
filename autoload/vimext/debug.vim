@@ -1,8 +1,10 @@
 const s:NullRepl = 'XXXNULLXXX'
 function vimext#debug#DecodeFilePath(quotedText)
-  let l:msg = a:quotedText
+  let l:msg = substitute(a:quotedText, "\\", "/", "g")
+  let l:msg = substitute(l:msg, "//", "/", "g")
+  let l:msg = substitute(l:msg, "\"", "", "g")
 
-  return vimext#debug#DecodeMessage(l:msg, v:false)
+  return l:msg
 endfunction
 
 function vimext#debug#DecodeMessage(quotedText, literal)

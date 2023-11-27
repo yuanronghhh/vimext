@@ -152,9 +152,13 @@ function vimext#runner#Run(args) abort
 
   if a:args isnot v:null && a:args != ""
     if s:self.dbg.name == "gdb"
-      call s:Call("file", a:args)
+      call s:Call("file", l:args)
     else
-      call s:Call(s:self.proto.Arguments, a:args)
+      let l:args = vimext#debug#DecodeFilePath(a:args)
+      if l:args[0] != "\""
+        let l:args = "\"" . l:args . "\""
+      endif
+      call s:Call(s:self.proto.Arguments, l:args)
     endif
   endif
 
@@ -230,6 +234,7 @@ endfunction
 function s:PromptInput(cmd) abort
   let l:info = s:self.proto.ProcessInput(s:self.proto, a:cmd)
 
+  call vimext#logger#Info(l:info)
   if l:info[0] == 1 " quit
     if exists('#User#DbgDebugStopPre')
       doauto <nomodeline> User DbgDebugStopPre
@@ -299,7 +304,8 @@ function vimext#runner#LoadSource(self, fname, lnum) abort
 endfunction
 
 function vimext#runner#PrintOutput(self, msg) abort
-  if a:msg == "" || a:msg[0] == "="
+  let l:msg = vimext#proto#ProcessMsg(a:msg)
+  if l:msg is v:null
     return
   endif
 
@@ -317,7 +323,6 @@ function vimext#runner#PrintError(self, msg) abort
 endfunction
 
 function s:PromptOut(channel, msg) abort
-  "call vimext#logger#Info(a:msg)
   let l:proto = s:self.proto
 
   let l:info = l:proto.ProcessOutput(a:msg)
