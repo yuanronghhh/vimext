@@ -63,8 +63,6 @@ function vimext#runner#Create(lang) abort
 
   call vimext#breakpoint#Init()
 
-  "call vimext#runner#Restore()
-
   if exists('#User#DbgDebugStartPost')
     doauto <nomodeline> User DbgDebugStartPost
   endif
@@ -128,6 +126,10 @@ function vimext#runner#Asm() abort
     return
   endif
 
+  if s:self.source_viewer is v:null
+    return
+  endif
+
   if s:self.asm_viewer isnot v:null
     call vimext#viewer#Show(s:self.asm_viewer)
     call vimext#runner#SetAsmEnv(s:self.asm_viewer)
@@ -142,6 +144,11 @@ function vimext#runner#Asm() abort
 endfunction
 
 function vimext#runner#Run(args) abort
+  let l:start = vimext#proto#GetStart(s:self.proto)
+  if l:start is v:null
+    return
+  endif
+
   if a:args isnot v:null && a:args != ""
     if s:self.dbg.name == "gdb"
       call s:Call("file", a:args)
@@ -149,13 +156,8 @@ function vimext#runner#Run(args) abort
       call s:Call(s:self.proto.Arguments, a:args)
     endif
   endif
-  let l:start = vimext#proto#GetStart(s:self.proto)
 
-  if l:start is v:null
-    return
-  endif
-
-  call s:Call(l:start, "")
+  call s:Call(l:start, v:null)
 endfunction
 
 function vimext#runner#Attach(pid) abort
@@ -284,6 +286,7 @@ function vimext#runner#LoadSource(self, fname, lnum) abort
     execute "wincmd H"
   endif
   call vimext#viewer#LoadByFile(a:self.source_viewer, a:fname, a:lnum)
+  call vimext#runner#Restore()
 
   if vimext#viewer#IsShow(a:self.asm_viewer)
     call s:Call(s:self.proto.Disassemble, "$pc")
@@ -291,11 +294,24 @@ function vimext#runner#LoadSource(self, fname, lnum) abort
 endfunction
 
 function vimext#runner#PrintOutput(self, msg) abort
+  if has("win32") && a:self.dbg.name == "gdb"
+    let l:term = a:self.cmd_term
+    call l:term.Print(l:term, a:msg)
+  else
+  endif
+endfunction
+
+function vimext#runner#SaveBrks(self) abort
+  call s:Call(a:self.proto.SaveBreakoints, s:gdb_cfg)
+endfunction
+
+function vimext#runner#PrintError(self, msg) abort
   let l:term = a:self.cmd_term
   call l:term.Print(l:term, a:msg)
 endfunction
 
 function s:PromptOut(channel, msg) abort
+  "call vimext#logger#Info(a:msg)
   let l:proto = s:self.proto
 
   let l:info = l:proto.ProcessOutput(a:msg)
@@ -307,6 +323,7 @@ function s:PromptOut(channel, msg) abort
     call vimext#runner#LoadSource(s:self, info[2], info[3])
 
   elseif info[0] == 2 " exit normally
+    call vimext#runner#SaveBrks(s:self)
 
   elseif info[0] == 3 " running
 
@@ -326,7 +343,7 @@ function s:PromptOut(channel, msg) abort
     call vimext#runner#LoadSource(s:self, info[1], info[2])
 
   elseif info[0] == 10 " error msg
-    call vimext#runner#PrintOutput(s:self, info[1])
+    call vimext#runner#PrintError(s:self, info[1])
 
   elseif info[0] == 11 " breakpoint delete
     call vimext#breakpoint#DeleteID(l:info[1])

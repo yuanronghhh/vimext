@@ -50,7 +50,7 @@ function vimext#term#New(cmd, opts) abort
 endfunction
 
 function s:Send(self, cmd) abort
-  call term_sendkeys(a:self.buf, a:cmd . "\r")
+  call term_sendkeys(a:self.buf, a:cmd . "\n")
 endfunction
 
 function s:Running(self) abort
@@ -75,14 +75,11 @@ function s:NewDbgTerm(cmd, out_func, exit_func) abort
   let l:dbg_term = vimext#term#New(a:cmd, {
         \ 'term_finish': 'close',
         \ 'exit_cb': a:exit_func,
-        \ 'out_cb': a:out_func
         \ })
   if l:dbg_term is v:null
     call vimext#logger#Error('Failed to start dbg term')
     return 0
   endif
-
-  call vimext#gccdbg#FilterStart(l:dbg_term)
 
   call l:dbg_term.Send(l:dbg_term, 'server new-ui mi ' . l:cmd_term.tty)
   set filetype=termdebug
@@ -93,7 +90,8 @@ endfunction
 function s:NewDbg(self, cmd) abort
   return s:NewDbgTerm(a:cmd,
         \ function("s:TermOut"),
-        \ a:self.HandleExit)
+        \ function("s:TermExit")
+        \ )
 endfunction
 
 function s:NewProg() abort
@@ -111,38 +109,25 @@ function s:NewProg() abort
 endfunction
 
 function s:Print(self, msg) abort
-  " empty, see gdb must startswith -tty parameter
+  if a:msg == ''
+    return
+  endif
+
+  call s:Send(a:self, a:msg)
 endfunction
 "Term end
 
 function s:TermOut(channel, data) abort
-  let msgs = split(a:data, '\r\n')
+  let l:msgs = split(a:data, "\r\n")
 
-  for l:msg in msgs
+  for l:msg in l:msgs
     call s:self.HandleOutput(a:channel, l:msg)
   endfor
 endfunction
 
-
 " term
-function s:TermCallback(cmd) abort
-  let l:cmd = s:self.HandleInput(a:cmd)
-  if l:cmd is v:null
-    return
-  endif
-
-  call vimext#term#Send(s:self.term.buf, l:cmd)
-endfunction
-
-function s:TermInterrupt() abort
-  "call vimext#logger#Info("TermInterrupt")
-
-  if s:pid == 0
-    call vimext#logger#Error('Cannot interrupt, not find a process ID')
-    return
-  endif
-
-  call debugbreak(s:term_pid)
+function s:TermExit(job, status) abort
+  call s:self.HandleExit(a:job, a:status)
 endfunction
 
 function vimext#term#Create(param) abort
@@ -150,8 +135,6 @@ function vimext#term#Create(param) abort
         \ "term_pid": 0,
         \ "NewProg": function("s:NewProg"),
         \ "NewDbg": function("s:NewDbg"),
-        \ "Callback": function("s:TermCallback"),
-        \ "Interrupt": function("s:TermInterrupt"),
         \ 'HandleExit': get(a:param, "HandleExit", v:null),
         \ "HandleInput": get(a:param, "HandleInput", v:null),
         \ 'HandleOutput': get(a:param, "HandleOutput", v:null),

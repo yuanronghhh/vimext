@@ -68,6 +68,7 @@ function vimext#viewer#LoadByFile(self, fname, lnum) abort
   let l:cwin = win_getid()
 
   if !filereadable(a:fname)
+    call vimext#logger#Warning("Viewer load by file failed: ". a:fname)
     return
   endif
   call win_gotoid(a:self.winid)

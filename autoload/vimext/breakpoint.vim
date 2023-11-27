@@ -37,18 +37,7 @@ endfunction
 function vimext#breakpoint#DeleteID(id)
   let l:brk = get(s:breaks, a:id, v:null)
   if l:brk is v:null
-    return
-  endif
-
-  call vimext#breakpoint#Delete(l:brk)
-endfunction
-
-function vimext#breakpoint#Delete(brk)
-  if a:brk is v:null
-    return
-  endif
-
-  if !has_key(s:breaks, a:brk[1])
+    call vimext#logger#Warning("break id not exists: ". a:id)
     return
   endif
 
@@ -59,6 +48,14 @@ function vimext#breakpoint#Delete(brk)
     call vimext#sign#Dispose(l:sign)
     unlet l:sign
   endfor
+endfunction
+
+function vimext#breakpoint#Delete(brk)
+  if a:brk is v:null
+    return
+  endif
+
+  call vimext#breakpoint#DeleteID(l:brk[1])
 endfunction
 
 function vimext#breakpoint#Get(fname, lnum)
@@ -78,6 +75,7 @@ function vimext#breakpoint#Add(info)
   endif
 
   if !bufexists(a:info[7])
+    call vimext#logger#Warning("break buffer not exists: " . a:info[7])
     return
   endif
 

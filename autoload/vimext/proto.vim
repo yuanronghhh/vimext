@@ -166,7 +166,7 @@ endfunction
 function s:ProcessMsg(text) abort
   let l:text = v:null
 
-  if a:text =~ '(gdb) ' || a:text[0] == '&'
+  if a:text =~ '(gdb) ' || a:text == '^done' || a:text[0] == '&'
     return v:null
   endif
 

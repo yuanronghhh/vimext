@@ -13,10 +13,13 @@ endfunction
 function s:SetConfig(self, prompt, proto) abort
   if has("win32")
     call a:prompt.Send(a:prompt, a:proto.Set . " new-console on")
+    call a:prompt.Send(a:prompt, a:proto.Set . " print pretty on")
+    call a:prompt.Send(a:prompt, a:proto.Set . " breakpoint pending on")
+  else
+    call a:prompt.Send(a:prompt, "set print pretty on")
+    call a:prompt.Send(a:prompt, "set breakpoint pending on")
   endif
 
-  call a:prompt.Send(a:prompt, a:proto.Set . " print pretty on")
-  call a:prompt.Send(a:prompt, a:proto.Set . " breakpoint pending on")
 endfunction
 
 function vimext#gccdbg#FilterStart(term) abort
@@ -57,7 +60,6 @@ function s:GetGccCmd(protoname, tty) abort
   let l:cmd += ['-iex', 'set pagination off']
   let l:cmd += ['-iex', 'set mi-async on']
   let l:cmd += ['-tty', a:tty]
-  let l:cmd += ['-ex', 'echo startupdone\n']
 
   return l:cmd
 endfunction
