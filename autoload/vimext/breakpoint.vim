@@ -35,7 +35,7 @@ function vimext#breakpoint#Parse(args)
 endfunction
 
 function vimext#breakpoint#DeleteID(id)
-  let l:brk = get(s:breaks, a:id)
+  let l:brk = get(s:breaks, a:id, v:null)
   if l:brk is v:null
     return
   endif
@@ -80,10 +80,6 @@ function vimext#breakpoint#Add(info)
   if !bufexists(a:info[7])
     call vimext#logger#Warning("break buffer not exists: " . a:info[7])
     return
-  endif
-
-  if has_key(s:breaks, a:info[1])
-    return vimext#breakpoint#DeleteN(a:info[1])
   endif
 
   let s:breaks[a:info[1]] = a:info

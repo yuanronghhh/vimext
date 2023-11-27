@@ -185,7 +185,7 @@ function s:MIProcessOutput(msg) abort
     return
   endif
 
-  let l:info = [0, 0, 0, 0, 0, 0, 0, 0, 0, l:msg]
+  let l:info = [7, 0, 0, 0, 0, 0, 0, 0, 0, l:msg]
 
   if l:msg =~ '^\*stopped,reason="breakpoint-hit"'
     let l:nameIdx = matchlist(l:msg, '^\*stopped,reason="breakpoint-hit",\S*,bkptno="\(\d*\)",\S*,fullname=\([^,]*\),line="\(\d\+\)"')
@@ -359,10 +359,7 @@ function s:MIProcessOutput(msg) abort
   elseif l:msg == 'End of assembler dump.'
     let l:info[0] = 16
 
-  elseif l:msg =~ '=library-'
-        \ || l:msg =~ '^=symbols-loaded,'
-        \ || l:msg =~ '^=no-symbols-loaded,'
-        \ || l:msg =~ '^=thread'
+  elseif l:msg =~ '^='
         \ || l:msg == '^done'
         \ || l:msg =~ '^*running,thread-id'
     " ignored

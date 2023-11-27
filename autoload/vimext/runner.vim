@@ -152,12 +152,14 @@ function vimext#runner#Run(args) abort
 
   if a:args isnot v:null && a:args != ""
     if s:self.dbg.name == "gdb"
-      call s:Call("file", l:args)
+      call s:Call("file", a:args)
     else
       let l:args = vimext#debug#DecodeFilePath(a:args)
+      call vimext#logger#Info(l:args)
       if l:args[0] != "\""
         let l:args = "\"" . l:args . "\""
       endif
+
       call s:Call(s:self.proto.Arguments, l:args)
     endif
   endif
