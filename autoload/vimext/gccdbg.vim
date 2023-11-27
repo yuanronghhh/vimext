@@ -59,7 +59,12 @@ function s:GetGccCmd(protoname, tty) abort
   let l:cmd += ['-quiet']
   let l:cmd += ['-iex', 'set pagination off']
   let l:cmd += ['-iex', 'set mi-async on']
-  let l:cmd += ['-tty', a:tty]
+
+  if a:protoname == "mi2" && has("win32")
+    let l:cmd += ['--interpreter=mi2']
+  else
+    let l:cmd += ['-tty', a:tty]
+  endif
 
   return l:cmd
 endfunction

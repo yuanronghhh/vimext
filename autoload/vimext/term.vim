@@ -5,7 +5,7 @@ function s:GetWinID(self) abort
   return a:self.winid
 endfunction
 
-function s:GoTerm(self) abort
+function s:Go(self) abort
   return win_gotoid(a:self.winid)
 endfunction
 
@@ -25,7 +25,7 @@ function vimext#term#New(cmd, opts) abort
         \ "tty": v:null,
         \ "winid": v:null,
         \ "GetWinID": function("s:GetWinID"),
-        \ "GoTerm": function("s:GoTerm"),
+        \ "Go": function("s:Go"),
         \ "GetLine": function("s:GetLine"),
         \ "Send": function("s:Send"),
         \ "Print": function("s:Print"),

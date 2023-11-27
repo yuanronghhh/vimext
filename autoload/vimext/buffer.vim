@@ -17,7 +17,7 @@ function vimext#buffer#ClearWin(winid) abort
 endfunction
 
 function vimext#buffer#Wipe(buf) abort
-  if !bufexists(a:buf)
+  if a:buf is v:null || !bufexists(a:buf) || a:buf == 0
     call vimext#logger#Warning("Wipe bufid not exists: ". a:buf)
     return
   endif

@@ -55,6 +55,8 @@ function vimext#runner#Create(lang) abort
   let l:cmd_term = l:bridge.NewProg()
   let l:self.cmd_term = l:cmd_term
 
+  call win_execute(l:empty_win, "close")
+
   let l:cmd = l:dbg.GetCmd(l:self.dbg, l:cmd_term)
   let l:dbg_term = l:bridge.NewDbg(l:bridge, l:cmd)
   let l:self.dbg_term = l:dbg_term
@@ -66,7 +68,6 @@ function vimext#runner#Create(lang) abort
   if exists('#User#DbgDebugStartPost')
     doauto <nomodeline> User DbgDebugStartPost
   endif
-  call win_execute(l:empty_win, "close")
 
   return l:self
 endfunction
@@ -246,7 +247,7 @@ function s:PromptInput(cmd) abort
     endif
   endif
 
-  return l:info[1] . " " . l:info[2]
+  call s:Call(l:info[1] . " " . l:info[2], v:null)
 endfunction
 
 function s:DeleteBreakPointByFName(self, fname, lnum) abort
@@ -284,9 +285,13 @@ function vimext#runner#LoadSource(self, fname, lnum) abort
     let a:self.source_viewer = vimext#viewer#CreateFileMode("source", 1, l:dbg_win, 31)
     call vimext#viewer#Go(a:self.source_viewer)
     execute "wincmd H"
+    call a:self.dbg_term.Go(a:self.dbg_term)
+
+    call vimext#viewer#LoadByFile(a:self.source_viewer, a:fname, a:lnum)
+    call vimext#runner#Restore()
+  else
+    call vimext#viewer#LoadByFile(a:self.source_viewer, a:fname, a:lnum)
   endif
-  call vimext#viewer#LoadByFile(a:self.source_viewer, a:fname, a:lnum)
-  call vimext#runner#Restore()
 
   if vimext#viewer#IsShow(a:self.asm_viewer)
     call s:Call(s:self.proto.Disassemble, "$pc")
@@ -294,11 +299,12 @@ function vimext#runner#LoadSource(self, fname, lnum) abort
 endfunction
 
 function vimext#runner#PrintOutput(self, msg) abort
-  if has("win32") && a:self.dbg.name == "gdb"
-    let l:term = a:self.cmd_term
-    call l:term.Print(l:term, a:msg)
-  else
+  if a:msg == "" || a:msg[0] == "="
+    return
   endif
+
+  let l:term = a:self.cmd_term
+  call l:term.Print(l:term, a:msg)
 endfunction
 
 function vimext#runner#SaveBrks(self) abort
@@ -328,7 +334,6 @@ function s:PromptOut(channel, msg) abort
 
   elseif info[0] == 4 " user set breakpoint
     "brkid,type,disp,enable,func,file,fullname,line
-    call vimext#logger#Info(l:info)
     call vimext#breakpoint#Add(l:info[0:8])
 
   elseif info[0] == 5 " exit end stepping range
