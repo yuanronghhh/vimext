@@ -138,7 +138,6 @@ function vimext#config#LoadConfig()
 
   "let g:hexmode_xxd_options = '-p'
 
-  let l:plugins = ["vim-multiple-cursors", "supertab", "nerdtree", "TagBar"]
   let g:ale_lint_on_text_changed = 'never'
   let g:ale_set_loclist = 1
   let g:ale_c_parse_compile_commands = 1
@@ -150,7 +149,7 @@ function vimext#config#LoadConfig()
         \ 'c': ['clangtidy', 'gcc', 'clangd'],
         \ 'python': ['pylint']
         \ }
-  "call add(l:plugins, "ale")
+  let l:plugins = ["vim-multiple-cursors", "supertab", "nerdtree", "TagBar", "ale"]
   call vimext#plugins#LoadPlugin(l:plugins)
   call vimext#debug#Init()
 

@@ -1,6 +1,3 @@
-"
-" some code from python-mode https://github.com/python-mode/python-mode.git
-"
 let g:vimext_python = 0
 
 function python#Init()
@@ -9,9 +6,9 @@ import vim
 sys.path.insert(0, vim.eval("$vimext_home") + "/plugin/python")
 import utils
 import CommentParser, GetterGenerator
+from autotags import g_atags
 EOF
   let g:vimext_python = 1
-  python3 from autotags import g_atags
 
   nnoremap <leader>c :GetComment<cr>
   nnoremap <leader>g :GenGetter<cr>
