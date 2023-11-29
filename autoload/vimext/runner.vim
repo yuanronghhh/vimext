@@ -155,7 +155,6 @@ function vimext#runner#Run(args) abort
       call s:Call("file", a:args)
     else
       let l:args = vimext#debug#DecodeFilePath(a:args)
-      call vimext#logger#Info(l:args)
       if l:args[0] != "\""
         let l:args = "\"" . l:args . "\""
       endif
@@ -236,7 +235,6 @@ endfunction
 function s:PromptInput(cmd) abort
   let l:info = s:self.proto.ProcessInput(s:self.proto, a:cmd)
 
-  call vimext#logger#Info(l:info)
   if l:info[0] == 1 " quit
     if exists('#User#DbgDebugStopPre')
       doauto <nomodeline> User DbgDebugStopPre
@@ -332,6 +330,7 @@ function s:PromptOut(channel, msg) abort
     return
   endif
 
+  "call vimext#logger#Info(info)
   if info[0] == 1 " hit breakpoint
     call vimext#runner#LoadSource(s:self, info[2], info[3])
 

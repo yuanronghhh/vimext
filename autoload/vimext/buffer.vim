@@ -37,7 +37,7 @@ endfunction
 
 function vimext#buffer#GetNameByWinID(wid) abort
   let l:bnr = winbufnr(a:wid)
-  return bufname(l:bnr)
+  return substitute(bufname(l:bnr), "\\", "/", "g")
 endfunction
 
 function vimext#buffer#NewWindowLayout(name, dr) abort
