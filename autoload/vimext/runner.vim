@@ -329,14 +329,10 @@ function s:PromptOut(channel, msg) abort
   if l:info is v:null
     return
   endif
+  call vimext#logger#Info(l:info)
 
-  "call vimext#logger#Info(info)
   if info[0] == 1 " hit breakpoint
     call vimext#runner#LoadSource(s:self, info[2], info[3])
-
-  elseif info[0] == 2 " exit normally
-
-  elseif info[0] == 3 " running
 
   elseif info[0] == 4 " user set breakpoint
     "brkid,type,disp,enable,func,file,fullname,line
@@ -345,9 +341,7 @@ function s:PromptOut(channel, msg) abort
   elseif info[0] == 5 " exit end stepping range
     call vimext#runner#LoadSource(s:self, info[1], info[2])
 
-  elseif info[0] == 7 " filter useless msg
-
-  elseif info[0] == 8 " output msg
+  elseif info[0] == 8 " message
     call vimext#runner#PrintOutput(s:self, info[1])
 
   elseif info[0] == 9 " entry-point-hit
@@ -377,7 +371,6 @@ function s:PromptOut(channel, msg) abort
       call vimext#viewer#AddLine(s:self.asm_viewer, l:line)
 
     else
-      call vimext#runner#PrintOutput(s:self, l:info[9])
       let s:output_state = 1
     endif
   endif

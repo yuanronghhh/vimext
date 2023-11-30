@@ -1,6 +1,7 @@
 function vimext#proto#Create(name) abort
   let s:mi_cmd = {
         \ "name": "mi",
+        \ "state": 0,
         \ "Break": "-break-insert",
         \ "Clear": "-break-delete",
         \ "Arguments": "-exec-arguments",
@@ -166,22 +167,16 @@ endfunction
 function vimext#proto#ProcessMsg(text) abort
   let l:text = v:null
 
-  if a:text =~ '(gdb)' || a:text[0] == '&' || a:text == ""
+  if a:text =~ "(gdb)" || a:text[0] == "&" || a:text == ""
     return v:null
   endif
 
-  if a:text[0] == '~'
-    let l:text = vimext#debug#DecodeMessage(a:text[1:], v:false)
-  else
-    return a:text
-  endif
-
-  return l:text
+  return a:text
 endfunction
 
 function s:MIProcessOutput(msg) abort
   let l:msg = vimext#proto#ProcessMsg(a:msg)
-  if l:msg is v:null || l:msg == ""
+  if l:msg is v:null
     return v:null
   endif
 
@@ -202,8 +197,14 @@ function s:MIProcessOutput(msg) abort
   elseif l:msg == '*stopped,reason="exited",exit-code="0"'
         \ || l:msg == '*stopped,reason="exited-normally"'
     let l:info[0] = 2
-  elseif l:msg == '^running'
-    let l:info[0] = 3
+
+  elseif l:msg =~ '^=breakpoint-deleted,id='
+    let l:nameIdx = matchlist(l:msg, '=breakpoint-deleted,id="\(\d\+\)"')
+    if len(l:nameIdx) > 0
+      let l:info[0] = 11
+      let l:info[1] = l:nameIdx[1] " breakpoint id
+    endif
+
   elseif l:msg =~ '^=breakpoint-created,bkpt'
         \ || l:msg =~ '^=breakpoint-modified,bkpt'
         \ || l:msg =~ '^\^done,bkpt=\S*,fullname='
@@ -222,11 +223,12 @@ function s:MIProcessOutput(msg) abort
     else
       let l:info[0] = 7
     endif
+
+
   elseif l:msg =~ '^\*stopped,reason="end-stepping-range"'
         \ || l:msg =~ '^\*stopped,reason="function-finished"'
         \ || l:msg =~ '\*stopped,reason="signal-received"'
 
-    ""*stopped,reason="end-stepping-range",frame={addr="0x00007ff8c315a890",func="ntdll!RtlEnterCriticalSection",args=[],from="C:\\Windows\\SYSTEM32\\ntdll.dll",arch="i386:x86-64"},thread-id="1",stopped-threads="all"
     let l:nameIdx = matchlist(l:msg, '^\*stopped,reason=.*,fullname=\([^,]*\),line="\(\d\+\)"')
     if len(l:nameIdx) > 0
       let l:info[0] = 5
@@ -265,6 +267,10 @@ function s:MIProcessOutput(msg) abort
       let l:info[1] = vimext#debug#DecodeMessage(l:nameIdx[1], v:false)
       let l:info[2] = l:nameIdx[2]
     endif
+
+  elseif l:msg[0] == '^~'
+    let l:info[0] = 8
+    let l:info[1] = vimext#debug#DecodeMessage(l:msg[1], v:false)
 
   elseif l:msg =~ '^=cmd-param-changed,'
     let l:nameIdx = matchlist(l:msg, '^=cmd-param-changed,param="\([^\n]\+\)",value="\([^,]\+\)"')
@@ -316,13 +322,6 @@ function s:MIProcessOutput(msg) abort
       let l:info[1] = "exit-code: " . l:nameIdx[1]
     endif
 
-  elseif l:msg =~ '^=breakpoint-deleted,id='
-    let l:nameIdx = matchlist(l:msg, '=breakpoint-deleted,id="\(\d\+\)"')
-    if len(l:nameIdx) > 0
-      let l:info[0] = 11
-      let l:info[1] = l:nameIdx[1] " breakpoint id
-    endif
-
   elseif l:msg =~ '^=>'
     let l:nameIdx = matchlist(l:msg, '^=>\s\+\(\S\+\) <+\(\d\+\)>')
 
@@ -343,80 +342,8 @@ function s:MIProcessOutput(msg) abort
   elseif l:msg == 'End of assembler dump.'
     let l:info[0] = 16
 
-  elseif l:msg =~ '^='
-        \ || l:msg == '^done'
-        \ || l:msg =~ '^*running,thread-id'
-    " ignored
-    let l:info[0] = 7
   else
-  endif
-
-  return l:info
-endfunction
-
-function s:CLIDecodeLine(msg) abort
-  let l:info = [0, 0, 0, 0]
-
-  if a:msg =~ '^stopped, reason: breakpoint'
-    let l:nameIdx = matchlist(a:msg, 'stopped, reason: breakpoint \(\d\+\) hit, .* frame={\S* at \([^}]*\):\(\d\+\)')
-    if len(l:nameIdx) == 0
-      return l:info
-    endif
-
-    let l:info[0] = 1
-    let l:info[1] = l:nameIdx[1]  " breakpoint
-    let l:info[2] = l:nameIdx[2]  " filename
-    let l:info[3] = l:nameIdx[3]  " lineno
-    return l:info
-  endif
-
-  if a:msg =~ '^\^stopped, reason: exited, exit-code: 0'
-    let l:info[0] = 2
-    return l:info
-  endif
-
-  if a:msg =~ '^\^running'
-    let l:info[0] = 3
-    return l:info
-  endif
-
-  if a:msg =~ '^ Breakpoint ' " user set breakpoint
-    let l:info[0] = 4
-    let l:nameIdx = matchlist(a:msg, ' Breakpoint \(\d\+\)')
-
-    if len(l:nameIdx) == 0
-      return l:info
-    endif
-
-    let l:info[1] = l:nameIdx[1]  " breakpoint number
-    return l:info
-  endif
-
-  if a:msg =~ 'stopped, reason: end stepping range,'
-    let l:info[0] = 5
-
-    let l:nameIdx = matchlist(a:msg, 'stopped, reason: end stepping range, .* frame={\S* at \([^}]*\):\(\d\+\)')
-    if len(l:nameIdx) == 0
-      return l:info
-    endif
-
-    let l:info[1] = l:nameIdx[1]  " filename
-    let l:info[2] = l:nameIdx[2]  " lineno
-    return l:info
-  endif
-
-  if a:msg =~ '^\^exit'
-    let l:info[0] = 6
-    return l:info
-  endif
-
-  if a:msg =~ '^library loaded:'
-        \ || a:msg =~ '^symbols loaded,'
-        \ || a:msg =~ '^no symbols loaded,'
-        \ || a:msg =~ '^breakpoint modified,'
-        \ || a:msg =~ '^thread created,'
-    let l:info[0] = 7
-    return l:info
+    return v:null
   endif
 
   return l:info
