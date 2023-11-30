@@ -1,7 +1,11 @@
+let s:self = v:null
+
+
 function vimext#proto#Create(name) abort
   let s:mi_cmd = {
         \ "name": "mi",
         \ "state": 0,
+        \ "lines": [],
         \ "Break": "-break-insert",
         \ "Clear": "-break-delete",
         \ "Arguments": "-exec-arguments",
@@ -48,6 +52,8 @@ function vimext#proto#Create(name) abort
   if a:name == "vscode"
     let l:self = s:vscode_cmd
   endif
+
+  let s:self = l:self
 
   return l:self
 endfunction
@@ -167,11 +173,27 @@ endfunction
 function vimext#proto#ProcessMsg(text) abort
   let l:text = v:null
 
-  if a:text =~ "(gdb)" || a:text[0] == "&" || a:text == ""
+  if a:text =~ "(gdb)"
+        \ || a:text == ""
+        \ || a:text[0] == "&"
     return v:null
   endif
 
   return a:text
+endfunction
+
+function s:LoadTextByState(self, line) abort
+  if a:self.state == 0
+    call add(a:self.lines, a:line)
+  elseif a:self.state == 1
+    " start
+  elseif a:self.state == 2
+    " end
+  endif
+endfunction
+
+function s:GetLine(self) abort
+  return a:self.lines
 endfunction
 
 function s:MIProcessOutput(msg) abort
@@ -224,7 +246,6 @@ function s:MIProcessOutput(msg) abort
       let l:info[0] = 7
     endif
 
-
   elseif l:msg =~ '^\*stopped,reason="end-stepping-range"'
         \ || l:msg =~ '^\*stopped,reason="function-finished"'
         \ || l:msg =~ '\*stopped,reason="signal-received"'
@@ -267,6 +288,18 @@ function s:MIProcessOutput(msg) abort
       let l:info[1] = vimext#debug#DecodeMessage(l:nameIdx[1], v:false)
       let l:info[2] = l:nameIdx[2]
     endif
+
+  elseif l:msg =~ '^\~"Dump of assembler code for function '
+    let l:nameIdx = matchlist(l:msg, '^\~"Dump of assembler code for function \([^$]\+\):')
+
+    if len(l:nameIdx) > 0
+      let l:info[0] = 15
+      let l:info[1] = l:nameIdx[1]
+    endif
+
+    let s:output_state = 1
+  elseif l:msg =~ '^\~"End of assembler dump.'
+    let l:info[0] = 16
 
   elseif l:msg[0] == '^~'
     let l:info[0] = 8
@@ -331,16 +364,6 @@ function s:MIProcessOutput(msg) abort
       let l:info[2] = l:nameIdx[2]
       let l:info[3] = substitute(l:info[9], "^=>[ ]*", "", "")
     endif
-
-  elseif l:msg =~ 'Dump of assembler code for function '
-    let l:nameIdx = matchlist(l:msg, '^Dump of assembler code for function \([^$]\+\):')
-
-    if len(l:nameIdx) > 0
-      let l:info[0] = 15
-      let l:info[1] = l:nameIdx[1]
-    endif
-  elseif l:msg == 'End of assembler dump.'
-    let l:info[0] = 16
 
   else
     return v:null

@@ -323,13 +323,13 @@ function vimext#runner#PrintError(self, msg) abort
 endfunction
 
 function s:PromptOut(channel, msg) abort
+  "call vimext#logger#Info(a:msg)
   let l:proto = s:self.proto
 
   let l:info = l:proto.ProcessOutput(a:msg)
   if l:info is v:null
     return
   endif
-  call vimext#logger#Info(l:info)
 
   if info[0] == 1 " hit breakpoint
     call vimext#runner#LoadSource(s:self, info[2], info[3])
