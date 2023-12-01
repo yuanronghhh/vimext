@@ -4,7 +4,7 @@ function vimext#viewer#Create(name, dr, basewin, sign_id, mode) abort
         \ "mode": a:mode,
         \ "dr": a:dr,
         \ "unique_id": v:null,
-        \ "dirty": v:false,
+        \ "dirty": v:true,
         \ "basewin": a:basewin,
         \ "lines": v:null,
         \ "winid": 0,
@@ -68,7 +68,7 @@ function vimext#viewer#LoadByFile(self, fname, lnum) abort
   let l:cwin = win_getid()
 
   if !filereadable(a:fname)
-    call vimext#logger#Warning("Viewer load by file failed: ". a:fname)
+    "call vimext#logger#Warning("Viewer load by file failed: ". a:fname)
     return
   endif
   call win_gotoid(a:self.winid)
@@ -78,6 +78,7 @@ function vimext#viewer#LoadByFile(self, fname, lnum) abort
     let a:self.buff = bufnr("%")
     :setlocal signcolumn=yes
     let a:self.unique_id = a:fname
+    let a:self.dirty = v:true
   endif
   call vimext#viewer#SignByNum(a:self, a:lnum)
 
@@ -100,12 +101,20 @@ function vimext#viewer#SignByText(self, text) abort
   call win_gotoid(l:cwin)
 endfunction
 
-function vimext#viewer#AddLine(self, line) abort
+function vimext#viewer#SetLines(self, lines) abort
   if !a:self.dirty
     return
   endif
 
-  call add(a:self.lines, a:line)
+  let a:self.lines = a:lines
+endfunction
+
+function vimext#viewer#IsDirty(self) abort
+  if a:self is v:null
+    return v:false
+  endif
+
+  return a:self.dirty
 endfunction
 
 function vimext#viewer#SetUniqueID(self, id) abort
@@ -128,6 +137,7 @@ function vimext#viewer#LoadByLines(self) abort
   let l:cwin = win_getid()
   call win_gotoid(a:self.winid)
 
+  call insert(a:self.lines, a:self.unique_id . ":", 0)
   if a:self.dirty
     call append(line('$') - 1, a:self.lines)
   endif

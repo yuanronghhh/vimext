@@ -182,27 +182,18 @@ function vimext#proto#ProcessMsg(text) abort
   return a:text
 endfunction
 
-function s:LoadTextByState(self, line) abort
-  if a:self.state == 0
-    call add(a:self.lines, a:line)
-  elseif a:self.state == 1
-    " start
-  elseif a:self.state == 2
-    " end
-  endif
-endfunction
-
 function s:GetLine(self) abort
   return a:self.lines
 endfunction
 
 function s:MIProcessOutput(msg) abort
+  "call vimext#logger#Info(a:msg)
   let l:msg = vimext#proto#ProcessMsg(a:msg)
   if l:msg is v:null
     return v:null
   endif
 
-  let l:info = [0, 0, 0, 0, 0, 0, 0, 0, 0, l:msg]
+  let l:info = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
   if l:msg =~ '^\*stopped,reason="breakpoint-hit"'
     let l:nameIdx = matchlist(l:msg, '^\*stopped,reason="breakpoint-hit",\S*,bkptno="\(\d*\)",\S*,fullname=\([^,]*\),line="\(\d\+\)"')
@@ -297,13 +288,36 @@ function s:MIProcessOutput(msg) abort
       let l:info[1] = l:nameIdx[1]
     endif
 
-    let s:output_state = 1
+    let s:self.state = 1
+    let s:self.lines = []
   elseif l:msg =~ '^\~"End of assembler dump.'
     let l:info[0] = 16
+    let l:info[1] = s:self.lines
+    let s:self.state = 0
 
-  elseif l:msg[0] == '^~'
-    let l:info[0] = 8
-    let l:info[1] = vimext#debug#DecodeMessage(l:msg[1], v:false)
+  elseif l:msg =~ '^\~"=>'
+    let l:nameIdx = matchlist(l:msg[2:], '^=>\s\+\(\S\+\) <+\(\d\+\)>')
+    let l:msg = vimext#debug#DecodeMessage(l:msg[1:], v:false)
+
+    if len(l:nameIdx) > 0
+      let l:info[0] = 14
+      let l:info[1] = l:nameIdx[1]
+      let l:info[2] = l:nameIdx[2]
+      let l:info[3] = substitute(l:msg, "^=>[ ]*", "", "")
+      call add(s:self.lines, l:info[3])
+    endif
+  elseif l:msg[0] == '~'
+
+    if s:self.state == 1
+      let l:info[0] = 0
+      let l:line = vimext#debug#DecodeMessage(l:msg[1:], v:false)
+      let l:line = substitute(l:line, '^[ ]*', "", "g")
+      let l:line = substitute(l:line, '^=>[ ]*', "", "g")
+      call add(s:self.lines, l:line)
+    else
+      let l:info[0] = 8
+      let l:info[1] = vimext#debug#DecodeMessage(l:msg[1:], v:false)
+    endif
 
   elseif l:msg =~ '^=cmd-param-changed,'
     let l:nameIdx = matchlist(l:msg, '^=cmd-param-changed,param="\([^\n]\+\)",value="\([^,]\+\)"')
@@ -312,7 +326,6 @@ function s:MIProcessOutput(msg) abort
       let l:info[0] = 8
       let l:info[1] = l:nameIdx[1] . " " . l:nameIdx[2]
     endif
-
 
   elseif l:msg =~ '^\^done,name='
     let l:nameIdx = matchlist(l:msg, '^\^done,name="\([^"]*\)",value=\([^,]*\),attributes="\([^"]*\)",exp="\([^"]*\)"')
@@ -347,24 +360,12 @@ function s:MIProcessOutput(msg) abort
       let l:info[1] = l:nameIdx[1] . ": " . vimext#debug#DecodeMessage('"' . l:nameIdx[2] . '\"', v:false)
     endif
 
-
   elseif l:msg =~ '^\*stopped,reason="exited",exit-code='
     let l:nameIdx = matchlist(l:msg, '^\*stopped,reason="exited",exit-code="\(\d\+\)"')
     if len(l:nameIdx) > 0
       let l:info[0] = 10
       let l:info[1] = "exit-code: " . l:nameIdx[1]
     endif
-
-  elseif l:msg =~ '^=>'
-    let l:nameIdx = matchlist(l:msg, '^=>\s\+\(\S\+\) <+\(\d\+\)>')
-
-    if len(l:nameIdx) > 0
-      let l:info[0] = 14
-      let l:info[1] = l:nameIdx[1]
-      let l:info[2] = l:nameIdx[2]
-      let l:info[3] = substitute(l:info[9], "^=>[ ]*", "", "")
-    endif
-
   else
     return v:null
   endif

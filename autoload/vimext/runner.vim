@@ -1,6 +1,5 @@
 let s:gdb_cfg = g:vim_session."/gdb.cfg"
 let s:self = v:null
-let s:output_state = 1
 
 function vimext#runner#Create(lang) abort
   let l:bridge = v:null
@@ -233,6 +232,7 @@ function s:PromptExit(job, status) abort
 endfunction
 
 function s:PromptInput(cmd) abort
+  call vimext#logger#Info(a:cmd)
   let l:info = s:self.proto.ProcessInput(s:self.proto, a:cmd)
 
   if l:info[0] == 1 " quit
@@ -298,7 +298,7 @@ function vimext#runner#LoadSource(self, fname, lnum) abort
     call vimext#viewer#LoadByFile(a:self.source_viewer, a:fname, a:lnum)
   endif
 
-  if vimext#viewer#IsShow(a:self.asm_viewer)
+  if a:self.asm_viewer isnot v:null
     call s:Call(s:self.proto.Disassemble, "$pc")
   endif
 endfunction
@@ -323,7 +323,6 @@ function vimext#runner#PrintError(self, msg) abort
 endfunction
 
 function s:PromptOut(channel, msg) abort
-  "call vimext#logger#Info(a:msg)
   let l:proto = s:self.proto
 
   let l:info = l:proto.ProcessOutput(a:msg)
@@ -355,23 +354,13 @@ function s:PromptOut(channel, msg) abort
 
   elseif info[0] == 14 " asm break
     call vimext#viewer#SetSignText(s:self.asm_viewer, l:info[1])
-    call vimext#viewer#AddLine(s:self.asm_viewer, l:info[3])
 
   elseif info[0] == 15 " asm start
     call vimext#viewer#SetUniqueID(s:self.asm_viewer, l:info[1])
-    call vimext#viewer#AddLine(s:self.asm_viewer, l:info[1] . ":")
 
-    let s:output_state = 2
   elseif info[0] == 16 " asm end
+    call vimext#viewer#SetLines(s:self.asm_viewer, l:info[1])
     call vimext#viewer#LoadByLines(s:self.asm_viewer)
-    let s:output_state = 1
   else
-    if s:output_state == 2
-      let l:line = substitute(l:info[9], "^[ ]*", "", "g")
-      call vimext#viewer#AddLine(s:self.asm_viewer, l:line)
-
-    else
-      let s:output_state = 1
-    endif
   endif
 endfunction
