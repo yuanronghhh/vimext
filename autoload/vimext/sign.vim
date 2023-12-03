@@ -32,10 +32,6 @@ function vimext#sign#GetByBreakID(breakid) abort
   let l:v = []
 
   for l:sign in s:signs
-    if l:sign is v:null
-      continue
-    endif
-
     if l:sign.breakid == a:breakid
       call add(l:v, l:sign)
     endif
@@ -85,7 +81,7 @@ function vimext#sign#New(winid, breakid, text, enable) abort
   if a:enable == 0
     let l:hiName = "dbgSignOff"
   endif
-  let l:id = len(s:signs) + 1
+  let l:id = a:winid + a:breakid + 1
   let l:nsign = {
         \ "id": l:id,
         \ "winid": a:winid,
@@ -97,6 +93,7 @@ function vimext#sign#New(winid, breakid, text, enable) abort
   call sign_define('DbgSign'.l:id, {
         \ "text": a:text,
         \ "texthl": l:hiName})
+
   call add(s:signs, l:nsign)
 
   return l:nsign
@@ -112,5 +109,6 @@ function vimext#sign#Dispose(self) abort
         \ "id": a:self.id
         \ })
   call sign_undefine('DbgSign'.a:self.id)
-  let s:signs[a:self.id - 1] = v:null
+  let l:idx = indexof(s:signs, { v -> v:val is a:self})
+  call remove(s:signs, l:idx)
 endfunction

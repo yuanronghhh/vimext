@@ -50,6 +50,7 @@ function vimext#term#New(cmd, opts) abort
 endfunction
 
 function s:Send(self, cmd) abort
+  "call vimext#logger#Info("[cmd] " . a:cmd)
   call term_sendkeys(a:self.buf, a:cmd . "\n")
 endfunction
 
@@ -78,11 +79,13 @@ function s:NewDbgTerm(cmd, out_func, exit_func) abort
         \ })
   if l:dbg_term is v:null
     call vimext#logger#Error('Failed to start dbg term')
-    return 0
+    return v:null
   endif
 
+  " cmd_term is hidden
+  let l:cmd_term.winid = l:dbg_term.winid
+
   call l:dbg_term.Send(l:dbg_term, 'server new-ui mi ' . l:cmd_term.tty)
-  set filetype=termdebug
 
   return l:cmd_term
 endfunction
@@ -109,10 +112,6 @@ function s:NewProg() abort
 endfunction
 
 function s:Print(self, msg) abort
-  if a:msg == ''
-    return
-  endif
-
   call s:Send(a:self, a:msg)
 endfunction
 "Term end

@@ -16,7 +16,6 @@ function s:SetConfig(self, prompt, proto) abort
     call a:prompt.Send(a:prompt, a:proto.Set . " print pretty on")
     call a:prompt.Send(a:prompt, a:proto.Set . " breakpoint pending on")
   else
-    call a:prompt.Send(a:prompt, "set print pretty on")
     call a:prompt.Send(a:prompt, "set breakpoint pending on")
   endif
 
@@ -47,24 +46,25 @@ function vimext#gccdbg#FilterStart(term) abort
   endwhile
 endfunction
 
-function s:GetCmd(self, oterm) abort
+function s:GetCmd(self, oterm, args) abort
   let l:tty = a:oterm.tty
   let l:protoname = a:self.proto.name
 
-  return s:GetGccCmd(l:protoname, l:tty)
+  return s:GetGccCmd(l:protoname, l:tty, a:args)
 endfunction
 
-function s:GetGccCmd(protoname, tty) abort
+function s:GetGccCmd(protoname, tty, args) abort
   let l:cmd = ["gdb"]
   let l:cmd += ['-quiet']
   let l:cmd += ['-iex', 'set pagination off']
-  let l:cmd += ['-iex', 'set mi-async off']
+  let l:cmd += ['-iex', 'set mi-async on']
 
   if a:protoname == "mi2" && has("win32")
     let l:cmd += ['--interpreter=mi2']
   else
     let l:cmd += ['-tty', a:tty]
   endif
+  let l:cmd += a:args
 
   return l:cmd
 endfunction

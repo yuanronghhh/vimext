@@ -1,11 +1,6 @@
 let s:self = v:null
 
 " bridge
-function s:StartBridge(self, output_term) abort
-  startinsert
-endfunction
-
-" bridge
 function s:BridgeCallback(cmd) abort
   let l:cmd = s:self.HandleInput(a:cmd)
   if l:cmd is v:null
@@ -16,8 +11,6 @@ function s:BridgeCallback(cmd) abort
 endfunction
 
 function s:BridgeInterrupt() abort
-  "call vimext#logger#Info("BridgeInterrupt")
-
   if s:pid == 0
     call vimext#logger#Error('Cannot interrupt, not find a process ID')
     return

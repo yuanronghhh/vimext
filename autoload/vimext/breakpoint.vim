@@ -45,11 +45,10 @@ endfunction
 
 function vimext#breakpoint#DeleteN(id)
   call remove(s:breaks, a:id)
-  let l:signs = vimext#sign#GetByBreakID(a:id)
 
+  let l:signs = vimext#sign#GetByBreakID(a:id)
   for l:sign in l:signs
     call vimext#sign#Dispose(l:sign)
-    unlet l:sign
   endfor
 endfunction
 
@@ -77,26 +76,48 @@ function vimext#breakpoint#Add(info)
     return
   endif
 
-  if !bufexists(a:info[7])
-    call vimext#logger#Warning("break buffer not exists: " . a:info[7])
-    return
-  endif
-
   let s:breaks[a:info[1]] = a:info
+
+endfunction
+
+function s:SetBrks() abort
+  let l:fname = expand('<afile>:p')
   let l:winid = win_getid()
-  let l:sign = vimext#sign#New(l:winid, a:info[1], a:info[1], 1)
-  if l:sign isnot v:null
-    call vimext#sign#Place(l:sign, a:info[7], a:info[8])
-  endif
+
+  for l:brk in values(s:breaks)
+    if l:brk[7] != l:fname
+      continue
+    endif
+
+    let l:sign = vimext#sign#New(l:winid, l:brk[1], l:brk[1], 1)
+    if l:sign isnot v:null
+      call vimext#sign#Place(l:sign, l:brk[7], l:brk[8])
+    endif
+  endfor
+endfunction
+
+function s:DeleteBrks() abort
+  let l:fname = expand('<afile>:p')
+
+  for l:brk in values(s:breaks)
+    if l:brk[7] != l:fname
+      continue
+    endif
+
+    let l:signs = vimext#sign#GetByBreakID(l:brk[1])
+    for l:sign in l:signs
+      call vimext#sign#Dispose(l:sign)
+    endfor
+  endfor
 endfunction
 
 function vimext#breakpoint#Init()
   hi default dbgBreakpoint term=reverse ctermbg=red guibg=red
   hi default dbgBreakpointDisabled term=reverse ctermbg=gray guibg=gray
+
+  au BufRead * call s:SetBrks()
+  au BufUnload * call s:DeleteBrks()
 endfunction
 
 function vimext#breakpoint#DeInit()
-  for l:brk in values(s:breaks)
-    call vimext#breakpoint#Delete(l:brk)
-  endfor
 endfunction

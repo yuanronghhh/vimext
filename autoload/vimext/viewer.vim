@@ -9,6 +9,8 @@ function vimext#viewer#Create(name, dr, basewin, sign_id, mode) abort
         \ "lines": v:null,
         \ "winid": 0,
         \ "buff": v:null,
+        \ "fname": v:null,
+        \ "lnum": v:null,
         \ "sign_id": a:sign_id,
         \ "sign_text": v:null,
         \ "Dispose": function("s:Dispose")
@@ -56,8 +58,21 @@ function vimext#viewer#SignByNum(self, lnum) abort
   call vimext#sign#Line(a:self.sign_id, a:self.buff, a:lnum)
 endfunction
 
+function vimext#viewer#Load(self) abort
+  call vimext#viewer#LoadByFile(a:self, a:self.fname, a:self.lnum)
+endfunction
+
 function vimext#viewer#Show(self) abort
+  if vimext#viewer#IsShow(a:self)
+    return
+  endif
+
   call vimext#viewer#NewBuffer(a:self)
+  if a:self.mode == 1
+    call vimext#viewer#LoadByFile(a:self, a:self.fname, a:self.lnum)
+  else
+    call vimext#viewer#LoadByLines(a:self)
+  endif
 endfunction
 
 function vimext#viewer#Clear(self) abort
@@ -66,11 +81,9 @@ endfunction
 
 function vimext#viewer#LoadByFile(self, fname, lnum) abort
   let l:cwin = win_getid()
+  let a:self.fname = a:fname
+  let a:self.lnum = a:lnum
 
-  if !filereadable(a:fname)
-    "call vimext#logger#Warning("Viewer load by file failed: ". a:fname)
-    return
-  endif
   call win_gotoid(a:self.winid)
 
   if a:self.unique_id != a:fname
@@ -80,7 +93,10 @@ function vimext#viewer#LoadByFile(self, fname, lnum) abort
     let a:self.unique_id = a:fname
     let a:self.dirty = v:true
   endif
-  call vimext#viewer#SignByNum(a:self, a:lnum)
+
+  if filereadable(a:fname)
+    call vimext#viewer#SignByNum(a:self, a:lnum)
+  endif
 
   call win_gotoid(l:cwin)
 endfunction

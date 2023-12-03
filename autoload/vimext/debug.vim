@@ -68,10 +68,10 @@ function s:StartDebug(bang, ...) abort
 
   let l:pargs = ""
   if len(a:000) > 1
-    let l:pargs = a:000[1]
+    let l:pargs = a:000[1:]
   endif
 
-  if vimext#runner#Create(l:lang) is v:null
+  if vimext#runner#Create(l:lang, l:pargs) is v:null
     return
   endif
 
@@ -86,6 +86,8 @@ function vimext#debug#Init() abort
 
   command -nargs=* -complete=file -bang DbgDebug call s:StartDebug(<bang>0, <f-args>)
   command DbgAsm call vimext#runner#Asm()
+  command DbgSource call vimext#runner#Source()
+  command DbgSave call vimext#runner#SaveBrks()
 endfunction
 
 function vimext#debug#DeInit() abort

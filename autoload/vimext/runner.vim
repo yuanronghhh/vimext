@@ -1,7 +1,7 @@
 let s:gdb_cfg = g:vim_session."/gdb.cfg"
 let s:self = v:null
 
-function vimext#runner#Create(lang) abort
+function vimext#runner#Create(lang, args) abort
   let l:bridge = v:null
   let l:proto = v:null
 
@@ -56,12 +56,11 @@ function vimext#runner#Create(lang) abort
 
   call win_execute(l:empty_win, "close")
 
-  let l:cmd = l:dbg.GetCmd(l:self.dbg, l:cmd_term)
+  let l:cmd = l:dbg.GetCmd(l:self.dbg, l:cmd_term, a:args)
   let l:dbg_term = l:bridge.NewDbg(l:bridge, l:cmd)
   let l:self.dbg_term = l:dbg_term
 
   call l:dbg.SetConfig(l:dbg, l:dbg_term, l:proto)
-
   call vimext#breakpoint#Init()
 
   if exists('#User#DbgDebugStartPost')
@@ -140,7 +139,14 @@ function vimext#runner#Asm() abort
   endif
 
   call s:Call(s:self.proto.Disassemble, "$pc")
-  call vimext#viewer#Go(s:self.source_viewer)
+endfunction
+
+function vimext#runner#Source() abort
+  if s:self.source_viewer is v:null
+    return
+  endif
+
+  call vimext#viewer#Show(s:self.source_viewer)
 endfunction
 
 function vimext#runner#Run(args) abort
@@ -149,9 +155,8 @@ function vimext#runner#Run(args) abort
     return
   endif
 
-  if a:args isnot v:null && a:args != ""
+  if a:args isnot v:null
     if s:self.dbg.name == "gdb"
-      call s:Call("file", a:args)
     else
       let l:args = vimext#debug#DecodeFilePath(a:args)
       if l:args[0] != "\""
@@ -161,8 +166,6 @@ function vimext#runner#Run(args) abort
       call s:Call(s:self.proto.Arguments, l:args)
     endif
   endif
-
-  call s:Call(l:start, v:null)
 endfunction
 
 function vimext#runner#Attach(pid) abort
@@ -232,7 +235,6 @@ function s:PromptExit(job, status) abort
 endfunction
 
 function s:PromptInput(cmd) abort
-  call vimext#logger#Info(a:cmd)
   let l:info = s:self.proto.ProcessInput(s:self.proto, a:cmd)
 
   if l:info[0] == 1 " quit
@@ -290,11 +292,11 @@ function vimext#runner#LoadSource(self, fname, lnum) abort
     let a:self.source_viewer = vimext#viewer#CreateFileMode("source", 1, l:dbg_win, 31)
     call vimext#viewer#Go(a:self.source_viewer)
     execute "wincmd H"
-    call a:self.dbg_term.Go(a:self.dbg_term)
 
     call vimext#viewer#LoadByFile(a:self.source_viewer, a:fname, a:lnum)
     call vimext#runner#Restore()
   else
+    call vimext#viewer#Show(s:self.source_viewer)
     call vimext#viewer#LoadByFile(a:self.source_viewer, a:fname, a:lnum)
   endif
 
@@ -313,8 +315,8 @@ function vimext#runner#PrintOutput(self, msg) abort
   call l:term.Print(l:term, a:msg)
 endfunction
 
-function vimext#runner#SaveBrks(self) abort
-  call s:Call(a:self.proto.SaveBreakoints, s:gdb_cfg)
+function vimext#runner#SaveBrks() abort
+  call s:Call(s:self.proto.SaveBreakoints, s:gdb_cfg)
 endfunction
 
 function vimext#runner#PrintError(self, msg) abort
@@ -323,6 +325,10 @@ function vimext#runner#PrintError(self, msg) abort
 endfunction
 
 function s:PromptOut(channel, msg) abort
+  if s:self is v:null
+    return
+  endif
+
   let l:proto = s:self.proto
 
   let l:info = l:proto.ProcessOutput(a:msg)
@@ -341,7 +347,6 @@ function s:PromptOut(channel, msg) abort
     call vimext#runner#LoadSource(s:self, info[1], info[2])
 
   elseif info[0] == 8 " message
-    call vimext#runner#PrintOutput(s:self, info[1])
 
   elseif info[0] == 9 " entry-point-hit
     call vimext#runner#LoadSource(s:self, info[1], info[2])

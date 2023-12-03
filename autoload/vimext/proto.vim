@@ -260,17 +260,6 @@ function s:MIProcessOutput(msg) abort
   elseif l:msg =~ '^\^exit'
     let l:info[0] = 6
 
-  elseif l:msg =~ '^\^done,bkpt=\S*,warning='
-    let l:nameIdx = matchlist(l:msg, '^\^done,bkpt={number="\(\d*\)",type="\([^,]\+\)",disp="\([^,]\+\)",enabled="\(\w\)",warning=\([^}]*\)}')
-
-    if len(l:nameIdx) > 0
-      let l:info[0] = 8         " user set breakpoint
-      let l:info[1] = vimext#debug#DecodeMessage(l:nameIdx[5], v:true) " warning
-      let l:info[2] = l:nameIdx[1]  " break number
-      let l:info[3] = l:nameIdx[2]  " type
-      let l:info[4] = l:nameIdx[3] == "y" ? 1 : 0  " enable
-    endif
-
   elseif l:msg =~ '^=message,text='
     let l:nameIdx = matchlist(l:msg, '^=message,text=\([^\n]*\),send-to="\([^,]\+"\)')
 
@@ -278,6 +267,17 @@ function s:MIProcessOutput(msg) abort
       let l:info[0] = 8
       let l:info[1] = vimext#debug#DecodeMessage(l:nameIdx[1], v:false)
       let l:info[2] = l:nameIdx[2]
+    endif
+
+  elseif l:msg =~ '^\^done,bkpt=\S*,warning='
+    let l:nameIdx = matchlist(l:msg, '^\^done,bkpt={number="\(\d*\)",type="\([^,]\+\)",disp="\([^,]\+\)",enabled="\(\w\)",warning=\([^}]*\)}')
+
+    if len(l:nameIdx) > 0
+      let l:info[0] = 9         " user set breakpoint
+      let l:info[1] = vimext#debug#DecodeMessage(l:nameIdx[5], v:true) " warning
+      let l:info[2] = l:nameIdx[1]  " break number
+      let l:info[3] = l:nameIdx[2]  " type
+      let l:info[4] = l:nameIdx[3] == "y" ? 1 : 0  " enable
     endif
 
   elseif l:msg =~ '^\~"Dump of assembler code for function '

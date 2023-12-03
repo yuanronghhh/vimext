@@ -149,7 +149,7 @@ function vimext#config#LoadConfig()
         \ 'c': ['clangtidy', 'gcc', 'clangd'],
         \ 'python': ['pylint']
         \ }
-  let l:plugins = ["vim-multiple-cursors", "supertab", "nerdtree", "TagBar", "ale"]
+  let l:plugins = ["vim-multiple-cursors", "supertab", "nerdtree", "TagBar"]
   call vimext#plugins#LoadPlugin(l:plugins)
   call vimext#debug#Init()
 
