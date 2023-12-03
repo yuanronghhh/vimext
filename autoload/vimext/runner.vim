@@ -300,7 +300,7 @@ function vimext#runner#LoadSource(self, fname, lnum) abort
     call vimext#viewer#LoadByFile(a:self.source_viewer, a:fname, a:lnum)
   endif
 
-  if a:self.asm_viewer isnot v:null
+  if vimext#viewer#IsShow(a:self.asm_viewer)
     call s:Call(s:self.proto.Disassemble, "$pc")
   endif
 endfunction

@@ -53,23 +53,41 @@ function vimext#sign#Line(pc_id, fname, lnum) abort
         \ })
 endfunction
 
-function vimext#sign#Place(self, filename, linenum) abort
-  if !bufexists(a:filename)
-    call vimext#logger#Warning("filename not correct: " . a:filename)
+function vimext#sign#UnPlace(self) abort
+  if a:self.filename is v:null
     return
   endif
 
+  call sign_unplace("DbgDebug", {
+        \ "buffer": a:self.filename,
+        \ "id": a:self.id
+        \ })
+endfunction
+
+function vimext#sign#Place(self, filename, linenum) abort
   let a:self.filename = a:filename
   let a:self.linenum = a:linenum
 
-  call sign_place(a:self.id,
-        \ "DbgDebug",
-        \ "DbgSign" . a:self.id,
-        \ a:filename,
-        \ {
-        \ "lnum": a:linenum,
-        \ "priority": 110
-        \ })
+  if bufexists(a:filename)
+    call sign_place(a:self.id,
+          \ "DbgDebug",
+          \ "DbgSign" . a:self.id,
+          \ a:filename,
+          \ {
+          \ "lnum": a:linenum,
+          \ "priority": 110
+          \ })
+  endif
+
+endfunction
+
+function vimext#sign#Get(id) abort
+  let l:idx = indexof(s:signs, { v -> v:val.id is a:id})
+  if l:idx == -1
+    return v:null
+  endif
+
+  return s:signs[l:idx]
 endfunction
 
 function vimext#sign#New(winid, breakid, text, enable) abort
@@ -81,7 +99,13 @@ function vimext#sign#New(winid, breakid, text, enable) abort
   if a:enable == 0
     let l:hiName = "dbgSignOff"
   endif
-  let l:id = a:winid + a:breakid + 1
+  let l:id = a:breakid
+  let l:osign = vimext#sign#Get(l:id)
+  if l:osign isnot v:null
+    call vimext#logger#Warning("sign id repeat: " . string(l:osign))
+    return v:null
+  endif
+
   let l:nsign = {
         \ "id": l:id,
         \ "winid": a:winid,
@@ -100,14 +124,7 @@ function vimext#sign#New(winid, breakid, text, enable) abort
 endfunction
 
 function vimext#sign#Dispose(self) abort
-  if !bufexists(a:self.filename)
-    return
-  endif
-
-  call sign_unplace("DbgDebug", {
-        \ "buffer": a:self.filename,
-        \ "id": a:self.id
-        \ })
+  call vimext#sign#UnPlace(a:self)
   call sign_undefine('DbgSign'.a:self.id)
   let l:idx = indexof(s:signs, { v -> v:val is a:self})
   call remove(s:signs, l:idx)

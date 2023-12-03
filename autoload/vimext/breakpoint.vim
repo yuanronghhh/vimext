@@ -70,13 +70,22 @@ function vimext#breakpoint#Get(fname, lnum)
   return v:null
 endfunction
 
-function vimext#breakpoint#Add(info)
-  if a:info[0] != 4
-    call vimext#logger#Warning("break info not correct")
+function vimext#breakpoint#Add(brk)
+  let l:winid = win_getid()
+  if a:brk[0] != 4
+    call vimext#logger#Warning("break brk not correct")
     return
   endif
 
-  let s:breaks[a:info[1]] = a:info
+  if has_key(s:breaks, a:brk[1])
+    return
+  endif
+
+  let s:breaks[a:brk[1]] = a:brk
+  let l:sign = vimext#sign#New(l:winid, a:brk[1], a:brk[1], 1)
+  if l:sign isnot v:null
+    call vimext#sign#Place(l:sign, a:brk[7], a:brk[8])
+  endif
 
 endfunction
 
@@ -89,10 +98,10 @@ function s:SetBrks() abort
       continue
     endif
 
-    let l:sign = vimext#sign#New(l:winid, l:brk[1], l:brk[1], 1)
-    if l:sign isnot v:null
+    let l:signs = vimext#sign#GetByBreakID(l:brk[1])
+    for l:sign in l:signs
       call vimext#sign#Place(l:sign, l:brk[7], l:brk[8])
-    endif
+    endfor
   endfor
 endfunction
 
@@ -106,7 +115,7 @@ function s:DeleteBrks() abort
 
     let l:signs = vimext#sign#GetByBreakID(l:brk[1])
     for l:sign in l:signs
-      call vimext#sign#Dispose(l:sign)
+      call vimext#sign#UnPlace(l:sign)
     endfor
   endfor
 endfunction
