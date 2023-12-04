@@ -4,3 +4,4 @@ _viminfo
 __pycache__
 *.pyc
 tags
+.netcoredbg_hist

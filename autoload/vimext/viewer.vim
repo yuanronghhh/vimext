@@ -80,6 +80,10 @@ function vimext#viewer#Clear(self) abort
 endfunction
 
 function vimext#viewer#LoadByFile(self, fname, lnum) abort
+  if !filereadable(a:fname)
+    return
+  endif
+
   let l:cwin = win_getid()
   let a:self.fname = a:fname
   let a:self.lnum = a:lnum
@@ -94,9 +98,7 @@ function vimext#viewer#LoadByFile(self, fname, lnum) abort
     let a:self.dirty = v:true
   endif
 
-  if filereadable(a:fname)
-    call vimext#viewer#SignByNum(a:self, a:lnum)
-  endif
+  call vimext#viewer#SignByNum(a:self, a:lnum)
 
   call win_gotoid(l:cwin)
 endfunction

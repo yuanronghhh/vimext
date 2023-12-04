@@ -347,6 +347,7 @@ function s:PromptOut(channel, msg) abort
     call vimext#runner#LoadSource(s:self, info[1], info[2])
 
   elseif info[0] == 8 " message
+    call vimext#runner#PrintOutput(s:self, info[1])
 
   elseif info[0] == 9 " entry-point-hit
     call vimext#runner#LoadSource(s:self, info[1], info[2])

@@ -112,7 +112,7 @@ function s:NewProg() abort
 endfunction
 
 function s:Print(self, msg) abort
-  call s:Send(a:self, a:msg)
+  "call s:Send(a:self, a:msg)
 endfunction
 "Term end
 
