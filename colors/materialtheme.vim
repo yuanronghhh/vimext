@@ -7,6 +7,9 @@ if exists("syntax_on")
 endif
 
 let g:colors_name="materialtheme"
+if (has('termguicolors') && &termguicolors) || has('gui_running')
+  let g:terminal_ansi_colors = ['#1c1c1c', '#d75f5f', '#87af87', '#afaf87', '#5f87af', '#af87af', '#5f8787', '#9e9e9e', '#767676', '#d7875f', '#afd7af', '#d7d787', '#87afd7', '#d7afd7', '#87afaf', '#bcbcbc']
+endif
 
 hi SpecialKey term=bold ctermfg=9 guifg=#ffffff guibg=#263238
 hi NonText term=bold ctermfg=9 gui=bold guifg=#252525 guibg=#252525
@@ -78,6 +81,7 @@ hi SyntasticWarning guifg=#fdffdd
 hi SyntasticErrorSign gui=bold guifg=#e57373
 hi SyntasticWarningSign gui=bold guifg=#fdffdd
 hi Error term=reverse ctermfg=15 ctermbg=12 guifg=#E6DB74 guibg=#1E0010
+hi Terminal guifg=#bcbcbc guibg=#1c1c1c
 
 hi link EndOfBuffer NonText
 hi link QuickFixLine Search
