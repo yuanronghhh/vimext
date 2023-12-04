@@ -1,41 +1,43 @@
-let g:vimext_c_plugins = []
+vim9script
 
-function vimext#plugins#LoadPlugin(plugins) abort
-  let l:ppath = ""
+var vimext_c_plugins = []
 
-  for l:p in a:plugins
-    if l:p[1] == ":" || l:p[0] == "/"
-      let l:ppath = l:p
+export def LoadPlugin(plugins: list<string>)
+  var ppath = ""
+
+  for p in plugins
+    if p[1] == ":" || p[0] == "/"
+      ppath = p
     else
-      let l:ppath = g:vim_plugin."/".l:p
+      ppath = g:vim_plugin .. "/" .. p
     endif
 
-    exec "set rtp+=".l:ppath
+    exec "set rtp+=" .. ppath
   endfor
-endfunction
+enddef
 
-function vimext#plugins#LoadCPlugin(plugins) abort
-  let l:ppath = ""
-  for l:p in a:plugins
-    if l:p[1] == ":" || l:p[0] == "/"
-      let l:ppath = l:p
+def LoadCPlugin(plugins: list<string>)
+  var ppath = ""
+  for p in plugins
+    if p[1] == ":" || p[0] == "/"
+      ppath = p
     else
-      let l:ppath = g:vim_plugin."/".l:p
+      ppath = g:vim_plugin .. "/" .. p
     endif
 
-    add(g:vimext_c_plugins, l:ppath)
+    add(vimext_c_plugins, ppath)
   endfor
-endfunction
+enddef
 
-function vimext#plugins#CallCFunc(pindex, func_name, args) abort
-  if !g:vimext_c_api
+def CallCFunc(pindex: number, func_name: string, args: any)
+  if !vimext_c_api
     return '<None>'
   endif
 
-  let l:s = libcall(g:vimext_c_plugins[pindex], func_name, args)
-  if !l:s
+  var s = libcall(vimext_c_plugins[pindex], func_name, args)
+  if !s
     return '<None>'
   endif
 
-  return l:s
-endfunction
+  return s
+enddef

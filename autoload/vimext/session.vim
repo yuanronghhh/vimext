@@ -1,54 +1,56 @@
-let s:spath = "s.vim"
+vim9script
 
-function vimext#session#SaveSession(sfile) abort
-  let l:sfile = a:sfile
-  if strlen(a:sfile) == 0
-    let l:sfile = "s.vim"
+var spath = "s.vim"
+
+export def SaveSession(sfile: string)
+  let sfile = sfile
+  if strlen(sfile) == 0
+    let sfile = "s.vim"
   endif
 
-  if stridx(l:sfile, ".vim") == -1
-    let l:sfile = a:sfile.".vim"
+  if stridx(l:sfile, " .. vim") == -1
+    let sfile = sfile." .. vim"
   endif
 
   if winnr("$") > 1
     :NERDTreeClose
   endif
 
-  echo "mks! ".g:vim_session."/".l:sfile
-  exec "mks! ".g:vim_session."/".l:sfile
-endfunction
+  echo "mks! " .. g:vim_session."/" .. sfile
+  execute "mks! " .. g:vim_session."/" .. sfile
+enddef
 
-function vimext#session#SessionCompelete(A,L,P) abort
+def SessionCompelete(A: number, L: number, P: number)
   let alist = map(globpath(g:vim_session, "*", 1, 1), "fnamemodify(v:val, ':p:t')")
 
   return join(alist, "\n")
-endfunction
+enddef
 
-function vimext#session#OpenSession(sfile) abort
-  let l:sfile = a:sfile
+def OpenSession(sfile: string)
+  let sfile = sfile
 
-  if stridx(a:sfile, ".vim") == -1
-    let l:sfile = a:sfile.".vim"
+  if stridx(sfile, ".vim") == -1
+    let sfile = sfile.".vim"
   endif
 
-  if strlen(a:sfile) == 0
-    let l:sfile = "s.vim"
+  if strlen(sfile) == 0
+    let sfile = "s.vim"
   endif
 
-  let s:spath = l:sfile
-  echo "source ".g:vim_session."/".l:sfile
-  exec "source ".g:vim_session."/".l:sfile
+  var spath = sfile
+  echo "source " .. g:vim_session."/" .. sfile
+  execute "source " .. g:vim_session."/" .. sfile
   :NERDTreeFind
-endfunction
+enddef
 
-function vimext#session#AutoSave() abort
-  call vimext#session#SaveSession(s:spath)
-endfunction
+def AutoSave()
+  call SaveSession(s:spath)
+enddef
 
-function vimext#session#Init() abort
+export def Init()
   if !exists("g:autosave_session") || g:autosave_session == 0
     return
   endif
 
-  :autocmd VimLeave * call vimext#session#AutoSave()
-endfunction
+  :autocmd VimLeave * call AutoSave()
+enddef

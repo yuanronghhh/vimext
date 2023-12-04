@@ -1,95 +1,100 @@
-const s:NullRepl = 'XXXNULLXXX'
-function vimext#debug#DecodeFilePath(quotedText)
-  let l:msg = substitute(a:quotedText, "\\", "/", "g")
-  let l:msg = substitute(l:msg, "//", "/", "g")
-  let l:msg = substitute(l:msg, "\"", "", "g")
+vim9script
 
-  return l:msg
-endfunction
+import "./logger.vim" as Logger
+import "./runner.vim" as Runner
 
-function vimext#debug#DecodeMessage(quotedText, literal)
-  if a:quotedText[0] != '"'
-    call vimext#logger#Error('DecodeMessage(): missing quote in ' . a:quotedText)
+const NullRepl = 'XXXNULLXXX'
+export def DecodeFilePath(quotedText: string)
+  var msg = substitute(quotedText, "\\", "/", "g")
+  var msg = substitute(msg, "//", "/", "g")
+  var msg = substitute(msg, "\"", "", "g")
+
+  return msg
+enddef
+
+def DecodeMessage(quotedText: string, literal: bool)
+  if quotedText[0] != '"'
+    call vimext#logger#Error('DecodeMessage(): missing quote in ' . quotedText)
     return
   endif
 
-  let msg = a:quotedText
+  var msg = quotedText
         \ ->substitute('^"\|[^\\]\zs".*', '', 'g')
         \ ->substitute('\\"', '"', 'g')
         "\ multi-byte characters arrive in octal form
         "\ NULL-values must be kept encoded as those break the string otherwise
-        \ ->substitute('\\000', s:NullRepl, 'g')
+        \ ->substitute('\\000', NullRepl, 'g')
         \ ->substitute('\\\o\o\o', {-> eval('"' .. submatch(0) .. '"')}, 'g')
         "\ Note: GDB docs also mention hex encodings - the translations below work
         "\       but we keep them out for performance-reasons until we actually see
         "\       those in mi-returns
         "\ \ ->substitute('\\0x\(\x\x\)', {-> eval('"\x' .. submatch(1) .. '"')}, 'g')
-        "\ \ ->substitute('\\0x00', s:NullRepl, 'g')
+        "\ \ ->substitute('\\0x00', NullRepl, 'g')
         \ ->substitute('\\\\', '\', 'g')
-        \ ->substitute(s:NullRepl, '\\000', 'g')
-  if !a:literal
+        \ ->substitute(NullRepl, '\\000', 'g')
+  if !literal
     return msg
           \ ->substitute('\\t', "\t", 'g')
           \ ->substitute('\\n', '', 'g')
   else
     return msg
   endif
-endfunction
+enddef
 
-function s:StartPre() abort
-  nnoremap <F5>  :call vimext#runner#Continue()<cr>
-  nnoremap <F6>  :call vimext#runner#Next()<cr>
-  nnoremap <F7>  :call vimext#runner#Step()<cr>
-  nnoremap <F8>  :call vimext#runner#Break(line("."))<cr>
+def StartPre()
+  nnoremap <F5>  :call Runner.Continue()<cr>
+  nnoremap <F6>  :call Runner.Next()<cr>
+  nnoremap <F7>  :call Runner.Step()<cr>
+  nnoremap <F8>  :call Runner.Break(line("."))<cr>
 
   execute ":silent tabnew"
-endfunction
+enddef
 
-function s:StartPost() abort
-endfunction
+def StartPost()
+enddef
 
-function s:StopPre() abort
+def StopPre()
   unmap <F5>
   unmap <F6>
   unmap <F7>
   unmap <F8>
-endfunction
+enddef
 
-function s:StopPost() abort
-  call vimext#runner#Dispose()
+def StopPost()
+  call Runner.Dispose()
   execute ":redraw!"
-endfunction
+enddef
 
-function s:StartDebug(bang, ...) abort
+def StartDebug(bang: string, ...a: list<string>)
   if len(a:000) < 1
     return
   endif
-  let l:lang = a:000[0]
+  var lang = a:000[0]
 
-  let l:pargs = ""
+  var pargs = ""
   if len(a:000) > 1
-    let l:pargs = a:000[1:]
+    pargs = a:000[1:]
   endif
 
-  if vimext#runner#Create(l:lang, l:pargs) is v:null
+  if Runner.Create(lang, pargs) is v:null
     return
   endif
 
-  call vimext#runner#Run(l:pargs)
-endfunction
+  call Runner.Run(pargs)
+enddef
 
-function vimext#debug#Init() abort
+export def Init()
   autocmd! User DbgDebugStartPre :call s:StartPre()
   autocmd! User DbgDebugStartPost :call s:StartPost()
   autocmd! User DbgDebugStopPre :call s:StopPre()
   autocmd! User DbgDebugStopPost :call s:StopPost()
 
-  command -nargs=* -complete=file -bang DbgDebug call s:StartDebug(<bang>0, <f-args>)
-  command DbgAsm call vimext#runner#Asm()
-  command DbgSource call vimext#runner#Source()
-  command DbgSave call vimext#runner#SaveBrks()
-endfunction
+  command -nargs=* -complete=file -bang DbgDebug call StartDebug(<bang>0, <f-args>)
+  command DbgAsm call Runner.Asm()
+  command DbgSource call Runner.Source()
+  command DbgSave call Runner.SaveBrks()
+enddef
 
-function vimext#debug#DeInit() abort
+export def DeInit()
   delcommand DbgDebug
-endfunction
+enddef

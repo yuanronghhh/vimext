@@ -1,3 +1,5 @@
+vim9script
+
 function vimext#viewer#Create(name, dr, basewin, sign_id, mode) abort
   let l:self = {
         \ "name": a:name,

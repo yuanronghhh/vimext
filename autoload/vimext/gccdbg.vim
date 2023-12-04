@@ -1,3 +1,5 @@
+vim9script
+
 function vimext#gccdbg#Create(proto) abort
   let l:self = {
         \ "proto": a:proto,

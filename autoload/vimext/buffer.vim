@@ -1,3 +1,5 @@
+vim9script
+
 function vimext#buffer#WinExists(winid) abort
   if a:winid == v:null
     return v:false

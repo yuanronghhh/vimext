@@ -1,36 +1,38 @@
-function vimext#logger#Warning(msg) abort
+vim9script
+
+export def Warning(msg: string)
   if g:vimext_debug != 1
     return
   endif
 
   echohl WarningMsg
-  echomsg '[warning] '.string(a:msg)
+  echomsg '[warning] ' .. string(msg)
   echohl None
-endfunction
+enddef
 
-function vimext#logger#Error(msg) abort
+export def Error(msg: string)
   if g:vimext_debug != 1
     return
   endif
 
   echohl ErrorMsg
-  echoerr '[error] '.string(a:msg)
+  echoerr '[error] ' .. string(msg)
   echohl None
-endfunction
+enddef
 
-function vimext#logger#Info(msg) abort
+export def Info(msg: string)
   if g:vimext_debug != 1
     return
   endif
 
-  echomsg '[info] '.string(a:msg)
-endfunction
+  echomsg '[info] ' .. string(msg)
+enddef
 
-function vimext#logger#ProfileStart(funcname) abort
+export def ProfileStart(funcname: string)
   execute ':profile start vim-profile.log'
-  execute ':profile func '. a:funcname
-endfunction
+  execute ':profile func ' .. funcname
+enddef
 
-function vimext#logger#ProfileEnd() abort
+export def ProfileEnd()
   execute ':profile pause'
-endfunction
+enddef

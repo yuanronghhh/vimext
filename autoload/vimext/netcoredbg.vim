@@ -1,3 +1,5 @@
+vim9script
+
 function vimext#netcoredbg#Create(proto) abort
   let l:self = {
         \ "proto": a:proto,

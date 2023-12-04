@@ -1,3 +1,5 @@
+vim9script
+
 let s:breaks = {}
 
 function vimext#breakpoint#Parse(args)

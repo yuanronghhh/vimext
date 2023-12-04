@@ -1,3 +1,5 @@
+vim9script
+
 let s:self = v:null
 
 " Term Start

@@ -1,3 +1,4 @@
+vim9script
 let s:signs = []
 let s:pc_id = 30
 

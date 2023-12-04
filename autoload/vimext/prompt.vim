@@ -1,6 +1,5 @@
-"""
-" refactor version of termdbug
-"""
+vim9script
+
 let s:self = v:null
 let s:parent = v:null
 

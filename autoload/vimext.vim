@@ -1,28 +1,30 @@
-let g:vimext_python = 0
-let g:vimext_debug = 1
-let s:is_fullscreen = 0
-let g:vimext_c_api = 0
-let g:autosave_session = 0
+vim9script
 
+var is_fullscreen = 0
+g:vimext_python = 0
+g:vimext_debug = 1
+g:vimext_c_api = 0
 
-function vimext#Init()
-  let $VIM=substitute($VIM, "\\", "/", "g")
-  let $VIMRUNTIME=substitute($VIMRUNTIME, "\\", "/", "g")
+import "./vimext/session.vim" as Session
+
+export def Init()
+  $VIM = substitute($VIM, "\\", "/", "g")
+  $VIMRUNTIME = substitute($VIMRUNTIME, "\\", "/", "g")
 
   if !exists("g:vim_home")
     if has("unix")
-      let g:vim_home = expand("~/.vim")
+      g:vim_home = expand("~/.vim")
     else
-      let g:vim_home = substitute(expand("$VIM"), '\\', '/', 'g')
+      g:vim_home = substitute(expand("$VIM"), '\\', '/', 'g')
     endif
 
-    let $vimext_home = g:vim_home."/plugins/vimext"
+    $vimext_home = g:vim_home .. "/plugins/vimext"
   endif
 
-  let g:python_cmd = "python3"
-  let g:vim_session = g:vim_home."/session"
-  let &undodir = g:vim_home."/undodir"
-  let g:vim_plugin = g:vim_home."/plugins"
+  g:python_cmd = "python3"
+  g:vim_session = g:vim_home .. "/session"
+  g:vim_plugin = g:vim_home .. "/plugins"
+  &undodir = g:vim_home .. "/undodir"
 
   if !isdirectory(g:vim_session)
     call mkdir(g:vim_session)
@@ -32,93 +34,91 @@ function vimext#Init()
     call mkdir(&undodir)
   endif
 
-  call vimext#session#Init()
+  call Session.Init()
 
   if has("libcall")
-    let g:vimext_c_api = 1
+    g:vimext_c_api = 1
   endif
 
   if has("python3")
     autocmd! BufRead * ++once call python#Init()
   endif
-endfunction
+enddef
 
-function vimext#FullScreen()
-  if s:is_fullscreen == 0
-    exec ":simalt ~x"
-    let s:is_fullscreen = 1
+def FullScreen()
+  if is_fullscreen == 0
+    execute ":simalt ~x"
+    is_fullscreen = 1
   else
-    exec ":simalt ~r"
-    let s:is_fullscreen = 0
+    execute ":simalt ~r"
+    is_fullscreen = 0
   endif
-endfunction
+enddef
 
-function vimext#ClosePair(char)
-  if getline('.')[col('.') - 1] == a:char
+def ClosePair(chr: string)
+  if getline('.')[col('.') - 1] == chr
     return "\<Right>"
   else
-    return a:char
+    return chr
   endif
-endfunction
+enddef
 
-function vimext#DirName(name)
-  let l:dname = fnamemodify(a:name, ':h')[1:]
-  return l:dname
-endfunction
+def DirName(name: string)
+  var dname = fnamemodify(a:name, ':h')[1:]
+  return dname
+enddef
 
-function vimext#GetBinPath(cmd)
-  let l:bpath = exepath(a:cmd)
+def GetBinPath(cmd: string)
+  var bpath = exepath(a:cmd)
   if len(l:bpath) == 0
     return ""
   endif
 
-  let l:bpath = substitute(l:bpath, "\\", "/", 'g')
-  let l:bpath = substitute(l:bpath, ".EXE", ".exe", 'g')
-  return l:bpath
-endfunction
+  var bpath = substitute(l:bpath, "\\", "/", 'g')
+  var bpath = substitute(l:bpath, ".EXE", ".exe", 'g')
+  return bpath
+enddef
 
-function vimext#GetCWDPath()
-  let l:bpath = getcwd()
-  let l:bpath = substitute(l:bpath, "\\", "/", 'g')
-  let l:bpath = substitute(l:bpath, ".EXE", ".exe", 'g')
-  return l:bpath
-endfunction
+def GetCWDPath()
+  var bpath = getcwd()
+  var bpath = substitute(l:bpath, "\\", "/", 'g')
+  var bpath = substitute(l:bpath, ".EXE", ".exe", 'g')
+  return bpath
+enddef
 
-function vimext#TabMan(word)
-  let l:word = a:word
-
-  if strlen(l:word) == 0
-    let l:word = expand("<cword>")
+def TabMan(word: string)
+  if strlen(word) == 0
+    var word = expand("<cword>")
   endif
 
-  exec ":tab Man -s2,3 ".l:word
-endfunction
+  exec ":tab Man -s2,3 " . word
+enddef
 
-function vimext#HeaderOrCode()
-  let l:cext = expand("%:e")
-  let l:emap = [
+def HeaderOrCode()
+  var cext = expand("%:e")
+  var emap = [
         \ ["c", 1, ["h", "hpp"]],
         \ ["cpp", 1, ["h", "hpp"]],
         \ ["h", 0, ["cpp", "c"]],
         \ ["hpp", 0, ["cpp", "c"]]
         \ ]
-  let l:content = expand("<cword>")
-  let l:nname = ""
-  let l:ftags = taglist(l:content)
+  var content = expand("<cword>")
+  var nname = ""
+  var ftags = taglist(l:content)
 
-  for l:item in l:emap
-    if l:item[0] != l:cext
+  for item in emap
+    if item[0] != cext
       continue
     endif
 
-    for j in l:item[2]
-      let l:tname = expand("%<").".".l:j
+    for j in item[2]
+      var tname = expand("%<").".".l:j
 
       if !filereadable(l:tname)
         continue
       endif
 
-      let l:nname = l:tname
+      var nname = tname
       exec ":edit ".l:nname
 
       break
@@ -131,42 +131,42 @@ function vimext#HeaderOrCode()
     break
   endfor
 
-  if l:nname == "" && len(l:ftags) > 0
+  if nname == "" && len(l:ftags) > 0
     exec ":silent! tag! ".l:content
   endif
 
   call search(l:content, 'c')
-endfunction
+enddef
 
-function vimext#GetLinesEnds(endstr)
-  let l:start = line('.')
-  let l:end   = search(a:endstr, 'n')
-  let l:lines = getline(l:start, l:end)
+def GetLinesEnds(endstr: string)
+  var start = line('.')
+  var end   = search(a:endstr, 'n')
+  var lines = getline(l:start, end)
 
-  return l:lines
-endfunction
+  return lines
+enddef
 
-function vimext#GetTabWins(winid)
-  let l:winfo = getwininfo(a:winid)
+def GetTabWins(winid: number)
+  var winfo = getwininfo(a:winid)
   if len(l:winfo) == 0
     return []
   endif
 
-  let l:tabnr = l:winfo[0]["tabnr"]
-  let l:tabinfo = gettabinfo(l:tabnr)
+  var tabnr = winfo[0]["tabnr"]
+  var tabinfo = gettabinfo(l:tabnr)
   if len(l:tabinfo) == 0
     return []
   endif
 
-  return l:tabinfo[0]["windows"]
-endfunction
+  return tabinfo[0]["windows"]
+enddef
 
-function vimext#GetTabInfo(winid)
-  let l:winfo = getwininfo(a:winid)
+def GetTabInfo(winid: number)
+  var winfo = getwininfo(a:winid)
   if len(l:winfo) == 0
     return []
   endif
 
-  let l:tabnr = l:winfo[0]["tabnr"]
+  var tabnr = winfo[0]["tabnr"]
   return gettabinfo(l:tabnr)
-endfunction
+enddef

@@ -1,10 +1,17 @@
-let g:vimext_loaded = 0
+vim9script
 
-function vimext#config#LoadConfig()
-  if g:vimext_loaded == 1
+var vimext_loaded = 0
+import "../vimext.vim" as V
+import "./plugins.vim" as Plugin
+import "./debug.vim" as Debug
+import "./session.vim" as Session
+import "./logger.vim" as Logger
+
+export def ConfigLoadConfig()
+  if vimext_loaded == 1
     return
   endif
-  call vimext#Init()
+  call V.Init()
 
   set nocompatible
   behave xterm
@@ -54,7 +61,7 @@ function vimext#config#LoadConfig()
   set t_vb=
   set fdm=syntax
   set t_Co=256
-  " switch case 缩进问题
+  # switch case 缩进问题
   set cinoptions=l1
   set ssop=blank,buffers,curdir,folds,tabpages
 
@@ -72,17 +79,17 @@ function vimext#config#LoadConfig()
 
   set grepprg=grep\ -nH
 
+  $PATH = $PATH .. ";" .. $vimext_home .. "/tools"
+
   if has("unix")
     set clipboard=unnamedplus
     set guifont=FZFangSong\-Z02S\ bold\ 12
-    let $PATH .= ":".$vimext_home."/tools"
   elseif has("win32")
-    let $PATH .= ";".$vimext_home."/tools"
     set clipboard=unnamed
     set guifont=Fixedsys
     set makeencoding=gbk
-    let g:python_cmd="python"
-    let $BashBin=vimext#config#GetWinBash()
+    var python_cmd = "python"
+    $BashBin = V.ConfigGetWinBash()
     set errorformat^=
           \%f(%l\\,%c):\ %t%*[^\ ]\ C%n:\ %m,
           \%f(%l\\,%c):\ fatal\ \ %t%*[^\ ]\ C%n:\ %m
@@ -91,21 +98,21 @@ function vimext#config#LoadConfig()
       set shell=$BashBin
     endif
 
-    let g:tagbar_ctags_bin = vimext#GetBinPath("ctags.exe")
-    command! -nargs=0 FullScreen :call vimext#FullScreen()
-    command! -nargs=0 GitBash :call vimext#config#GitBash()
+    var tagbar_ctags_bin = V.GetBinPath("ctags.exe")
+    command! -nargs=0 FullScreen :call V.FullScreen()
+    command! -nargs=0 GitBash :call ConfigGitBash()
   elseif has("mac")
     set guiligatures
     set noanti
   endif
 
   inoremap < <><ESC>i
-  inoremap > <c-r>=vimext#ClosePair('>')<CR>
+  inoremap > <c-r>=V.VClosePair('>')<CR>
   inoremap ( ()<ESC>i
-  inoremap ) <c-r>=vimext#ClosePair(')')<CR>
-  inoremap } <c-r>=vimext#ClosePair('}')<CR>
+  inoremap ) <c-r>=V.VClosePair(')')<CR>
+  inoremap } <c-r>=V.VClosePair('}')<CR>
   inoremap [ []<ESC>i
-  inoremap ] <c-r>=vimext#ClosePair(']')<CR>
+  inoremap ] <c-r>=V.VClosePair(']')<CR>
   inoremap " ""<ESC>i
   inoremap ' ''<ESC>i
   inoremap <c-o> <ESC>o
@@ -115,7 +122,7 @@ function vimext#config#LoadConfig()
   vnoremap x "_x
   vnoremap X "_X
 
-  " for c develop
+  # for c develop
   nnoremap <leader>c :GetComment<cr>
   nnoremap <F9>  :HeaderOrCode<cr>
 
@@ -131,33 +138,33 @@ function vimext#config#LoadConfig()
   nnoremap <F3>  :tabnew<cr>
   nnoremap <F4>  :close<cr>
 
-  let g:NERDTreeShowHidden = 1
-  let g:NERDTreeShowLineNumbers = 0
-  let g:NERDTreeAutoDeleteBuffer = 1
-  let g:NERDTreeBookmarksFile = g:vim_session."/NERDTreeBookmarks"
+  g:NERDTreeShowHidden = 1
+  g:NERDTreeShowLineNumbers = 0
+  g:NERDTreeAutoDeleteBuffer = 1
+  g:NERDTreeBookmarksFile = g:vim_session .. "/NERDTreeBookmarks"
 
-  "let g:hexmode_xxd_options = '-p'
+  g:hexmode_xxd_options = '-p'
+  g:ale_lint_on_text_changed = 'never'
+  g:ale_set_loclist = 1
+  g:ale_c_parse_compile_commands = 1
+  g:ale_c_build_dir = 'build'
+  g:ale_linters_explicit = 1
+  g:ale_linters = {
+    'cs': ['mcs'],
+    'c': ['clangtidy', 'gcc', 'clangd'],
+    'python': ['pylint']
+  }
 
-  let g:ale_lint_on_text_changed = 'never'
-  let g:ale_set_loclist = 1
-  let g:ale_c_parse_compile_commands = 1
-  let g:ale_c_build_dir = 'build'
-  let g:ale_linters_explicit = 1
-  let g:ale_linters =
-        \ {
-        \ 'cs': ['mcs'],
-        \ 'c': ['clangtidy', 'gcc', 'clangd'],
-        \ 'python': ['pylint']
-        \ }
-  let l:plugins = ["vim-multiple-cursors", "supertab", "nerdtree", "TagBar"]
-  call vimext#plugins#LoadPlugin(l:plugins)
-  call vimext#debug#Init()
+  var plugins = ["vim-multiple-cursors", "supertab", "nerdtree", "TagBar"]
+  call Plugin.LoadPlugin(plugins)
 
-  command! -nargs=? -complete=custom,vimext#session#SessionCompelete OpenSession :call vimext#session#OpenSession("<args>")
-  command! -nargs=? -complete=custom,vimext#session#SessionCompelete SaveSession :call vimext#session#SaveSession("<args>")
-  command! -nargs=? HeaderOrCode :call vimext#HeaderOrCode()
-  command! -nargs=? EditConfig :call vimext#config#Edit()
-  command! -nargs=? TabMan :call vimext#TabMan("<args>")
+  call Debug.Init()
+
+  command! -nargs=? -complete=custom,Session.SessionCompelete OpenSession :call Session.OpenSession("<args>")
+  command! -nargs=? -complete=custom,Session.SessionCompelete SaveSession :call Session.SaveSession("<args>")
+  command! -nargs=? HeaderOrCode :call V.VHeaderOrCode()
+  command! -nargs=? EditConfig :call ConfigEdit()
+  command! -nargs=? TabMan :call V.VTabMan("<args>")
 
   autocmd! BufRead *.vs,*.vert,*.glsl,*.frag,*.comp :set ft=c
   autocmd! BufRead *.vue,*.cshtml :set ft=html
@@ -168,24 +175,24 @@ function vimext#config#LoadConfig()
   tnoremap <C-j> <C-W>gt
   tnoremap <C-k> <C-W>gT
 
-  let g:vimext_loaded = 1
-endfunction
+  vimext_loaded = 1
+enddef
 
-function vimext#config#GetWinBash()
-  let l:bpath = vimext#GetBinPath("bash.exe")
+def ConfigGetWinBash()
+  var bpath = V.VGetBinPath("bash.exe")
   if len(l:bpath) == 0
     return ""
   endif
 
   return shellescape(l:bpath)
-endfunction
+enddef
 
-function vimext#config#GitBash()
-  let l:cmd = "bash"
+def ConfigGitBash()
+  var cmd = "bash"
   exec ":silent !start ".l:cmd
-endfunction
+enddef
 
-function vimext#config#Edit()
-  let l:vimext_config = g:vim_plugin."/vimext/autoload/vimext/config.vim"
+def ConfigEdit()
+  var vimext_config = g:vim_plugin."/vimext/autoload/vimext/config.vim"
   exec ":edit ".l:vimext_config
-endfunction
+enddef

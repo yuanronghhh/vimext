@@ -1,5 +1,5 @@
+vim9script
 let s:self = v:null
-
 
 function vimext#proto#Create(name) abort
   let s:mi_cmd = {
