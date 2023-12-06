@@ -1,0 +1,14 @@
+vim9script
+
+if has("unix")
+  g:vim_home = expand("~/.vim")
+else
+  g:vim_home = substitute(expand("$VIM"), '\\', '/', 'g')
+endif
+
+g:vim_plugin = g:vim_home .. "/plugins"
+$vimext_home = g:vim_plugin .. "/vimext"
+set rtp+=$vimext_home
+
+import $vimext_home .. "/autoload/vimext/config.vim"
+call config.LoadConfig()

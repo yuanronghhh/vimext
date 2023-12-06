@@ -2,7 +2,7 @@ vim9script
 
 g:vimext_python = 0
 
-def Init()
+export def Init()
 python3 << EOF
 import vim
 sys.path.insert(0, vim.eval("$vimext_home") + "/plugin/python")
@@ -10,11 +10,11 @@ import utils
 import CommentParser, GetterGenerator
 from autotags import g_atags
 EOF
-  var g:vimext_python = 1
+  g:vimext_python = 1
 
   nnoremap <leader>c :GetComment<cr>
   nnoremap <leader>g :GenGetter<cr>
-  command! -nargs=? PythonDoc :call doc("<args>")
+  command! -nargs=? PythonDoc :call Doc("<args>")
   command! -nargs=? JsonFormat :call JsonFormat()
   command! -nargs=? GetComment :call GetComment()
   command! -nargs=? GenGetter :call GenGetter()
@@ -25,17 +25,17 @@ EOF
     autocmd BufWritePost * call ReGenCtags()
   augroup END
 
-  var $C_HEADERS=GetSystemHeaderPath()
+  $C_HEADERS = GetSystemHeaderPath()
   set path+=$C_HEADERS
 enddef
 
-def GetSystemHeaderPath()
+def GetSystemHeaderPath(): string
   if g:vimext_python == 0
     return ""
   endif
 
-  varipath = py3eval("utils.get_system_header_str()")
-  returnipath
+  var ipath = py3eval("utils.get_system_header_str()")
+  return ipath
 enddef
 
 def Operate(lnum: number)
@@ -82,13 +82,13 @@ def Doc(word: string)
     return
   endif
 
-  varword = a:word
+  var word = a:word
 
   if strlen(l:word) == 0
-    varline = getline(".")
-    varpre =line[:col(".") - 1]
-    varsuf =line[col("."):]
-    varword = matchstr(pre, "[A-Za-z0-9_.]*$") . matchstr(suf, "^[A-Za-z0-9_]*")
+    var line = getline(".")
+    var pre =line[:col(".") - 1]
+    var suf =line[col("."):]
+    var word = matchstr(pre, "[A-Za-z0-9_.]*$") . matchstr(suf, "^[A-Za-z0-9_]*")
   endif
 
   exe "botright 8new __doc__"
@@ -111,7 +111,7 @@ def GetComment()
     return 0
   endif
 
-  varcomment = py3eval("CommentParser.get_comment()")
+  var comment = py3eval("CommentParser.get_comment()")
   call append(line('.')-1,comment)
 enddef
 
@@ -120,7 +120,7 @@ def GenGetter()
     return 0
   endif
 
-  vararray = py3eval("GetterGenerator.gen_c_getter_setter()")
+  var array = py3eval("GetterGenerator.gen_c_getter_setter()")
 
   if len(l:array) == 0
     return 0

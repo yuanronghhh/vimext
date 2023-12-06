@@ -3,13 +3,13 @@ vim9script
 var spath = "s.vim"
 
 export def SaveSession(sfile: string)
-  let sfile = sfile
+  var sfile = sfile
   if strlen(sfile) == 0
-    let sfile = "s.vim"
+    var sfile = "s.vim"
   endif
 
   if stridx(l:sfile, " .. vim") == -1
-    let sfile = sfile." .. vim"
+    var sfile = sfile." .. vim"
   endif
 
   if winnr("$") > 1
@@ -20,30 +20,30 @@ export def SaveSession(sfile: string)
   execute "mks! " .. g:vim_session."/" .. sfile
 enddef
 
-def SessionCompelete(A: number, L: number, P: number)
-  let alist = map(globpath(g:vim_session, "*", 1, 1), "fnamemodify(v:val, ':p:t')")
+export def SessionCompelete(A: string, L: string, P: number): string
+  var alist = map(globpath(g:vim_session, "*", 1, 1), "fnamemodify(v:val, ':p:t')")
 
   return join(alist, "\n")
 enddef
 
-def OpenSession(sfile: string)
-  let sfile = sfile
+export def OpenSession(ofile: string)
+  var sfile = ofile
 
   if stridx(sfile, ".vim") == -1
-    let sfile = sfile.".vim"
+    sfile = sfile .. ".vim"
   endif
 
   if strlen(sfile) == 0
-    let sfile = "s.vim"
+    sfile = "s.vim"
   endif
 
-  var spath = sfile
-  echo "source " .. g:vim_session."/" .. sfile
-  execute "source " .. g:vim_session."/" .. sfile
-  :NERDTreeFind
+  spath = sfile
+  echo "source " .. g:vim_session .. "/" .. sfile
+  execute "source " .. g:vim_session .. "/" .. sfile
+  execute ":NERDTreeFind"
 enddef
 
-def AutoSave()
+export def AutoSave()
   call SaveSession(s:spath)
 enddef
 

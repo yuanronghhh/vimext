@@ -1,11 +1,12 @@
 vim9script
 
+import "./vimext/session.vim" as Session
+import "../plugin/python.vim" as Python
+
 var is_fullscreen = 0
 g:vimext_python = 0
 g:vimext_debug = 1
 g:vimext_c_api = 0
-
-import "./vimext/session.vim" as Session
 
 export def Init()
   $VIM = substitute($VIM, "\\", "/", "g")
@@ -41,7 +42,7 @@ export def Init()
   endif
 
   if has("python3")
-    autocmd! BufRead * ++once call python#Init()
+    autocmd! BufRead * ++once call Python.Init()
   endif
 enddef
 
@@ -64,25 +65,26 @@ def ClosePair(chr: string)
 enddef
 
 def DirName(name: string)
-  var dname = fnamemodify(a:name, ':h')[1:]
+  var dname = fnamemodify(name, ':h')[1:]
   return dname
 enddef
 
-def GetBinPath(cmd: string)
-  var bpath = exepath(a:cmd)
-  if len(l:bpath) == 0
+export def GetBinPath(cmd: string): string
+  var bpath = exepath(cmd)
+  if len(bpath) == 0
     return ""
   endif
 
-  var bpath = substitute(l:bpath, "\\", "/", 'g')
-  var bpath = substitute(l:bpath, ".EXE", ".exe", 'g')
+  bpath = substitute(bpath, "\\", "/", 'g')
+  bpath = substitute(bpath, ".EXE", ".exe", 'g')
+
   return bpath
 enddef
 
 def GetCWDPath()
   var bpath = getcwd()
-  var bpath = substitute(l:bpath, "\\", "/", 'g')
-  var bpath = substitute(l:bpath, ".EXE", ".exe", 'g')
+  var bpath = substitute(bpath, "\\", "/", 'g')
+  var bpath = substitute(bpath, ".EXE", ".exe", 'g')
   return bpath
 enddef
 
@@ -104,7 +106,7 @@ def HeaderOrCode()
         \ ]
   var content = expand("<cword>")
   var nname = ""
-  var ftags = taglist(l:content)
+  var ftags = taglist(content)
 
   for item in emap
     if item[0] != cext
@@ -112,49 +114,49 @@ def HeaderOrCode()
     endif
 
     for j in item[2]
-      var tname = expand("%<").".".l:j
+      var tname = expand("%<")."." .. j
 
-      if !filereadable(l:tname)
+      if !filereadable(tname)
         continue
       endif
 
       var nname = tname
-      exec ":edit ".l:nname
+      exec ":edit " .. nname
 
       break
     endfor
 
-    if !l:item[1] && len(l:ftags) > 0
-      exec ":silent! tag! ".l:content
+    if !l:item[1] && len(ftags) > 0
+      exec ":silent! tag! " .. content
     endif
 
     break
   endfor
 
-  if nname == "" && len(l:ftags) > 0
-    exec ":silent! tag! ".l:content
+  if nname == "" && len(ftags) > 0
+    exec ":silent! tag! " .. content
   endif
 
-  call search(l:content, 'c')
+  call search(content, 'c')
 enddef
 
 def GetLinesEnds(endstr: string)
   var start = line('.')
-  var end   = search(a:endstr, 'n')
-  var lines = getline(l:start, end)
+  var end   = search(endstr, 'n')
+  var lines = getline(start, end)
 
   return lines
 enddef
 
 def GetTabWins(winid: number)
-  var winfo = getwininfo(a:winid)
-  if len(l:winfo) == 0
+  var winfo = getwininfo(winid)
+  if len(winfo) == 0
     return []
   endif
 
   var tabnr = winfo[0]["tabnr"]
-  var tabinfo = gettabinfo(l:tabnr)
-  if len(l:tabinfo) == 0
+  var tabinfo = gettabinfo(tabnr)
+  if len(tabinfo) == 0
     return []
   endif
 
@@ -162,11 +164,11 @@ def GetTabWins(winid: number)
 enddef
 
 def GetTabInfo(winid: number)
-  var winfo = getwininfo(a:winid)
-  if len(l:winfo) == 0
+  var winfo = getwininfo(winid)
+  if len(winfo) == 0
     return []
   endif
 
   var tabnr = winfo[0]["tabnr"]
-  return gettabinfo(l:tabnr)
+  return gettabinfo(tabnr)
 enddef

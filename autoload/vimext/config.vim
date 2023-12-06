@@ -1,13 +1,14 @@
 vim9script
 
-var vimext_loaded = 0
 import "../vimext.vim" as V
 import "./plugins.vim" as Plugin
 import "./debug.vim" as Debug
 import "./session.vim" as Session
 import "./logger.vim" as Logger
 
-export def ConfigLoadConfig()
+var vimext_loaded = 0
+
+export def LoadConfig()
   if vimext_loaded == 1
     return
   endif
@@ -89,7 +90,7 @@ export def ConfigLoadConfig()
     set guifont=Fixedsys
     set makeencoding=gbk
     var python_cmd = "python"
-    $BashBin = V.ConfigGetWinBash()
+    $BashBin = GetWinBash()
     set errorformat^=
           \%f(%l\\,%c):\ %t%*[^\ ]\ C%n:\ %m,
           \%f(%l\\,%c):\ fatal\ \ %t%*[^\ ]\ C%n:\ %m
@@ -100,7 +101,7 @@ export def ConfigLoadConfig()
 
     var tagbar_ctags_bin = V.GetBinPath("ctags.exe")
     command! -nargs=0 FullScreen :call V.FullScreen()
-    command! -nargs=0 GitBash :call ConfigGitBash()
+    command! -nargs=0 GitBash :call GitBash()
   elseif has("mac")
     set guiligatures
     set noanti
@@ -163,7 +164,7 @@ export def ConfigLoadConfig()
   command! -nargs=? -complete=custom,Session.SessionCompelete OpenSession :call Session.OpenSession("<args>")
   command! -nargs=? -complete=custom,Session.SessionCompelete SaveSession :call Session.SaveSession("<args>")
   command! -nargs=? HeaderOrCode :call V.VHeaderOrCode()
-  command! -nargs=? EditConfig :call ConfigEdit()
+  command! -nargs=? EditConfig :call Edit()
   command! -nargs=? TabMan :call V.VTabMan("<args>")
 
   autocmd! BufRead *.vs,*.vert,*.glsl,*.frag,*.comp :set ft=c
@@ -178,21 +179,21 @@ export def ConfigLoadConfig()
   vimext_loaded = 1
 enddef
 
-def ConfigGetWinBash()
-  var bpath = V.VGetBinPath("bash.exe")
-  if len(l:bpath) == 0
+def GetWinBash(): string
+  var bpath = V.GetBinPath("bash.exe")
+  if len(bpath) == 0
     return ""
   endif
 
-  return shellescape(l:bpath)
+  return shellescape(bpath)
 enddef
 
-def ConfigGitBash()
+def GitBash()
   var cmd = "bash"
-  exec ":silent !start ".l:cmd
+  exec ":silent !start " .. cmd
 enddef
 
-def ConfigEdit()
+def Edit()
   var vimext_config = g:vim_plugin."/vimext/autoload/vimext/config.vim"
-  exec ":edit ".l:vimext_config
+  exec ":edit " .. vimext_config
 enddef
