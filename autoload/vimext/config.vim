@@ -1,6 +1,6 @@
 vim9script
 
-import "../vimext.vim" as V
+import "../vimext.vim" as VimExt
 import "./plugins.vim" as Plugin
 import "./debug.vim" as Debug
 import "./session.vim" as Session
@@ -12,7 +12,7 @@ export def LoadConfig()
   if vimext_loaded == 1
     return
   endif
-  call V.Init()
+  call VimExt.Init()
 
   set nocompatible
   behave xterm
@@ -99,8 +99,8 @@ export def LoadConfig()
       set shell=$BashBin
     endif
 
-    var tagbar_ctags_bin = V.GetBinPath("ctags.exe")
-    command! -nargs=0 FullScreen :call V.FullScreen()
+    var tagbar_ctags_bin = VimExt.GetBinPath("ctags.exe")
+    command! -nargs=0 FullScreen :call VimExt.FullScreen()
     command! -nargs=0 GitBash :call GitBash()
   elseif has("mac")
     set guiligatures
@@ -108,12 +108,12 @@ export def LoadConfig()
   endif
 
   inoremap < <><ESC>i
-  inoremap > <c-r>=V.VClosePair('>')<CR>
+  inoremap > <c-r>=VimExt.VClosePair('>')<CR>
   inoremap ( ()<ESC>i
-  inoremap ) <c-r>=V.VClosePair(')')<CR>
-  inoremap } <c-r>=V.VClosePair('}')<CR>
+  inoremap ) <c-r>=VimExt.VClosePair(')')<CR>
+  inoremap } <c-r>=VimExt.VClosePair('}')<CR>
   inoremap [ []<ESC>i
-  inoremap ] <c-r>=V.VClosePair(']')<CR>
+  inoremap ] <c-r>=VimExt.VClosePair(']')<CR>
   inoremap " ""<ESC>i
   inoremap ' ''<ESC>i
   inoremap <c-o> <ESC>o
@@ -163,9 +163,9 @@ export def LoadConfig()
 
   command! -nargs=? -complete=custom,Session.SessionCompelete OpenSession :call Session.OpenSession("<args>")
   command! -nargs=? -complete=custom,Session.SessionCompelete SaveSession :call Session.SaveSession("<args>")
-  command! -nargs=? HeaderOrCode :call V.VHeaderOrCode()
+  command! -nargs=? HeaderOrCode :call VimExt.VHeaderOrCode()
   command! -nargs=? EditConfig :call Edit()
-  command! -nargs=? TabMan :call V.VTabMan("<args>")
+  command! -nargs=? TabMan :call VimExt.VTabMan("<args>")
 
   autocmd! BufRead *.vs,*.vert,*.glsl,*.frag,*.comp :set ft=c
   autocmd! BufRead *.vue,*.cshtml :set ft=html
@@ -180,7 +180,7 @@ export def LoadConfig()
 enddef
 
 def GetWinBash(): string
-  var bpath = V.GetBinPath("bash.exe")
+  var bpath = VimExt.GetBinPath("bash.exe")
   if len(bpath) == 0
     return ""
   endif

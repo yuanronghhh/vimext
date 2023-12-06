@@ -1,377 +1,391 @@
 vim9script
 
-class Runner
-  def new(lang: string, args: list<string>)
-    var gdb_cfg = g:vim_session .. "/gdb.cfg"
-    var self = v:null
-
-    var bridge = v:null
-    var proto = v:null
-
-    if self isnot v:null
-      call vimext#logger#Warning("call not start two debugger")
-      return v:null
-    endif
-
-    if lang == "csharp"
-      var proto = vimext#proto#Create("mi")
-      var dbg = vimext#netcoredbg#Create(l:proto)
-    elseif lang == "c"
-      var proto = vimext#proto#Create("mi2")
-      var dbg = vimext#gccdbg#Create(l:proto)
-    else
-      return v:null
-    endif
-
-    if dbg is v:null || proto is v:null
-      return v:null
-    endif
-
-    var funcs = {
-          \ 'HandleExit': function("s:PromptExit"),
-          \ "HandleInput": function("s:PromptInput"),
-          \ 'HandleOutput': function("s:PromptOut")
-          \ }
-
-    call vimext#sign#Init()
-
-    var self = {
-          \ "proto": proto,
-          \ "bridge": v:null,
-          \ "dbg": dbg,
-          \ "dbg_term": v:null,
-          \ "cmd_term": v:null,
-          \ "source_viewer": v:null,
-          \ "asm_viewer": v:null
-          \ }
-    var self = self
-
-    if exists('#User#DbgDebugStartPre')
-      doauto <nomodeline> User DbgDebugStartPre
-    endif
-    var empty_win = win_getid()
-
-    var bridge = vimext#bridge#Create(l:dbg, funcs)
-    var this.bridge = bridge
-
-    var cmd_term = bridge.NewProg()
-    var this.cmd_term = cmd_term
-
-    call win_execute(l:empty_win, "close")
-
-    var cmd = dbg.GetCmd(l:this.dbg, cmd_term, args)
-    var dbg_term = bridge.NewDbg(l:bridge, cmd)
-    var this.dbg_term = dbg_term
-
-    call dbg.SetConfig(l:dbg, dbg_term, proto)
-    call vimext#breakpoint#Init()
-
-    if exists('#User#DbgDebugStartPost')
-      doauto <nomodeline> User DbgDebugStartPost
-    endif
-
-    return self
-  enddef
-
-  def Call(cmd: string, args: list<string>)
-    if self is v:null
-      return
-    endif
-
-    var term = this.dbg_term
-
-    if args is v:null
-      call term.Send(l:term, cmd)
-    else
-      call term.Send(l:term, cmd . " " . args)
-    endif
-  enddef
-
-  def Dispose()
-    call this.bridge.Dispose(this.bridge)
-    call this.proto.Dispose(this.proto)
-    call this.dbg.Dispose(this.dbg)
-
-    call vimext#sign#DeInit()
-    call vimext#breakpoint#DeInit()
-
-    if this.source_viewer isnot v:null
-      call this.source_viewer.Dispose(this.source_viewer)
-      unvar this.source_viewer
-    endif
-
-    if this.asm_viewer isnot v:null
-      call this.asm_viewer.Dispose(this.asm_viewer)
-      unvar this.asm_viewer
-    endif
-
-    call this.cmd_term.Destroy(this.cmd_term)
-    call this.dbg_term.Destroy(this.dbg_term)
-
-    var self = v:null
-  enddef
-
-  def GetSouceWinPath()
-    var winid = vimext#viewer#GetWinID(this.source_viewer)
-    return vimext#buffer#GetNameByWinID(l:winid)
-  enddef
-
-  def Asm()
-    if self is v:null
-          \ || this.proto is v:null
-          \ || this.dbg is v:null
-      return
-    endif
-
-    if this.proto.name == "mi2" && this.dbg.name == "gdb"
-    else
-      return
-    endif
-
-    if this.source_viewer is v:null
-      return
-    endif
-
-    if this.asm_viewer isnot v:null
-      call vimext#viewer#Show(this.asm_viewer)
-      call this.SetAsmEnv(this.asm_viewer)
-    else
-      var source_win = vimext#viewer#GetWinID(this.source_viewer)
-      var asm_viewer = this.CreateAsmViewer(l:source_win)
-      this.asm_viewer = asm_viewer
-    endif
-
-    call Call(this.proto.Disassemble, "$pc")
-  enddef
-
-  def Source()
-    if this.source_viewer is v:null
-      return
-    endif
-
-    call vimext#viewer#Show(this.source_viewer)
-  enddef
-
-  def Run(args: list<string>)
-    var start = vimext#proto#GetStart(this.proto)
-    if start is v:null
-      return
-    endif
-
-    if args isnot v:null
-      if this.dbg.name == "gdb"
-      else
-        var args = vimext#debug#DecodeFilePath(a:args)
-        if args[0] != "\""
-          var args = "\"" . args . "\""
-        endif
-
-        call Call(this.proto.Arguments, args)
-      endif
-    endif
-
-    call Call(this.proto.Start, v:null)
-  enddef
-
-  def Attach(pid: number)
-    call Call(this.proto.Attach, pid)
-  enddef
-
-  def Restore()
-    if !filereadable(s:gdb_cfg)
-      call writefile([], gdb_cfg, "w")
-    else
-      if this.proto.name == "mi"
-      else
-        call Call(this.proto.Source, gdb_cfg)
-      endif
-    endif
-  enddef
-
-  def Next()
-    call Call(this.proto.Next, v:null)
-  enddef
-
-  def Stop()
-    call Call(this.proto.Stop, v:null)
-  enddef
-
-  def Step()
-    call Call(this.proto.Step, v:null)
-  enddef
-
-  def Continue()
-    call Call(this.proto.Continue, v:null)
-  enddef
-
-  def Break(args: list<string>)
-    var info = vimext#breakpoint#Parse(a:args)
-    if info is v:null
-      return
-    endif
-
-    if info[0] == 1
-      var info[1] = this.GetSouceWinPath(this)
-
-      var brk = vimext#breakpoint#Get(l:info[1], info[2])
-      if brk isnot v:null
-        call vimext#breakpoint#Delete(l:brk)
-        call Call(this.proto.Clear, brk[1])
-      else
-        call DeleteBreakPointByFName(this, info[1], info[2])
-      endif
-    else
-      call Call(this.proto.Break, info[1])
-    endif
-  enddef
-
-  def Clear(args: list<string>)
-    call Call(this.proto.Clear, args)
-  enddef
-
-  def Delete()
-    call Call(this.proto.Delete, v:null)
-  enddef
-
-  def PromptExit(job: job, status: number)
-    if exists('#User#DbgDebugStopPost')
-      doauto <nomodeline> User DbgDebugStopPost
-    endif
-  enddef
-
-  def PromptInput(cmd: string)
-    var info = this.proto.ProcessInput(this.proto, cmd)
-
-    if info[0] == 1 " quit
-      if exists('#User#DbgDebugStopPre')
-        doauto <nomodeline> User DbgDebugStopPre
-      endif
-    endif
-
-    if info[0] == 6
-      call this.Break(l:info[2])
-      return v:null
-    endif
-
-    if info[0] == 7 " print
-      if info[3] != 0
-        call Call(l:info[3], v:null)
-      endif
-    endif
-
-    call Call(l:info[1] . " " . info[2], v:null)
-  enddef
-
-  def DeleteBreakPointByFName(fname: string, lnum: number)
-    var brk = vimext#breakpoint#Get(a:fname, lnum)
-    if brk is v:null
-      call Call(this.proto.Break, fname . ":" . lnum)
-    else
-      call vimext#breakpoint#Delete(l:brk)
-    endif
-  enddef
-
-  def SetAsmEnv(viewer: any)
-    call vimext#viewer#Go(a:viewer)
-    :setlocal nowrap
-    :setlocal number
-    :setlocal noswapfile
-    :setlocal buftype=nofile
-    :setlocal filetype=asm
-    :setlocal bufhidden=wipe
-    :setlocal signcolumn=no
-    :setlocal modifiable
-    :setlocal nolist
-  enddef
-
-  def CreateAsmViewer(basewin: number)
-    var viewer = vimext#viewer#CreateTextMode("asm", 3, basewin, 32)
-    call this.SetAsmEnv(l:viewer)
-    return viewer
-  enddef
-
-  def LoadSource(fname: string, lnum: number)
-    if this.source_viewer is v:null
-      var dbg_win = this.dbg_term.GetWinID(this.dbg_term)
-
-      let this.source_viewer = vimext#viewer#CreateFileMode("source", 1, dbg_win, 31)
-      call vimext#viewer#Go(this.source_viewer)
-      execute "wincmd H"
-
-      call vimext#viewer#LoadByFile(this.source_viewer, fname, lnum)
-      call this.Restore()
-    else
-      call vimext#viewer#Show(this.source_viewer)
-      call vimext#viewer#LoadByFile(this.source_viewer, fname, lnum)
-    endif
-
-    if vimext#viewer#IsShow(this.asm_viewer)
-      call Call(this.proto.Disassemble, "$pc")
-    endif
-  enddef
-
-  def PrintOutput(msg: string)
-    var msg = vimext#proto#ProcessMsg(a:msg)
-    if msg is v:null
-      return
-    endif
-
-    var term = this.cmd_term
-    call term.Print(l:term, msg)
-  enddef
-
-  def SaveBrks()
-    call Call(this.proto.SaveBreakoints, gdb_cfg)
-  enddef
-
-  def PrintError(msg: string)
-    var term = this.cmd_term
-    call term.Print(l:term, msg)
-  enddef
-
-  def PromptOut(channel: channel, msg: string)
-    if self is v:null
-      return
-    endif
-
-    var proto = this.proto
-    var info = proto.ProcessOutput(a:msg)
-    if info is v:null
-      return
-    endif
-
-    if info[0] == 1 " hit breakpoint
-      call this.LoadSource(this, info[2], info[3])
-
-    elseif info[0] == 4 " user set breakpoint
-      "brkid,type,disp,enable,func,file,fullname,line
-      call vimext#breakpoint#Add(l:info[0:8])
-
-    elseif info[0] == 5 " exit end stepping range
-      call this.LoadSource(this, info[1], info[2])
-
-    elseif info[0] == 8 " message
-      call this.PrintOutput(this, info[1])
-
-    elseif info[0] == 9 " entry-point-hit
-      call this.LoadSource(this, info[1], info[2])
-
-    elseif info[0] == 10 " error msg
-      call this.PrintError(this, info[1])
-
-    elseif info[0] == 11 " breakpoint delete
-      call vimext#breakpoint#DeleteID(l:info[1])
-
-    elseif info[0] == 14 " asm break
-      call vimext#viewer#SetSignText(this.asm_viewer, info[1])
-
-    elseif info[0] == 15 " asm start
-      call vimext#viewer#SetUniqueID(this.asm_viewer, info[1])
-
-    elseif info[0] == 16 " asm end
-      call vimext#viewer#SetLines(this.asm_viewer, info[1])
-      call vimext#viewer#LoadByLines(this.asm_viewer)
-    else
-    endif
+import "./proto.vim" as Proto
+import "./bridge.vim" as Bridge
+
+export class Runner
+  this.gdb_cfg = g:vim_session .. "/gdb.cfg"
+
+  def new(proto: any, dbg: any)
+    this.proto = proto
+    this.bridge = v:null
+    this.dbg = dbg
+    this.dbg_term = v:null
+    this.cmd_term = v:null
+    this.source_viewer = v:null
+    this.asm_viewer = v:null
   enddef
 endclass
+
+var self = v:null
+
+export def Create(lang: string, args: list<string>)
+  var bridge = v:null
+  var proto = v:null
+
+  if self isnot v:null
+    call vimext#logger#Warning("call not start two debugger")
+    return v:null
+  endif
+
+  if lang == "csharp"
+    proto = Proto.Create("mi")
+    dbg = NetcoreDbg.Create(l:proto)
+  elseif lang == "c"
+    proto = Proto.Create("mi2")
+    dbg = NetcoreDbg.Create(proto)
+  else
+    return v:null
+  endif
+
+  if dbg is v:null || proto is v:null
+    return v:null
+  endif
+
+  var funcs = {
+        \ 'HandleExit': function("s:PromptExit"),
+        \ "HandleInput": function("s:PromptInput"),
+        \ 'HandleOutput': function("s:PromptOut")
+        \ }
+
+  call vimext#sign#Init()
+
+  var self = {
+        \ "proto": proto,
+        \ "bridge": v:null,
+        \ "dbg": dbg,
+        \ "dbg_term": v:null,
+        \ "cmd_term": v:null,
+        \ "source_viewer": v:null,
+        \ "asm_viewer": v:null
+        \ }
+  var self = self
+
+  if exists('#User#DbgDebugStartPre')
+    doauto <nomodeline> User DbgDebugStartPre
+  endif
+  var empty_win = win_getid()
+
+  var bridge = vimext#bridge#Create(l:dbg, funcs)
+  var this.bridge = bridge
+
+  var cmd_term = bridge.NewProg()
+  var this.cmd_term = cmd_term
+
+  call win_execute(l:empty_win, "close")
+
+  var cmd = dbg.GetCmd(l:this.dbg, cmd_term, args)
+  var dbg_term = bridge.NewDbg(l:bridge, cmd)
+  var this.dbg_term = dbg_term
+
+  call dbg.SetConfig(l:dbg, dbg_term, proto)
+  call vimext#breakpoint#Init()
+
+  if exists('#User#DbgDebugStartPost')
+    doauto <nomodeline> User DbgDebugStartPost
+  endif
+
+  return self
+enddef
+
+def Call(cmd: string, args: list<string>)
+  if self is v:null
+    return
+  endif
+
+  var term = this.dbg_term
+
+  if args is v:null
+    call term.Send(l:term, cmd)
+  else
+    call term.Send(l:term, cmd . " " . args)
+  endif
+enddef
+
+def Dispose()
+  call this.bridge.Dispose(this.bridge)
+  call this.proto.Dispose(this.proto)
+  call this.dbg.Dispose(this.dbg)
+
+  call vimext#sign#DeInit()
+  call vimext#breakpoint#DeInit()
+
+  if this.source_viewer isnot v:null
+    call this.source_viewer.Dispose(this.source_viewer)
+    unvar this.source_viewer
+  endif
+
+  if this.asm_viewer isnot v:null
+    call this.asm_viewer.Dispose(this.asm_viewer)
+    unvar this.asm_viewer
+  endif
+
+  call this.cmd_term.Destroy(this.cmd_term)
+  call this.dbg_term.Destroy(this.dbg_term)
+
+  var self = v:null
+enddef
+
+def GetSouceWinPath()
+  var winid = vimext#viewer#GetWinID(this.source_viewer)
+  return vimext#buffer#GetNameByWinID(l:winid)
+enddef
+
+def Asm()
+  if self is v:null
+        \ || this.proto is v:null
+        \ || this.dbg is v:null
+    return
+  endif
+
+  if this.proto.name == "mi2" && this.dbg.name == "gdb"
+  else
+    return
+  endif
+
+  if this.source_viewer is v:null
+    return
+  endif
+
+  if this.asm_viewer isnot v:null
+    call vimext#viewer#Show(this.asm_viewer)
+    call this.SetAsmEnv(this.asm_viewer)
+  else
+    var source_win = vimext#viewer#GetWinID(this.source_viewer)
+    var asm_viewer = this.CreateAsmViewer(l:source_win)
+    this.asm_viewer = asm_viewer
+  endif
+
+  call Call(this.proto.Disassemble, "$pc")
+enddef
+
+def Source()
+  if this.source_viewer is v:null
+    return
+  endif
+
+  call vimext#viewer#Show(this.source_viewer)
+enddef
+
+def Run(args: list<string>)
+  var start = vimext#proto#GetStart(this.proto)
+  if start is v:null
+    return
+  endif
+
+  if args isnot v:null
+    if this.dbg.name == "gdb"
+    else
+      var args = vimext#debug#DecodeFilePath(a:args)
+      if args[0] != "\""
+        var args = "\"" . args . "\""
+      endif
+
+      call Call(this.proto.Arguments, args)
+    endif
+  endif
+
+  call Call(this.proto.Start, v:null)
+enddef
+
+def Attach(pid: number)
+  call Call(this.proto.Attach, pid)
+enddef
+
+def Restore()
+  if !filereadable(s:gdb_cfg)
+    call writefile([], gdb_cfg, "w")
+  else
+    if this.proto.name == "mi"
+    else
+      call Call(this.proto.Source, gdb_cfg)
+    endif
+  endif
+enddef
+
+def Next()
+  call Call(this.proto.Next, v:null)
+enddef
+
+def Stop()
+  call Call(this.proto.Stop, v:null)
+enddef
+
+def Step()
+  call Call(this.proto.Step, v:null)
+enddef
+
+def Continue()
+  call Call(this.proto.Continue, v:null)
+enddef
+
+def Break(args: list<string>)
+  var info = vimext#breakpoint#Parse(a:args)
+  if info is v:null
+    return
+  endif
+
+  if info[0] == 1
+    var info[1] = this.GetSouceWinPath(this)
+
+    var brk = vimext#breakpoint#Get(l:info[1], info[2])
+    if brk isnot v:null
+      call vimext#breakpoint#Delete(l:brk)
+      call Call(this.proto.Clear, brk[1])
+    else
+      call DeleteBreakPointByFName(this, info[1], info[2])
+    endif
+  else
+    call Call(this.proto.Break, info[1])
+  endif
+enddef
+
+def Clear(args: list<string>)
+  call Call(this.proto.Clear, args)
+enddef
+
+def Delete()
+  call Call(this.proto.Delete, v:null)
+enddef
+
+def PromptExit(job: job, status: number)
+  if exists('#User#DbgDebugStopPost')
+    doauto <nomodeline> User DbgDebugStopPost
+  endif
+enddef
+
+def PromptInput(cmd: string)
+  var info = this.proto.ProcessInput(this.proto, cmd)
+
+  if info[0] == 1 " quit
+    if exists('#User#DbgDebugStopPre')
+      doauto <nomodeline> User DbgDebugStopPre
+    endif
+  endif
+
+  if info[0] == 6
+    call this.Break(l:info[2])
+    return v:null
+  endif
+
+  if info[0] == 7 " print
+    if info[3] != 0
+      call Call(l:info[3], v:null)
+    endif
+  endif
+
+  call Call(l:info[1] . " " . info[2], v:null)
+enddef
+
+def DeleteBreakPointByFName(fname: string, lnum: number)
+  var brk = vimext#breakpoint#Get(a:fname, lnum)
+  if brk is v:null
+    call Call(this.proto.Break, fname . ":" . lnum)
+  else
+    call vimext#breakpoint#Delete(l:brk)
+  endif
+enddef
+
+def SetAsmEnv(viewer: any)
+  call vimext#viewer#Go(a:viewer)
+  :setlocal nowrap
+  :setlocal number
+  :setlocal noswapfile
+  :setlocal buftype=nofile
+  :setlocal filetype=asm
+  :setlocal bufhidden=wipe
+  :setlocal signcolumn=no
+  :setlocal modifiable
+  :setlocal nolist
+enddef
+
+def CreateAsmViewer(basewin: number)
+  var viewer = vimext#viewer#CreateTextMode("asm", 3, basewin, 32)
+  call this.SetAsmEnv(l:viewer)
+  return viewer
+enddef
+
+def LoadSource(fname: string, lnum: number)
+  if this.source_viewer is v:null
+    var dbg_win = this.dbg_term.GetWinID(this.dbg_term)
+
+    let this.source_viewer = vimext#viewer#CreateFileMode("source", 1, dbg_win, 31)
+    call vimext#viewer#Go(this.source_viewer)
+    execute "wincmd H"
+
+    call vimext#viewer#LoadByFile(this.source_viewer, fname, lnum)
+    call this.Restore()
+  else
+    call vimext#viewer#Show(this.source_viewer)
+    call vimext#viewer#LoadByFile(this.source_viewer, fname, lnum)
+  endif
+
+  if vimext#viewer#IsShow(this.asm_viewer)
+    call Call(this.proto.Disassemble, "$pc")
+  endif
+enddef
+
+def PrintOutput(msg: string)
+  var msg = vimext#proto#ProcessMsg(a:msg)
+  if msg is v:null
+    return
+  endif
+
+  var term = this.cmd_term
+  call term.Print(l:term, msg)
+enddef
+
+def SaveBrks()
+  call Call(this.proto.SaveBreakoints, gdb_cfg)
+enddef
+
+def PrintError(msg: string)
+  var term = this.cmd_term
+  call term.Print(l:term, msg)
+enddef
+
+def PromptOut(channel: channel, msg: string)
+  if self is v:null
+    return
+  endif
+
+  var proto = this.proto
+  var info = proto.ProcessOutput(a:msg)
+  if info is v:null
+    return
+  endif
+
+  if info[0] == 1 " hit breakpoint
+    call this.LoadSource(this, info[2], info[3])
+
+  elseif info[0] == 4 " user set breakpoint
+    "brkid,type,disp,enable,func,file,fullname,line
+    call vimext#breakpoint#Add(l:info[0:8])
+
+  elseif info[0] == 5 " exit end stepping range
+    call this.LoadSource(this, info[1], info[2])
+
+  elseif info[0] == 8 " message
+    call this.PrintOutput(this, info[1])
+
+  elseif info[0] == 9 " entry-point-hit
+    call this.LoadSource(this, info[1], info[2])
+
+  elseif info[0] == 10 " error msg
+    call this.PrintError(this, info[1])
+
+  elseif info[0] == 11 " breakpoint delete
+    call vimext#breakpoint#DeleteID(l:info[1])
+
+  elseif info[0] == 14 " asm break
+    call vimext#viewer#SetSignText(this.asm_viewer, info[1])
+
+  elseif info[0] == 15 " asm start
+    call vimext#viewer#SetUniqueID(this.asm_viewer, info[1])
+
+  elseif info[0] == 16 " asm end
+    call vimext#viewer#SetLines(this.asm_viewer, info[1])
+    call vimext#viewer#LoadByLines(this.asm_viewer)
+  else
+  endif
+enddef
