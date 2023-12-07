@@ -1,48 +1,52 @@
 vim9script
-let s:self = v:null
+var self = v:null
 
-" bridge
-function s:BridgeCallback(cmd) abort
-  let l:cmd = s:self.HandleInput(a:cmd)
-  if l:cmd is v:null
+import "./prompt.vim" as Prompt
+import "./logger.vim" as Logger
+import "./term.vim" as Term
+
+# bridge
+def BridgeCallback(cmd: string)
+  var cmd = self.HandleInput(cmd)
+  if cmd is v:null
     return
   endif
 
-  call s:BridgeSend(s:self, l:cmd)
-endfunction
+  call BridgeSend(self, cmd)
+enddef
 
-function s:BridgeInterrupt() abort
-  if s:pid == 0
+def BridgeInterrupt()
+  if pid == 0
     call vimext#logger#Error('Cannot interrupt, not find a process ID')
     return
   endif
 
-  call debugbreak(s:bridge_pid)
-endfunction
+  call debugbreak(bridge_pid)
+enddef
 
-function vimext#bridge#Ref() abort
-  return s:self
-endfunction
+def Ref()
+  return self
+enddef
 
-function vimext#bridge#Create(dbg, funcs) abort
-  let l:self = v:null
+def Create(dbg: any, funcs: dict)
+  var self = v:null
   if has("win32")
-    let l:self = vimext#prompt#Create(a:funcs)
+    var self = Prompt.Create(funcs)
   else
-    let l:self = vimext#term#Create(a:funcs)
+    var self = Term.Create(funcs)
   endif
 
-  if l:self is v:null
+  if self is v:null
     return v:null
   endif
 
   if !has('terminal')
-    call vimext#logger#Error("+terminal not enabled in vim")
+    call Logger.Error("+terminal not enabled in vim")
     return v:null
   endif
 
-  return l:self
-endfunction
+  return self
+enddef
 
-function s:Dispose(self) abort
-endfunction
+def Dispose()
+enddef
