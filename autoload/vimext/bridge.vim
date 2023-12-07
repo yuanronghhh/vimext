@@ -5,48 +5,43 @@ import "./prompt.vim" as Prompt
 import "./logger.vim" as Logger
 import "./term.vim" as Term
 
-# bridge
-def BridgeCallback(cmd: string)
-  var cmd = self.HandleInput(cmd)
-  if cmd is v:null
-    return
-  endif
+class BridgeManager
+  def new(dbg: any, funcs: dict)
+    var self = v:null
+    if has("win32")
+      var self = Prompt.Create(funcs)
+    else
+      var self = Term.Create(funcs)
+    endif
 
-  call BridgeSend(self, cmd)
-enddef
+    if self is v:null
+      return v:null
+    endif
 
-def BridgeInterrupt()
-  if pid == 0
-    call vimext#logger#Error('Cannot interrupt, not find a process ID')
-    return
-  endif
+    if !has('terminal')
+      call Logger.Error("+terminal not enabled in vim")
+      return v:null
+    endif
+  enddef
 
-  call debugbreak(bridge_pid)
-enddef
+  def BridgeCallback(cmd: string)
+    var cmd = self.HandleInput(cmd)
+    if cmd is v:null
+      return
+    endif
 
-def Ref()
-  return self
-enddef
+    call this.BridgeSend(self, cmd)
+  enddef
 
-def Create(dbg: any, funcs: dict)
-  var self = v:null
-  if has("win32")
-    var self = Prompt.Create(funcs)
-  else
-    var self = Term.Create(funcs)
-  endif
+  def BridgeInterrupt()
+    if pid == 0
+      call vimext#logger#Error('Cannot interrupt, not find a process ID')
+      return
+    endif
 
-  if self is v:null
-    return v:null
-  endif
+    call debugbreak(bridge_pid)
+  enddef
 
-  if !has('terminal')
-    call Logger.Error("+terminal not enabled in vim")
-    return v:null
-  endif
-
-  return self
-enddef
-
-def Dispose()
-enddef
+  def Dispose()
+  enddef
+endclass

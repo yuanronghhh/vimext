@@ -1,140 +1,138 @@
 vim9script
 
+import "./buffer.vim" as Buffer
+import "./logger.vim" as Logger
+
 var self = v:null
-var parent = v:null
 
+class Prompt
+  def new(mode: number, name: string, cmd: string, opts: dict<any>)
+    this.name = name
+    this.mode = mode
+    this.channel = v:null
+    this.job = v:null
+    this.buf = v:null
+    this.tty = v:null
+    this.winid = v:null
+    this.GetWinID = function("GetWinID")
+    this.Go = function("Go")
+    this.Send = function("Send")
+    this.Print = function("Print")
+    this.Running = function("Running")
+    this.Destroy = function("Destroy")
 
-# term start
-def GetWinID()
-  return self.winid
-enddef
+    var winid = 0
+    if mode == 1
+      var job = job_start(cmd, {
+            \ "exit_cb":  get(opts, "exit_cb", v:null),
+            \ "out_cb": get(opts, "out_cb", v:null)
+            \ })
+      if job is v:null
+        return v:null
+      endif
 
-def Go(self)
-  return win_gotoid(self.winid)
-enddef
+      winid = Buffer.NewWindow(name, 2, v:null)
+      call win_gotoid(winid)
 
-def Destroy()
-  if self.mode == 1
-    call job_stop(self.job, "kill")
-  endif
+      this.winid = winid
+      this.buf = bufnr("%")
 
-  call vimext#buffer#Wipe(self.buf)
-enddef
+      this.job = job
+      this.channel = job_getchannel(job)
 
-def vimext#prompt#New(mode, name, cmd, opts)
-  var self = {
-        \ "name": name,
-        \ "mode": mode,
-        \ "channel": v:null,
-        \ "job": v:null,
-        \ "buf": v:null,
-        \ "tty": v:null,
-        \ "winid": v:null,
-        \ "GetWinID": function("GetWinID"),
-        \ "Go": function("Go"),
-        \ "Send": function("Send"),
-        \ "Print": function("Print"),
-        \ "Running": function("Running"),
-        \ "Destroy": function("Destroy")
-        \ }
+      setlocal buftype=prompt
+      call prompt_setprompt(this.buf, '(gdb) ')
+      call prompt_setcallback(this.buf, get(opts, "callback", v:null))
+      call prompt_setinterrupt(this.buf, get(opts, "interrupt", v:null))
+      startinsert
+    elseif mode == 2
+      winid = Buffer.NewWindow(name, 1, v:null)
+      call win_gotoid(winid)
 
-  if mode == 1
-    var job = job_start(cmd, {
-          \ "exit_cb":  get(opts, "exit_cb", v:null),
-          \ "out_cb": get(opts, "out_cb", v:null)
-          \ })
-    if l:job is v:null
+      this.winid = winid
+      this.buf = bufnr('%')
+    else
       return v:null
     endif
+  enddef
 
-    var winid = vimext#buffer#NewWindow(name, 2, v:null)
-    call win_gotoid(l:winid)
+  def GetWinID()
+    return this.winid
+  enddef
 
-    var self.winid = l:winid
-    var self.buf = bufnr("%")
+  def Go()
+    return win_gotoid(this.winid)
+  enddef
 
-    var self.job = l:job
-    var self.channel = job_getchannel(l:job)
+  def Destroy()
+    if this.mode == 1
+      call job_stop(this.job, "kill")
+    endif
 
-    setlocal buftype=prompt
-    call prompt_setprompt(l:self.buf, '(gdb) ')
-    call prompt_setcallback(l:self.buf, get(opts, "callback", v:null))
-    call prompt_setinterrupt(l:self.buf, get(opts, "interrupt", v:null))
-    startinsert
-  elseif mode == 2
-    var winid = vimext#buffer#NewWindow(name, 1, v:null)
-    call win_gotoid(l:winid)
+    call Buffer.Wipe(this.buf)
+  enddef
 
-    var self.winid = l:winid
-    var self.buf = bufnr('%')
-  else
-    return v:null
-  endif
+  def Send(cmd: string)
+    if this.channel is v:null
+      return
+    endif
 
-  return l:self
-enddef
+    call ch_sendraw(this.channel, cmd . "\n")
+  enddef
 
-def Send(self, cmd)
-  if self.channel is v:null
-    return
-  endif
+  def Running()
+    if job_status(this.job) !=# 'run'
+      return v:false
+    endif
 
-  call ch_sendraw(self.channel, cmd . "\n")
-enddef
+    return v:true
+  enddef
 
-def Running(self)
-  if job_status(self.job) !=# 'run'
-    return v:false
-  endif
+  def Print(msg: string)
+    var cwin = win_getid()
 
-  return v:true
-enddef
+    call win_gotoid(this.winid)
+    call append(line('$') - 1, msg)
 
-def NewDbg(cmd)
-  var term = vimext#prompt#New(1, "Dbg", cmd, {
-        \ "exit_cb": self.HandleExit,
-        \ "out_cb": self.HandleOutput,
-        \ "callback": self.HandleInput,
-        \ "interrupt": self.Interrupt,
+    call win_gotoid(cwin)
+  enddef
+endclass
+
+export def NewDbg(cmd: string)
+  var term = Prompt.new(1, "Dbg", cmd, {
+        \ "exit_cb": this.HandleExit,
+        \ "out_cb": this.HandleOutput,
+        \ "callback": this.HandleInput,
+        \ "interrupt": this.Interrupt,
         \ })
 
-  return l:term
+  return term
 enddef
 
 def NewProg()
-  var term = vimext#prompt#New(2, "Output", v:null, {})
-  if l:term is v:null
-    call vimext#logger#Error('Failed to start debugger term')
+  var term = Prompt.new(2, "Output", v:null, {})
+  if term is v:null
+    call Logger.Error('Failed to start debugger term')
     return v:null
   endif
 
-  return  l:term
+  return term
 enddef
 
-def Print(self, msg)
-  var cwin = win_getid()
-
-  call win_gotoid(self.winid)
-  call append(line('$') - 1, msg)
-
-  call win_gotoid(l:cwin)
-enddef
-" term end"
-
-" prompt
+# prompt
 def PromptInterrupt()
-  "call vimext#logger#Info("PromptInterrupt")
+  # call Logger.Info("PromptInterrupt")
 
   if pid == 0
-    call vimext#logger#Error('Cannot interrupt, not find a process ID')
+    call Logger.Error('Cannot interrupt, not find a process ID')
     return
   endif
 
   call debugbreak(prompt_pid)
 enddef
 
-" prompt manager
-def vimext#prompt#Create(funcs)
+# prompt manager
+export def Create(funcs: dict<any>)
   var self = {
         \ "prompt_pid": 0,
         \ "prompt_buf": 0,
@@ -148,14 +146,13 @@ def vimext#prompt#Create(funcs)
         \ }
 
   if !has('terminal')
-    call vimext#logger#Error("+terminal not enabled in vim")
+    call Logger.Error("+terminal not enabled in vim")
     return v:null
   endif
 
-  var self = l:self
-  var parent = vimext#bridge#Ref()
+  var self = self
 
-  return l:self
+  return self
 enddef
 
 def Dispose()

@@ -1,74 +1,74 @@
 vim9script
 
-function vimext#buffer#WinExists(winid) abort
-  if a:winid == v:null
+export def WinExists(winid: number)
+  if winid == v:null
     return v:false
   endif
 
-  let l:bnr = winbufnr(a:winid)
-  return bufexists(l:bnr)
-endfunction
+  var bnr = winbufnr(winid)
+  return bufexists(bnr)
+enddef
 
-function vimext#buffer#ClearWin(winid) abort
-  let l:cwin = win_getid()
+export def ClearWin(winid: number)
+  var cwin = win_getid()
 
-  call win_gotoid(a:winid)
+  call win_gotoid(winid)
   silent! %delete _
 
-  call win_gotoid(l:cwin)
-endfunction
+  call win_gotoid(cwin)
+enddef
 
-function vimext#buffer#Wipe(buf) abort
-  if a:buf is v:null || !bufexists(a:buf) || a:buf == 0
-    call vimext#logger#Warning("Wipe bufid not exists: ". a:buf)
+export def Wipe(buf: string)
+  if buf is v:null || !bufexists(buf) || buf == 0
+    call vimext#logger#Warning("Wipe bufid not exists: ". buf)
     return
   endif
 
-  execute ':bwipe! ' . a:buf
-endfunction
+  execute ':bwipe! ' . buf
+enddef
 
-function vimext#buffer#WipeWin(win) abort
-  let l:was_buf = winbufnr(a:win)
-  if l:was_buf == -1
-    call vimext#logger#Warning("Wipe winid not exists: ". a:win)
+export def WipeWin(win: number)
+  var was_buf = winbufnr(win)
+  if was_buf == -1
+    call vimext#logger#Warning("Wipe winid not exists: ". win)
     return
   endif
 
-  call vimext#buffer#Wipe(l:was_buf)
-endfunction
+  call Wipe(was_buf)
+enddef
 
-function vimext#buffer#GetNameByWinID(wid) abort
-  let l:bnr = winbufnr(a:wid)
-  return substitute(bufname(l:bnr), "\\", "/", "g")
-endfunction
+export def GetNameByWinID(wid: number)
+  var bnr = winbufnr(wid)
+  return substitute(bufname(bnr), "\\", "/", "g")
+enddef
 
-function vimext#buffer#NewWindowLayout(name, dr) abort
-  if a:dr == 1
-    execute ":vertical new ".a:name
+export def NewWindowLayout(name: string, dr: number)
+  if dr == 1
+    execute ":vertical new ".name
     execute (&columns / 2 - 1) . "wincmd |"
-  elseif a:dr == 2
-    execute ":new ".a:name
+  elseif dr == 2
+    execute ":new ".name
 
-  elseif a:dr == 3
-    execute ":rightbelow new ".a:name
+  elseif dr == 3
+    execute ":rightbelow new ".name
 
-  elseif a:dr == 4
-    execute ":topleft new ".a:name
+  elseif dr == 4
+    execute ":topleft new ".name
   endif
 
   return win_getid()
-endfunction
+enddef
 
-function vimext#buffer#NewWindow(name, dr, basewin) abort
-  let l:cwin = win_getid()
+export def NewWindow(name: string, dr: number, basewin: number)
+  var cwin = win_getid()
 
-  if a:basewin isnot v:null
-    call win_gotoid(a:basewin)
+  if basewin isnot v:null
+    call win_gotoid(basewin)
   endif
 
-  let l:nwin = vimext#buffer#NewWindowLayout(a:name, a:dr)
+  var nwin = NewWindowLayout(name, dr)
 
-  call win_gotoid(l:cwin)
+  call win_gotoid(cwin)
 
-  return l:nwin
-endfunction
+  return nwin
+enddef
