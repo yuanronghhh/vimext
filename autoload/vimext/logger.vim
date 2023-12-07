@@ -1,6 +1,6 @@
 vim9script
 
-export def Warning(msg: string)
+export def Warning(msg: any)
   if g:vimext_debug != 1
     return
   endif
@@ -10,7 +10,7 @@ export def Warning(msg: string)
   echohl None
 enddef
 
-export def Error(msg: string)
+export def Error(msg: any)
   if g:vimext_debug != 1
     return
   endif
@@ -20,7 +20,7 @@ export def Error(msg: string)
   echohl None
 enddef
 
-export def Info(msg: string)
+export def Info(msg: any)
   if g:vimext_debug != 1
     return
   endif
@@ -28,7 +28,7 @@ export def Info(msg: string)
   echomsg '[info] ' .. string(msg)
 enddef
 
-export def ProfileStart(funcname: string)
+export def ProfileStart(funcname: any)
   execute ':profile start vim-profile.log'
   execute ':profile func ' .. funcname
 enddef

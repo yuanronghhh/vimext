@@ -65,15 +65,15 @@ def StopPost()
   execute ":redraw!"
 enddef
 
-def StartDebug(bang: string, ...a: list<string>)
-  if len(a:000) < 1
+def StartDebug(bang: number, ...args: list<string>)
+  if len(args) < 1
     return
   endif
-  var lang = a:000[0]
+  var lang = args[0]
 
-  var pargs = ""
-  if len(a:000) > 1
-    pargs = a:000[1:]
+  var pargs: list<string> = []
+  if len(args) > 1
+    pargs = args[1 : ]
   endif
 
   if Runner.Create(lang, pargs) is v:null

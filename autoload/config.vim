@@ -1,10 +1,10 @@
 vim9script
 
-import "../vimext.vim" as VimExt
-import "./plugins.vim" as Plugin
-import "./debug.vim" as Debug
-import "./session.vim" as Session
-import "./logger.vim" as Logger
+import "./vimext.vim" as VimExt
+import "./vimext/plugins.vim" as Plugin
+import "./vimext/debug.vim" as Debug
+import "./vimext/session.vim" as Session
+import "./vimext/logger.vim" as Logger
 
 var vimext_loaded = 0
 

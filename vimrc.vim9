@@ -10,5 +10,5 @@ g:vim_plugin = g:vim_home .. "/plugins"
 $vimext_home = g:vim_plugin .. "/vimext"
 set rtp+=$vimext_home
 
-import $vimext_home .. "/autoload/vimext/config.vim"
+import $vimext_home .. "/autoload/config.vim"
 call config.LoadConfig()

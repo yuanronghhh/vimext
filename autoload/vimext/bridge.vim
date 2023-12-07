@@ -6,7 +6,7 @@ import "./logger.vim" as Logger
 import "./term.vim" as Term
 
 class BridgeManager
-  def new(dbg: any, funcs: dict)
+  def new(dbg: any, funcs: dict<any>)
     var self = v:null
     if has("win32")
       var self = Prompt.Create(funcs)

@@ -1,132 +1,134 @@
 vim9script
-let s:signs = []
-let s:pc_id = 30
 
-function s:Highlight(init, old, new) abort
-  let default = a:init ? 'default ' : ''
-  if a:new ==# 'light' && a:old !=# 'light'
+var signs = []
+var pc_id = 30
+
+def Highlight(init: bool, old: string, new: string)
+  var default = init ? 'default ' : ''
+  if new ==# 'light' && old !=# 'light'
     exe "hi " . default . "DbgPC term=reverse ctermbg=lightblue guibg=lightblue"
-  elseif a:new ==# 'dark' && a:old !=# 'dark'
+  elseif new ==# 'dark' && old !=# 'dark'
     exe "hi " . default . "DbgPC term=reverse ctermbg=darkblue guibg=darkblue"
   endif
-endfunction
+enddef
 
-function vimext#sign#Init() abort
-  call s:Highlight(1, '', &background)
+export def Init()
+  call Highlight(1, '', &background)
   hi default dbgSignOn term=reverse ctermbg=red guibg=red
   hi default dbgSignOff term=reverse ctermbg=gray guibg=gray
 
   call sign_define('DbgPC', {
         \ "linehl": 'DbgPC'
         \ })
-endfunction
+enddef
 
-function vimext#sign#DeInit() abort
+def DeInit()
   call sign_unplace('DbgDebug', {
-        \ "id": s:pc_id
+        \ "id": pc_id
         \})
 
   call sign_undefine('DbgPC')
-endfunction
+enddef
 
-function vimext#sign#GetByBreakID(breakid) abort
-  let l:v = []
+export def GetByBreakID(breakid: number)
+  var v = []
 
-  for l:sign in s:signs
-    if l:sign.breakid == a:breakid
-      call add(l:v, l:sign)
+  for sign in signs
+    if sign.breakid == breakid
+      call add(v, sign)
     endif
   endfor
 
-  return l:v
-endfunction
+  return v
+enddef
 
-function vimext#sign#Line(pc_id, fname, lnum) abort
-  exe a:lnum
-  normal! zv
+class Sign
+  def new(winid: number, breakid: number, text: string, enable: bool)
+    if len(text) > 2
+      return v:null
+    endif
 
-  call sign_unplace('DbgDebug', {
-        \ "id": a:pc_id
-        \})
-  call sign_place(a:pc_id, 'DbgDebug', 'DbgPC', a:fname, {
-        \ "lnum": a:lnum,
-        \ "priority": 110
-        \ })
-endfunction
+    var hiName = "dbgSignOn"
+    if enable == 0
+      var hiName = "dbgSignOff"
+    endif
+    var id = breakid
+    var osign = Get(id)
+    if osign isnot v:null
+      call Logger.Warning("sign id repeat: " . string(osign))
+      return v:null
+    endif
 
-function vimext#sign#UnPlace(self) abort
-  if a:self.filename is v:null
-    return
-  endif
+    var nsign = {
+          \ "id": id,
+          \ "winid": winid,
+          \ "breakid": breakid,
+          \ "filename": v:null,
+          \ "linenum": 0,
+          \ }
 
-  call sign_unplace("DbgDebug", {
-        \ "buffer": a:self.filename,
-        \ "id": a:self.id
-        \ })
-endfunction
+    call sign_define('DbgSign'.id, {
+          \ "text": text,
+          \ "texthl": hiName})
 
-function vimext#sign#Place(self, filename, linenum) abort
-  let a:self.filename = a:filename
-  let a:self.linenum = a:linenum
+    call add(signs, nsign)
 
-  if bufexists(a:filename)
-    call sign_place(a:self.id,
-          \ "DbgDebug",
-          \ "DbgSign" . a:self.id,
-          \ a:filename,
-          \ {
-          \ "lnum": a:linenum,
+    return nsign
+  enddef
+
+  def Line(pcid: number, fname: string, lnum: number)
+    exe lnum
+    normal! zv
+
+    call sign_unplace('DbgDebug', {
+          \ "id": pcid
+          \})
+    call sign_place(pcid, 'DbgDebug', 'DbgPC', fname, {
+          \ "lnum": lnum,
           \ "priority": 110
           \ })
-  endif
+  enddef
 
-endfunction
+  def UnPlace()
+    if this.filename is v:null
+      return
+    endif
 
-function vimext#sign#Get(id) abort
-  let l:idx = indexof(s:signs, { v -> v:val.id is a:id})
-  if l:idx == -1
-    return v:null
-  endif
+    call sign_unplace("DbgDebug", {
+          \ "buffer": this.filename,
+          \ "id": this.id
+          \ })
+  enddef
 
-  return s:signs[l:idx]
-endfunction
+  def Place(filename: string, linenum: number)
+    this.filename = filename
+    this.linenum = linenum
 
-function vimext#sign#New(winid, breakid, text, enable) abort
-  if len(a:text) > 2
-    return v:null
-  endif
+    if bufexists(filename)
+      call sign_place(this.id,
+            \ "DbgDebug",
+            \ "DbgSign" . this.id,
+            \ filename,
+            \ {
+            \ "lnum": linenum,
+            \ "priority": 110
+            \ })
+    endif
+  enddef
 
-  let l:hiName = "dbgSignOn"
-  if a:enable == 0
-    let l:hiName = "dbgSignOff"
-  endif
-  let l:id = a:breakid
-  let l:osign = vimext#sign#Get(l:id)
-  if l:osign isnot v:null
-    call vimext#logger#Warning("sign id repeat: " . string(l:osign))
-    return v:null
-  endif
+  def Get(id: number)
+    var idx = indexof(signs, { v -> v:val.id is id})
+    if idx == -1
+      return v:null
+    endif
 
-  let l:nsign = {
-        \ "id": l:id,
-        \ "winid": a:winid,
-        \ "breakid": a:breakid,
-        \ "filename": v:null,
-        \ "linenum": 0,
-        \ }
+    return signs[idx]
+  enddef
 
-  call sign_define('DbgSign'.l:id, {
-        \ "text": a:text,
-        \ "texthl": l:hiName})
-
-  call add(s:signs, l:nsign)
-
-  return l:nsign
-endfunction
-
-function vimext#sign#Dispose(self) abort
-  call vimext#sign#UnPlace(a:self)
-  call sign_undefine('DbgSign'.a:self.id)
-  let l:idx = indexof(s:signs, { v -> v:val is a:self})
-  call remove(s:signs, l:idx)
-endfunction
+  def Dispose()
+    call this.UnPlace()
+    call sign_undefine('DbgSign'.this.id)
+    var idx = indexof(signs, { v -> v:val is this})
+    call remove(signs, idx)
+  enddef
+endclass
