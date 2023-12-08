@@ -1,92 +1,99 @@
 vim9script
 
-import "./proto.vim" as Proto
 import "./bridge.vim" as Bridge
 import "./logger.vim" as Logger
 import "./sign.vim" as Sign
+import "./proto.vim" as Proto
+import "./gccdbg.vim" as GccDbg
+import "./netcoredbg.vim" as NetCoreDbg
 
 var self = v:null
 
 export class Runner
-  this.gdb_cfg = g:vim_session .. "/gdb.cfg"
+  this.gdb_cfg = v:null
+  this.proto = v:null
+  this.bridge = v:null
+  this.dbg = dbg
+  this.dbg_term = v:null
+  this.cmd_term = v:null
+  this.source_viewer = v:null
+  this.asm_viewer = v:null
 
   def new(proto: any, dbg: any)
+    this.gdb_cfg = g:vim_session .. "/gdb.cfg"
     this.proto = proto
-    this.bridge = v:null
-    this.dbg = dbg
-    this.dbg_term = v:null
-    this.cmd_term = v:null
-    this.source_viewer = v:null
-    this.asm_viewer = v:null
   enddef
 endclass
 
-class RunnerManager
+export class Manager
+  this.proto = v:null
+  this.dbg = v:null
+  this.bridge = v:null
+  this.dbg_term = v:null
+  this.cmd_term = v:null
+  this.source_viewer = v:null
+  this.asm_viewer = v:null
+
   def new(lang: string, args: list<string>)
-    var bridge = v:null
-    var proto = v:null
+    var bridge: any = v:null
+    var proto: any = v:null
+    var dbg: any = v:null
 
-    if self isnot v:null
-      call Logger.Warning("call not start two debugger")
-      return v:null
+    if self != v:null
+      call Logger.Error("call not start two debugger")
+      return
     endif
 
-    if lang == "csharp"
-      proto = Proto.Create("mi")
-      dbg = NetcoreDbg.Create(l:proto)
-    elseif lang == "c"
-      proto = Proto.Create("mi2")
-      dbg = NetcoreDbg.Create(proto)
-    else
-      return v:null
-    endif
+    Logger.Error(lang)
+    # if lang == "csharp"
+    #   proto = Proto.MIProto.new("mi")
+    #   dbg = NetCoreDbg.NetCoreDbg.new(proto)
+    # elseif lang == "c"
+    #   proto = Proto.MIProto.new("mi2")
+    #   dbg = GccDbg.GccDbg.new(proto)
+    # else
+    #   call Logger.Error("not correct language")
+    #   return
+    # endif
 
-    if dbg is v:null || proto is v:null
-      return v:null
-    endif
+    # if dbg is v:null || proto is v:null
+    #   call Logger.Error("dbg or proto not create successful in Runner.Manager")
+    #   return
+    # endif
+    # this.proto = proto
+    # this.dbg = dbg
 
-    var funcs = {
-          \ 'HandleExit': function("PromptExit"),
-          \ "HandleInput": function("PromptInput"),
-          \ 'HandleOutput': function("PromptOut")
-          \ }
+    # var funcs = {
+    #       \ 'HandleExit': function("PromptExit"),
+    #       \ "HandleInput": function("PromptInput"),
+    #       \ 'HandleOutput': function("PromptOut")
+    #       \ }
 
-    call Sign.Init()
+    # call Sign.Init()
 
-    this.proto = proto
-    this.bridge = v:null
-    this.dbg = dbg
-    this.dbg_term = v:null
-    this.cmd_term = v:null
-    this.source_viewer = v:null
-    this.asm_viewer = v:null
-    self = this
+    # if exists('#User#DbgDebugStartPre')
+    #   doauto <nomodeline> User DbgDebugStartPre
+    # endif
+    # var empty_win = win_getid()
 
-    if exists('#User#DbgDebugStartPre')
-      doauto <nomodeline> User DbgDebugStartPre
-    endif
-    var empty_win = win_getid()
+    # var bridge = Bridge.Create(dbg, funcs)
+    # var this.bridge = bridge
 
-    var bridge = vimext#bridge#Create(l:dbg, funcs)
-    var this.bridge = bridge
+    # var cmd_term = bridge.NewProg()
+    # var this.cmd_term = cmd_term
 
-    var cmd_term = bridge.NewProg()
-    var this.cmd_term = cmd_term
+    # call win_execute(empty_win, "close")
 
-    call win_execute(l:empty_win, "close")
+    # var cmd = dbg.GetCmd(this.dbg, cmd_term, args)
+    # var dbg_term = bridge.NewDbg(bridge, cmd)
+    # var this.dbg_term = dbg_term
 
-    var cmd = dbg.GetCmd(l:this.dbg, cmd_term, args)
-    var dbg_term = bridge.NewDbg(l:bridge, cmd)
-    var this.dbg_term = dbg_term
+    # call dbg.SetConfig(dbg, dbg_term, proto)
+    # call BreakPoint.Init()
 
-    call dbg.SetConfig(l:dbg, dbg_term, proto)
-    call vimext#breakpoint#Init()
-
-    if exists('#User#DbgDebugStartPost')
-      doauto <nomodeline> User DbgDebugStartPost
-    endif
-
-    return self
+    # if exists('#User#DbgDebugStartPost')
+    #   doauto <nomodeline> User DbgDebugStartPost
+    # endif
   enddef
 
   def Call(cmd: string, args: list<string>)
@@ -97,9 +104,9 @@ class RunnerManager
     var term = this.dbg_term
 
     if args is v:null
-      call term.Send(l:term, cmd)
+      call term.Send(term, cmd)
     else
-      call term.Send(l:term, cmd . " " . args)
+      call term.Send(term, cmd . " " . args)
     endif
   enddef
 
@@ -109,7 +116,7 @@ class RunnerManager
     call this.dbg.Dispose(this.dbg)
 
     call Sign.DeInit()
-    call vimext#breakpoint#DeInit()
+    call BreakPoint.DeInit()
 
     if this.source_viewer isnot v:null
       call this.source_viewer.Dispose(this.source_viewer)
@@ -129,7 +136,7 @@ class RunnerManager
 
   def GetSouceWinPath()
     var winid = vimext#viewer#GetWinID(this.source_viewer)
-    return vimext#buffer#GetNameByWinID(l:winid)
+    return vimext#buffer#GetNameByWinID(winid)
   enddef
 
   def Asm()
@@ -153,7 +160,7 @@ class RunnerManager
       call this.SetAsmEnv(this.asm_viewer)
     else
       var source_win = vimext#viewer#GetWinID(this.source_viewer)
-      var asm_viewer = this.CreateAsmViewer(l:source_win)
+      var asm_viewer = this.CreateAsmViewer(source_win)
       this.asm_viewer = asm_viewer
     endif
 
@@ -221,7 +228,7 @@ class RunnerManager
   enddef
 
   def Break(args: list<string>)
-    var info = vimext#breakpoint#Parse(a:args)
+    var info = BreakPoint.Parse(a:args)
     if info is v:null
       return
     endif
@@ -229,9 +236,9 @@ class RunnerManager
     if info[0] == 1
       var info[1] = this.GetSouceWinPath(this)
 
-      var brk = vimext#breakpoint#Get(l:info[1], info[2])
+      var brk = BreakPoint.Get(info[1], info[2])
       if brk isnot v:null
-        call vimext#breakpoint#Delete(l:brk)
+        call BreakPoint.Delete(brk)
         call Call(this.proto.Clear, brk[1])
       else
         call DeleteBreakPointByFName(this, info[1], info[2])
@@ -265,25 +272,25 @@ class RunnerManager
     endif
 
     if info[0] == 6
-      call this.Break(l:info[2])
+      call this.Break(info[2])
       return v:null
     endif
 
     if info[0] == 7 " print
       if info[3] != 0
-        call Call(l:info[3], v:null)
+        call Call(info[3], v:null)
       endif
     endif
 
-    call Call(l:info[1] . " " . info[2], v:null)
+    call Call(info[1] . " " . info[2], v:null)
   enddef
 
   def DeleteBreakPointByFName(fname: string, lnum: number)
-    var brk = vimext#breakpoint#Get(a:fname, lnum)
+    var brk = BreakPoint.Get(a:fname, lnum)
     if brk is v:null
       call Call(this.proto.Break, fname . ":" . lnum)
     else
-      call vimext#breakpoint#Delete(l:brk)
+      call BreakPoint.Delete(brk)
     endif
   enddef
 
@@ -302,7 +309,7 @@ class RunnerManager
 
   def CreateAsmViewer(basewin: number)
     var viewer = vimext#viewer#CreateTextMode("asm", 3, basewin, 32)
-    call this.SetAsmEnv(l:viewer)
+    call this.SetAsmEnv(viewer)
     return viewer
   enddef
 
@@ -333,7 +340,7 @@ class RunnerManager
     endif
 
     var term = this.cmd_term
-    call term.Print(l:term, msg)
+    call term.Print(term, msg)
   enddef
 
   def SaveBrks()
@@ -342,16 +349,15 @@ class RunnerManager
 
   def PrintError(msg: string)
     var term = this.cmd_term
-    call term.Print(l:term, msg)
+    call term.Print(term, msg)
   enddef
 
-  def PromptOut(channel: channel, msg: string)
+  def PromptOut(channe: channel, msg: string)
     if self is v:null
       return
     endif
 
-    var proto = this.proto
-    var info = proto.ProcessOutput(a:msg)
+    var info = this.proto.ProcessOutput(a:msg)
     if info is v:null
       return
     endif
@@ -361,7 +367,7 @@ class RunnerManager
 
     elseif info[0] == 4 " user set breakpoint
       "brkid,type,disp,enable,func,file,fullname,line
-      call vimext#breakpoint#Add(l:info[0:8])
+      call BreakPoint.Add(info[0:8])
 
     elseif info[0] == 5 " exit end stepping range
       call this.LoadSource(this, info[1], info[2])
@@ -376,7 +382,7 @@ class RunnerManager
       call this.PrintError(this, info[1])
 
     elseif info[0] == 11 " breakpoint delete
-      call vimext#breakpoint#DeleteID(l:info[1])
+      call BreakPoint.DeleteID(info[1])
 
     elseif info[0] == 14 " asm break
       call vimext#viewer#SetSignText(this.asm_viewer, info[1])

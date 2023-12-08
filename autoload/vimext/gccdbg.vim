@@ -1,75 +1,72 @@
 vim9script
 
-function vimext#gccdbg#Create(proto) abort
-  let l:self = {
-        \ "proto": a:proto,
-        \ "name": "gdb",
-        \ "GetCmd": function("s:GetCmd"),
-        \ "SetConfig": function("s:SetConfig"),
-        \ "Dispose": function("s:Dispose")
-        \ }
+export class GccDbg
+  def new(proto: any)
+    this.proto = proto
+    this.name = "gdb"
+    this.GetCmd = function("GetCmd")
+    this.SetConfig = function("SetConfig")
+    this.Dispose = function("Dispose")
+  enddef
 
-  return l:self
-endfunction
-
-function s:SetConfig(self, prompt, proto) abort
-  if has("win32")
-    call a:prompt.Send(a:prompt, a:proto.Set . " new-console on")
-    call a:prompt.Send(a:prompt, a:proto.Set . " print pretty on")
-    call a:prompt.Send(a:prompt, a:proto.Set . " breakpoint pending on")
-  else
-    call a:prompt.Send(a:prompt, "set breakpoint pending on")
-  endif
-
-endfunction
-
-function vimext#gccdbg#FilterStart(term) abort
-  let try_count = 0
-
-  while 1
-    if !a:term.Running(a:term)
-      call vimext#logger#Error('Exited unexpectedly: '. join(a:cmd, " "))
-      return 0
+  def SetConfig(prompt: any, proto: any)
+    if has("win32")
+      call prompt.Send(prompt, proto.Set . " new-console on")
+      call prompt.Send(prompt, proto.Set . " print pretty on")
+      call prompt.Send(prompt, proto.Set . " breakpoint pending on")
+    else
+      call prompt.Send(prompt, "set breakpoint pending on")
     endif
+  enddef
 
-    for l:lnum in range(1, 200)
-      let l:lstr = a:term.GetLine(a:term, l:lnum)
-      if l:lstr =~ 'startupdone'
-        let try_count = 9999
+  def FilterStart(term: any)
+    var try_count = 0
+
+    while 1
+      if !term.Running(term)
+        call vimext#logger#Error('Exited unexpectedly: '. join(cmd, " "))
+        return 0
+      endif
+
+      for lnum in range(1, 200)
+        var lstr = term.GetLine(term, lnum)
+        if lstr =~ 'startupdone'
+          var try_count = 9999
+          break
+        endif
+      endfor
+      var try_count += 1
+      if try_count > 300
+        " done or give up after five seconds
         break
       endif
-    endfor
-    let try_count += 1
-    if try_count > 300
-      " done or give up after five seconds
-      break
+      sleep 10m
+    endwhile
+  enddef
+
+  def GetCmd(output_term: any, args: list<string>)
+    var tty = output_term.tty
+    var protoname = this.proto.name
+
+    return GetGccCmd(protoname, tty, args)
+  enddef
+
+  def GetGccCmd(protoname: string, tty: number, args: list<string>)
+    var cmd = ["gdb"]
+    cmd += ['-quiet']
+    cmd += ['-iex', 'set pagination off']
+    cmd += ['-iex', 'set mi-async on']
+
+    if protoname == "mi2" && has("win32")
+      cmd += ['--interpreter=mi2']
+    else
+      cmd += ['-tty', tty]
     endif
-    sleep 10m
-  endwhile
-endfunction
+    cmd += args
 
-function s:GetCmd(self, oterm, args) abort
-  let l:tty = a:oterm.tty
-  let l:protoname = a:self.proto.name
+    return cmd
+  enddef
 
-  return s:GetGccCmd(l:protoname, l:tty, a:args)
-endfunction
-
-function s:GetGccCmd(protoname, tty, args) abort
-  let l:cmd = ["gdb"]
-  let l:cmd += ['-quiet']
-  let l:cmd += ['-iex', 'set pagination off']
-  let l:cmd += ['-iex', 'set mi-async on']
-
-  if a:protoname == "mi2" && has("win32")
-    let l:cmd += ['--interpreter=mi2']
-  else
-    let l:cmd += ['-tty', a:tty]
-  endif
-  let l:cmd += a:args
-
-  return l:cmd
-endfunction
-
-function s:Dispose(self) abort
-endfunction
+  def Dispose()
+  enddef
+endclass

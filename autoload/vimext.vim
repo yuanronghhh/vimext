@@ -172,3 +172,41 @@ def GetTabInfo(winid: number)
   var tabnr = winfo[0]["tabnr"]
   return gettabinfo(tabnr)
 enddef
+
+const NullRepl = 'XXXNULLXXX'
+export def DecodeFilePath(quotedText: string)
+  var msg = substitute(quotedText, "\\", "/", "g")
+  var msg = substitute(msg, "//", "/", "g")
+  var msg = substitute(msg, "\"", "", "g")
+
+  return msg
+enddef
+
+export def DecodeMessage(quotedText: string, literal: bool)
+  if quotedText[0] != '"'
+    call vimext#logger#Error('DecodeMessage(): missing quote in ' . quotedText)
+    return
+  endif
+
+  var msg = quotedText
+        \ ->substitute('^"\|[^\\]\zs".*', '', 'g')
+        \ ->substitute('\\"', '"', 'g')
+        "\ multi-byte characters arrive in octal form
+        "\ NULL-values must be kept encoded as those break the string otherwise
+        \ ->substitute('\\000', NullRepl, 'g')
+        \ ->substitute('\\\o\o\o', {-> eval('"' .. submatch(0) .. '"')}, 'g')
+        "\ Note: GDB docs also mention hex encodings - the translations below work
+        "\       but we keep them out for performance-reasons until we actually see
+        "\       those in mi-returns
+        "\ \ ->substitute('\\0x\(\x\x\)', {-> eval('"\x' .. submatch(1) .. '"')}, 'g')
+        "\ \ ->substitute('\\0x00', NullRepl, 'g')
+        \ ->substitute('\\\\', '\', 'g')
+        \ ->substitute(NullRepl, '\\000', 'g')
+  if !literal
+    return msg
+          \ ->substitute('\\t', "\t", 'g')
+          \ ->substitute('\\n', '', 'g')
+  else
+    return msg
+  endif
+enddef

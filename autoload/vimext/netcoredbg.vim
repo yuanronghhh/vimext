@@ -1,28 +1,23 @@
 vim9script
 
-function vimext#netcoredbg#Create(proto) abort
-  let l:self = {
-        \ "proto": a:proto,
-        \ "name": "netcoredbg",
-        \ "GetCmd": function("s:GetCmd"),
-        \ "SetConfig": function("s:SetConfig"),
-        \ "Dispose": function("s:Dispose")
-        \ }
+export class NetCoreDbg
+  def new(proto: any)
+    this.proto = proto
+    this.name = "netcoredbg"
+    this.GetCmd = function("GetCmd")
+  enddef
 
-  return l:self
-endfunction
+  def SetConfig(prompt: any, proto: any)
+    call prompt.Send(prompt, proto.Set . " " . "just-my-code 1")
+  enddef
 
-function s:SetConfig(self, prompt, proto) abort
-  call a:prompt.Send(a:prompt, a:proto.Set . " " . "just-my-code 1")
-  "call a:prompt.Send(a:prompt, a:proto.Set . " " . "step-filtering 1")
-endfunction
+  def GetCmd(param: any)
+    var cmd = ["netcoredbg"]
+    cmd += ["--interpreter=" . self.proto.name]
+    cmd += ["--", "dotnet"]
+    return cmd
+  enddef
 
-function s:GetCmd(self, param) abort
-  let l:cmd = ["netcoredbg"]
-  let l:cmd += ["--interpreter=" . a:self.proto.name]
-  let l:cmd += ["--", "dotnet"]
-  return l:cmd
-endfunction
-
-function s:Dispose(self) abort
-endfunction
+  def Dispose()
+  enddef
+endclass
