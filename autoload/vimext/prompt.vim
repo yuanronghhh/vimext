@@ -2,8 +2,10 @@ vim9script
 
 import "./buffer.vim" as Buffer
 import "./logger.vim" as Logger
+import "./termbase.vim" as TermBase
 
-export class Prompt
+
+export class Prompt extends TermBase.TermBase
   this.name = name
   this.mode = mode
   this.channel = v:null

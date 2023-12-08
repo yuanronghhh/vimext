@@ -29,7 +29,7 @@ def NewTermManager(dbg: any, funcs: dict<any>): any
   var term_m: any = v:null
 
   if has("win32")
-    term_m = Prompt.Manager.new(funcs)
+    term_m = Prompt.PromptManager.new(funcs)
   else
     term_m = Term.Manager.new(funcs)
   endif
@@ -92,6 +92,7 @@ export class Manager
           \ }
 
     term_m = NewTermManager(dbg, funcs)
+
     this.cmd_term = Term.ToManager(term_m).NewProg()
 
     call win_execute(empty_win, "close")
