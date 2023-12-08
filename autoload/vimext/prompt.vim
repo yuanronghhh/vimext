@@ -143,3 +143,11 @@ export class Manager
   def Dispose()
   enddef
 endclass
+
+export def ToTerm(o: Prompt): Prompt
+  return o
+enddef
+
+export def ToManager(o: Manager): Manager
+  return o
+enddef

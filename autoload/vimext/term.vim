@@ -100,7 +100,7 @@ def NewDbgTerm(cmd: string, out_func: any, exit_func: any)
 enddef
 
 # term
-export class TermManager
+export class Manager
   this.HandleExit: any = v:null
   this.HandleInput: any = v:null
   this.HandleOutput: any = v:null
@@ -149,3 +149,11 @@ export class TermManager
   def Dispose()
   enddef
 endclass
+
+export def ToTerm(o: Term): Term
+  return o
+enddef
+
+export def ToManager(o: Manager): Manager
+  return o
+enddef

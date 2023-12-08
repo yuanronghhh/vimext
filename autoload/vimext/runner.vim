@@ -9,7 +9,6 @@ import "./prompt.vim" as Prompt
 import "./breakpoint.vim" as BreakPoint
 import "./term.vim" as Term
 
-var self = v:null
 
 export class Runner
   this.gdb_cfg = v:null
@@ -42,6 +41,7 @@ def NewTermManager(dbg: any, funcs: dict<any>): any
   return term_m
 enddef
 
+var self: any = v:null
 export class Manager
   this.proto: any = v:null
   this.dbg: any = v:null
@@ -92,7 +92,7 @@ export class Manager
           \ }
 
     term_m = NewTermManager(dbg, funcs)
-    this.cmd_term = term_m.NewProg()
+    this.cmd_term = Term.ToManager(term_m).NewProg()
 
     call win_execute(empty_win, "close")
 
@@ -409,3 +409,11 @@ export class Manager
     endif
   enddef
 endclass
+
+export def ToRunner(o: Runner): Runner
+  return o
+enddef
+
+export def ToManager(o: Manager): Manager
+  return o
+enddef
