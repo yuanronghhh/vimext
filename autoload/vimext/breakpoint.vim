@@ -1,134 +1,138 @@
 vim9script
 
-let s:breaks = {}
+import "../vimext.vim" as VimExt
+import "./sign.vim" as Sign
+import "./logger.vim" as Logger
 
-function vimext#breakpoint#Parse(args)
-  if a:args is v:null
+var breaks = {}
+
+export def Parse(args: list<string>)
+  if args is v:null
     return v:null
   endif
 
-  let l:info = [0, 0, 0]
+  var info = [0, 0, 0]
   " type=1,fname,lnum
   " type=2,func_name
 
-  let l:nameIdx = matchlist(a:args, '^\([^:]\+\):\(\d\+\)$')
-  if len(l:nameIdx) > 0
-    let l:info[0] = 1
-    let l:info[1] = vimext#debug#DecodeMessage('"' . l:nameIdx[1] . '"')
-    let l:info[2] = l:nameIdx[2]
+  var nameIdx = matchlist(args, '^\([^:]\+\):\(\d\+\)$')
+  if len(nameIdx) > 0
+    var info[0] = 1
+    var info[1] = VimExt.DecodeMessage('"' . nameIdx[1] . '"')
+    var info[2] = nameIdx[2]
 
-    return l:info
+    return info
   endif
 
-  if a:args =~ '^\(\d\+\)$'
-    let l:info[0] = 1
-    let l:info[1] = v:null
-    let l:info[2] = a:args
-    return l:info
+  if args =~ '^\(\d\+\)$'
+    var info[0] = 1
+    var info[1] = v:null
+    var info[2] = args
+    return info
   endif
 
-  if a:args =~ '^\(\w\+\)'
-    let l:info[0] = 2
-    let l:info[1] = a:args
-    return l:info
+  if args =~ '^\(\w\+\)'
+    var info[0] = 2
+    var info[1] = args
+    return info
   endif
 
   return v:null
-endfunction
+enddef
 
-function vimext#breakpoint#DeleteID(id)
-  let l:brk = get(s:breaks, a:id, v:null)
-  if l:brk is v:null
+export def DeleteID(id: number)
+  var brk = get(breaks, id, v:null)
+  if brk is v:null
     return
   endif
 
-  return vimext#breakpoint#DeleteN(a:id)
-endfunction
+  return DeleteN(id)
+enddef
 
-function vimext#breakpoint#DeleteN(id)
-  call remove(s:breaks, a:id)
+export def DeleteN(id: number)
+  call remove(breaks, id)
 
-  let l:signs = vimext#sign#GetByBreakID(a:id)
-  for l:sign in l:signs
-    call vimext#sign#Dispose(l:sign)
+  var signs = Sign.GetByBreakID(id)
+  for sign in signs
+    call Sign.Dispose(sign)
   endfor
-endfunction
+enddef
 
-function vimext#breakpoint#Delete(brk)
-  if a:brk is v:null
+export def Delete(brk: any)
+  if brk is v:null
     return
   endif
 
-  call vimext#breakpoint#DeleteID(a:brk[1])
-endfunction
+  call DeleteID(brk[1])
+enddef
 
-function vimext#breakpoint#Get(fname, lnum)
-  for l:brk in values(s:breaks)
-    if l:brk[7] == a:fname && l:brk[8] == a:lnum
-      return l:brk
+export def Get(fname: string, lnum: number)
+  for brk in values(breaks)
+    if brk[7] == fname && brk[8] == lnum
+      return brk
     endif
   endfor
 
   return v:null
-endfunction
+enddef
 
-function vimext#breakpoint#Add(brk)
-  let l:winid = win_getid()
-  if a:brk[0] != 4
-    call vimext#logger#Warning("break brk not correct")
+export def Add(brk: any)
+  var winid = win_getid()
+  if brk[0] != 4
+    call Logger.Warning("break brk not correct")
     return
   endif
 
-  if has_key(s:breaks, a:brk[1])
+  if has_key(breaks, brk[1])
     return
   endif
 
-  let s:breaks[a:brk[1]] = a:brk
-  let l:sign = vimext#sign#New(l:winid, a:brk[1], a:brk[1], 1)
-  if l:sign isnot v:null
-    call vimext#sign#Place(l:sign, a:brk[7], a:brk[8])
+  var breaks[brk[1]] = brk
+  var sign = Sign.Sign.New(winid, brk[1], brk[1], 1)
+  if sign isnot v:null
+    call Sign.Place(sign, brk[7], brk[8])
   endif
 
-endfunction
+enddef
 
-function s:SetBrks() abort
-  let l:fname = expand('<afile>:p')
-  let l:winid = win_getid()
+export def SetBrks()
+  var fname = expand('<afile>:p')
+  var winid = win_getid()
 
-  for l:brk in values(s:breaks)
-    if l:brk[7] != l:fname
+  for brk in values(breaks)
+    if brk[7] != fname
       continue
     endif
 
-    let l:signs = vimext#sign#GetByBreakID(l:brk[1])
-    for l:sign in l:signs
-      call vimext#sign#Place(l:sign, l:brk[7], l:brk[8])
+    var signs = Sign.GetByBreakID(brk[1])
+    for sign in signs
+      call Sign.Place(sign, brk[7], brk[8])
     endfor
   endfor
-endfunction
+enddef
 
-function s:DeleteBrks() abort
-  let l:fname = expand('<afile>:p')
+export def DeleteBrks()
+  var fname = expand('<afile>:p')
 
-  for l:brk in values(s:breaks)
-    if l:brk[7] != l:fname
+  for brk in values(breaks)
+    if brk[7] != fname
       continue
     endif
 
-    let l:signs = vimext#sign#GetByBreakID(l:brk[1])
-    for l:sign in l:signs
-      call vimext#sign#UnPlace(l:sign)
+    var signs = Sign.GetByBreakID(brk[1])
+    for sign in signs
+      call Sign.UnPlace(sign)
     endfor
   endfor
-endfunction
+enddef
 
-function vimext#breakpoint#Init()
+export def Init()
   hi default dbgBreakpoint term=reverse ctermbg=red guibg=red
   hi default dbgBreakpointDisabled term=reverse ctermbg=gray guibg=gray
 
-  au BufRead * call s:SetBrks()
-  au BufUnload * call s:DeleteBrks()
-endfunction
+  au BufRead * call SetBrks()
+  au BufUnload * call DeleteBrks()
+enddef
 
-function vimext#breakpoint#DeInit()
-endfunction
+export def DeInit()
+enddef

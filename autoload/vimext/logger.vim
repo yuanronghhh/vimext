@@ -1,7 +1,7 @@
 vim9script
 
 export def Warning(msg: any)
-  if g:vimext_debug != 1
+  if !g:vimext_debug
     return
   endif
 
@@ -11,17 +11,15 @@ export def Warning(msg: any)
 enddef
 
 export def Error(msg: any)
-  if g:vimext_debug != 1
+  if !g:vimext_debug
     return
   endif
 
-  echohl ErrorMsg
-  echoerr '[error] ' .. string(msg)
-  echohl None
+  throw '[error] ' .. string(msg)
 enddef
 
 export def Info(msg: any)
-  if g:vimext_debug != 1
+  if !g:vimext_debug
     return
   endif
 

@@ -1,8 +1,7 @@
 vim9script
 
-var self = v:null
-
 import "./logger.vim" as Logger
+
 
 class Term
   def new(cmd: string, opts: dict<any>)
@@ -73,7 +72,7 @@ class Term
 endclass
 
 def NewDbgTerm(cmd: string, out_func: any, exit_func: any)
-  var cmd_term = New("NONE", {
+  var cmd_term = Term.new("NONE", {
         \ 'term_name': 'cmd hidden term',
         \ 'out_cb': out_func,
         \ 'hidden': 1,
@@ -83,7 +82,7 @@ def NewDbgTerm(cmd: string, out_func: any, exit_func: any)
     return v:null
   endif
 
-  var dbg_term = New(cmd, {
+  var dbg_term = Term.new(cmd, {
         \ 'term_finish': 'close',
         \ 'exit_cb': exit_func,
         \ })
@@ -100,51 +99,52 @@ def NewDbgTerm(cmd: string, out_func: any, exit_func: any)
   return cmd_term
 enddef
 
-def NewDbg(cmd: string)
-  return NewDbgTerm(cmd,
-        \ function("TermOut"),
-        \ function("TermExit")
-        \ )
-enddef
-
-def NewProg()
-  " start buffer
-  var term = New("NONE", {
-        \ 'term_name': 'term debugger',
-        \ 'vertical': 1,
-        \ })
-  if term is v:null
-    call Logger.Error('Failed to start debugger term')
-    return v:null
-  endif
-
-  return  term
-enddef
-
-def TermOut(channel: channel, data: string)
-  var msgs = split(data, "\r\n")
-
-  for msg in msgs
-    call self.HandleOutput(channel, msg)
-  endfor
-enddef
-
 # term
-class TermManager
+export class TermManager
+  this.HandleExit: any = v:null
+  this.HandleInput: any = v:null
+  this.HandleOutput: any = v:null
+  this.HandleInterrupt: any = v:null
+
   def new(param: dict<any>)
-    this.term_pid = 0
-    this.NewProg = function("NewProg")
-    this.NewDbg = function("NewDbg")
     this.HandleExit = get(param, "HandleExit", v:null)
     this.HandleInput = get(param, "HandleInput", v:null)
     this.HandleOutput = get(param, "HandleOutput", v:null)
-
-    self = this
   enddef
 
   def TermExit(job: job, status: number)
     call this.HandleExit(job, status)
   enddef
+
+  static def NewDbg(cmd: string)
+    return NewDbgTerm(cmd, {
+          \ function("TermOut"),
+          \ function("TermExit")
+          \ })
+  enddef
+
+  def NewProg()
+    " start buffer
+    var term = Term.new("NONE", {
+          \ 'term_name': 'term debugger',
+          \ 'vertical': 1,
+          \ })
+    if term is v:null
+      call Logger.Error('Failed to start debugger term')
+      return v:null
+    endif
+
+    return  term
+  enddef
+
+  def TermOut(channel: channel, data: string)
+    var msgs = split(data, "\r\n")
+
+    for msg in msgs
+      call this.HandleOutput(channel, msg)
+    endfor
+  enddef
+
 
   def Dispose()
   enddef

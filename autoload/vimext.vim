@@ -5,7 +5,7 @@ import "../plugin/python.vim" as Python
 
 var is_fullscreen = 0
 g:vimext_python = 0
-g:vimext_debug = 1
+g:vimext_debug = v:true
 g:vimext_c_api = 0
 
 export def Init()

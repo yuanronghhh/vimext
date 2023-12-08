@@ -1,12 +1,11 @@
 vim9script
 
 export class GccDbg
+  this.proto: any = v:null
+  this.name = "gdb"
+
   def new(proto: any)
     this.proto = proto
-    this.name = "gdb"
-    this.GetCmd = function("GetCmd")
-    this.SetConfig = function("SetConfig")
-    this.Dispose = function("Dispose")
   enddef
 
   def SetConfig(prompt: any, proto: any)

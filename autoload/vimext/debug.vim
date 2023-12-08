@@ -38,16 +38,12 @@ def StartDebug(bang: number, ...args: list<string>)
     pargs = args[1 : ]
   endif
 
-  try
-    var runner = Runner.Manager.new(lang, pargs)
-    if runner is v:null
-      return
-    endif
+  var rmanager = Runner.Manager.new(lang, pargs)
+  if rmanager == v:null
+    return
+  endif
 
-    call Runner.Run(pargs)
-  catch /.*/
-    echo v:throwpoint
-  endtry
+  # call rmanager.Run(pargs)
 enddef
 
 export def Init()

@@ -1,10 +1,12 @@
 vim9script
 
 export class NetCoreDbg
+  this.proto: any = v:null
+  this.name = "netcoredbg"
+
   def new(proto: any)
     this.proto = proto
     this.name = "netcoredbg"
-    this.GetCmd = function("GetCmd")
   enddef
 
   def SetConfig(prompt: any, proto: any)

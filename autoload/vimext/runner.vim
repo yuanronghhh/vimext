@@ -1,18 +1,19 @@
 vim9script
 
-import "./bridge.vim" as Bridge
 import "./logger.vim" as Logger
 import "./sign.vim" as Sign
 import "./proto.vim" as Proto
 import "./gccdbg.vim" as GccDbg
 import "./netcoredbg.vim" as NetCoreDbg
+import "./prompt.vim" as Prompt
+import "./breakpoint.vim" as BreakPoint
+import "./term.vim" as Term
 
 var self = v:null
 
 export class Runner
   this.gdb_cfg = v:null
   this.proto = v:null
-  this.bridge = v:null
   this.dbg = dbg
   this.dbg_term = v:null
   this.cmd_term = v:null
@@ -25,85 +26,97 @@ export class Runner
   enddef
 endclass
 
+def NewTermManager(dbg: any, funcs: dict<any>): any
+  var term_m: any = v:null
+
+  if has("win32")
+    term_m = Prompt.Manager.new(funcs)
+  else
+    term_m = Term.Manager.new(funcs)
+  endif
+
+  if !has('terminal')
+    call Logger.Error("+terminal not enabled in vim")
+  endif
+
+  return term_m
+enddef
+
 export class Manager
-  this.proto = v:null
-  this.dbg = v:null
-  this.bridge = v:null
-  this.dbg_term = v:null
-  this.cmd_term = v:null
-  this.source_viewer = v:null
-  this.asm_viewer = v:null
+  this.proto: any = v:null
+  this.dbg: any = v:null
+  this.dbg_term: any = v:null
+  this.cmd_term: any = v:null
+  this.source_viewer: any = v:null
+  this.asm_viewer: any = v:null
 
   def new(lang: string, args: list<string>)
     var bridge: any = v:null
     var proto: any = v:null
     var dbg: any = v:null
+    var term_m: any = v:null
 
     if self != v:null
       call Logger.Error("call not start two debugger")
-      return
     endif
 
-    Logger.Error(lang)
-    # if lang == "csharp"
-    #   proto = Proto.MIProto.new("mi")
-    #   dbg = NetCoreDbg.NetCoreDbg.new(proto)
-    # elseif lang == "c"
-    #   proto = Proto.MIProto.new("mi2")
-    #   dbg = GccDbg.GccDbg.new(proto)
-    # else
-    #   call Logger.Error("not correct language")
-    #   return
-    # endif
+    if lang == "csharp"
+      proto = Proto.MIProto.new("mi")
+      dbg = NetCoreDbg.NetCoreDbg.new(proto)
+    elseif lang == "c"
+      proto = Proto.MIProto.new("mi2")
+      dbg = GccDbg.GccDbg.new(proto)
+    else
+      call Logger.Error("not correct language")
+    endif
 
-    # if dbg is v:null || proto is v:null
-    #   call Logger.Error("dbg or proto not create successful in Runner.Manager")
-    #   return
-    # endif
-    # this.proto = proto
-    # this.dbg = dbg
+    if dbg == v:null || proto == v:null
+      call Logger.Error("dbg or proto not create successful in Runner")
+    endif
 
-    # var funcs = {
-    #       \ 'HandleExit': function("PromptExit"),
-    #       \ "HandleInput": function("PromptInput"),
-    #       \ 'HandleOutput': function("PromptOut")
-    #       \ }
+    this.proto = proto
+    this.dbg = dbg
 
-    # call Sign.Init()
+    call Sign.Init()
 
-    # if exists('#User#DbgDebugStartPre')
-    #   doauto <nomodeline> User DbgDebugStartPre
-    # endif
-    # var empty_win = win_getid()
+    if exists('#User#DbgDebugStartPre')
+      doauto <nomodeline> User DbgDebugStartPre
+    endif
 
-    # var bridge = Bridge.Create(dbg, funcs)
-    # var this.bridge = bridge
+    var empty_win = win_getid()
 
-    # var cmd_term = bridge.NewProg()
-    # var this.cmd_term = cmd_term
+    var funcs = {
+          \ 'HandleExit': this.PromptExit,
+          \ "HandleInput": this.PromptInput,
+          \ 'HandleOutput': this.PromptOut
+          \ }
 
-    # call win_execute(empty_win, "close")
+    term_m = NewTermManager(dbg, funcs)
+    this.cmd_term = term_m.NewProg()
 
-    # var cmd = dbg.GetCmd(this.dbg, cmd_term, args)
-    # var dbg_term = bridge.NewDbg(bridge, cmd)
-    # var this.dbg_term = dbg_term
+    call win_execute(empty_win, "close")
 
-    # call dbg.SetConfig(dbg, dbg_term, proto)
-    # call BreakPoint.Init()
+    var cmd = dbg.GetCmd(this.dbg, this.cmd_term, args)
+    var dbg_term = term_m.NewDbg(cmd)
 
-    # if exists('#User#DbgDebugStartPost')
-    #   doauto <nomodeline> User DbgDebugStartPost
-    # endif
+    this.dbg_term = dbg_term
+
+    call dbg.SetConfig(dbg, dbg_term, proto)
+    call BreakPoint.Init()
+
+    if exists('#User#DbgDebugStartPost')
+      doauto <nomodeline> User DbgDebugStartPost
+    endif
   enddef
 
   def Call(cmd: string, args: list<string>)
-    if self is v:null
+    if self == v:null
       return
     endif
 
     var term = this.dbg_term
 
-    if args is v:null
+    if args == v:null
       call term.Send(term, cmd)
     else
       call term.Send(term, cmd . " " . args)
@@ -111,19 +124,18 @@ export class Manager
   enddef
 
   def Dispose()
-    call this.bridge.Dispose(this.bridge)
     call this.proto.Dispose(this.proto)
     call this.dbg.Dispose(this.dbg)
 
     call Sign.DeInit()
     call BreakPoint.DeInit()
 
-    if this.source_viewer isnot v:null
+    if this.source_viewer != v:null
       call this.source_viewer.Dispose(this.source_viewer)
       unvar this.source_viewer
     endif
 
-    if this.asm_viewer isnot v:null
+    if this.asm_viewer != v:null
       call this.asm_viewer.Dispose(this.asm_viewer)
       unvar this.asm_viewer
     endif
@@ -140,9 +152,9 @@ export class Manager
   enddef
 
   def Asm()
-    if self is v:null
-          \ || this.proto is v:null
-          \ || this.dbg is v:null
+    if self == v:null
+          \ || this.proto == v:null
+          \ || this.dbg == v:null
       return
     endif
 
@@ -151,11 +163,11 @@ export class Manager
       return
     endif
 
-    if this.source_viewer is v:null
+    if this.source_viewer == v:null
       return
     endif
 
-    if this.asm_viewer isnot v:null
+    if this.asm_viewer != v:null
       call vimext#viewer#Show(this.asm_viewer)
       call this.SetAsmEnv(this.asm_viewer)
     else
@@ -168,7 +180,7 @@ export class Manager
   enddef
 
   def Source()
-    if this.source_viewer is v:null
+    if this.source_viewer == v:null
       return
     endif
 
@@ -176,24 +188,24 @@ export class Manager
   enddef
 
   def Run(args: list<string>)
-    var start = Proto.GetStart(this.proto)
-    if start is v:null
-      return
-    endif
+    # var start = this.proto.GetStart(this.proto)
+    # if start == v:null
+    #   return
+    # endif
 
-    if args isnot v:null
-      if this.dbg.name == "gdb"
-      else
-        var args = vimext#debug#DecodeFilePath(a:args)
-        if args[0] != "\""
-          var args = "\"" . args . "\""
-        endif
+    # if args != v:null
+    #   if this.dbg.name == "gdb"
+    #   else
+    #     var args = vimext#debug#DecodeFilePath(args)
+    #     if args[0] != "\""
+    #       var args = "\"" . args . "\""
+    #     endif
 
-        call Call(this.proto.Arguments, args)
-      endif
-    endif
+    #     call Call(this.proto.Arguments, args)
+    #   endif
+    # endif
 
-    call Call(this.proto.Start, v:null)
+    # call Call(this.proto.Start, v:null)
   enddef
 
   def Attach(pid: number)
@@ -228,8 +240,8 @@ export class Manager
   enddef
 
   def Break(args: list<string>)
-    var info = BreakPoint.Parse(a:args)
-    if info is v:null
+    var info = BreakPoint.Parse(args)
+    if info == v:null
       return
     endif
 
@@ -237,7 +249,7 @@ export class Manager
       var info[1] = this.GetSouceWinPath(this)
 
       var brk = BreakPoint.Get(info[1], info[2])
-      if brk isnot v:null
+      if brk != v:null
         call BreakPoint.Delete(brk)
         call Call(this.proto.Clear, brk[1])
       else
@@ -286,8 +298,8 @@ export class Manager
   enddef
 
   def DeleteBreakPointByFName(fname: string, lnum: number)
-    var brk = BreakPoint.Get(a:fname, lnum)
-    if brk is v:null
+    var brk = BreakPoint.Get(fname, lnum)
+    if brk == v:null
       call Call(this.proto.Break, fname . ":" . lnum)
     else
       call BreakPoint.Delete(brk)
@@ -295,7 +307,7 @@ export class Manager
   enddef
 
   def SetAsmEnv(viewer: any)
-    call vimext#viewer#Go(a:viewer)
+    call vimext#viewer#Go(viewer)
     :setlocal nowrap
     :setlocal number
     :setlocal noswapfile
@@ -314,7 +326,7 @@ export class Manager
   enddef
 
   def LoadSource(fname: string, lnum: number)
-    if this.source_viewer is v:null
+    if this.source_viewer == v:null
       var dbg_win = this.dbg_term.GetWinID(this.dbg_term)
 
       let this.source_viewer = vimext#viewer#CreateFileMode("source", 1, dbg_win, 31)
@@ -334,8 +346,8 @@ export class Manager
   enddef
 
   def PrintOutput(msg: string)
-    var msg = vimext#proto#ProcessMsg(a:msg)
-    if msg is v:null
+    var msg = vimext#proto#ProcessMsg(msg)
+    if msg == v:null
       return
     endif
 
@@ -353,12 +365,12 @@ export class Manager
   enddef
 
   def PromptOut(channe: channel, msg: string)
-    if self is v:null
+    if self == v:null
       return
     endif
 
-    var info = this.proto.ProcessOutput(a:msg)
-    if info is v:null
+    var info = this.proto.ProcessOutput(msg)
+    if info == v:null
       return
     endif
 

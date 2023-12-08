@@ -3,23 +3,18 @@ vim9script
 import "./buffer.vim" as Buffer
 import "./logger.vim" as Logger
 
-var self = v:null
+export class Prompt
+  this.name = name
+  this.mode = mode
+  this.channel = v:null
+  this.job = v:null
+  this.buf = v:null
+  this.tty = v:null
+  this.winid = v:null
 
-class Prompt
   def new(mode: number, name: string, cmd: string, opts: dict<any>)
     this.name = name
     this.mode = mode
-    this.channel = v:null
-    this.job = v:null
-    this.buf = v:null
-    this.tty = v:null
-    this.winid = v:null
-    this.GetWinID = function("GetWinID")
-    this.Go = function("Go")
-    this.Send = function("Send")
-    this.Print = function("Print")
-    this.Running = function("Running")
-    this.Destroy = function("Destroy")
 
     var winid = 0
     if mode == 1
@@ -98,67 +93,53 @@ class Prompt
   enddef
 endclass
 
-export def NewDbg(cmd: string)
-  var term = Prompt.new(1, "Dbg", cmd, {
-        \ "exit_cb": this.HandleExit,
-        \ "out_cb": this.HandleOutput,
-        \ "callback": this.HandleInput,
-        \ "interrupt": this.Interrupt,
-        \ })
+export class Manager
+  this.pid = 0
+  this.HandleExit: any = v:null
+  this.HandleInput: any = v:null
+  this.HandleOutput: any = v:null
+  this.HandleInterrupt: any = v:null
 
-  return term
-enddef
+  def new(funcs: dict<any>)
+    this.HandleExit = get(funcs, "HandleExit", v:null)
+    this.HandleInput = get(funcs, "HandleInput", v:null)
+    this.HandleOutput = get(funcs, "HandleOutput", v:null)
 
-def NewProg()
-  var term = Prompt.new(2, "Output", v:null, {})
-  if term is v:null
-    call Logger.Error('Failed to start debugger term')
-    return v:null
-  endif
+    if !has('terminal')
+      call Logger.Error("+terminal not enabled in vim")
+    endif
+  enddef
 
-  return term
-enddef
+  def PromptInterrupt()
+    if this.pid == 0
+      call Logger.Error('Cannot interrupt, not find a process ID')
+      return
+    endif
 
-# prompt
-def PromptInterrupt()
-  # call Logger.Info("PromptInterrupt")
+    call debugbreak(this.pid)
+  enddef
 
-  if pid == 0
-    call Logger.Error('Cannot interrupt, not find a process ID')
-    return
-  endif
+  def NewDbg(cmd: string): any
+    var term = Prompt.new(1, "Dbg", cmd, {
+          \ "exit_cb": this.HandleExit,
+          \ "out_cb": this.HandleOutput,
+          \ "callback": this.HandleInput,
+          \ "interrupt": this.HandleInterrupt,
+          \ })
 
-  call debugbreak(prompt_pid)
-enddef
+    return term
+  enddef
 
-# prompt manager
-export def Create(funcs: dict<any>)
-  var self = {
-        \ "prompt_pid": 0,
-        \ "prompt_buf": 0,
-        \ "NewDbg": function("NewDbg"),
-        \ "NewProg": function("NewProg"),
-        \ "Interrupt": function("PromptInterrupt"),
-        \ 'HandleExit': get(funcs, "HandleExit", v:null),
-        \ "HandleInput": get(funcs, "HandleInput", v:null),
-        \ 'HandleOutput': get(funcs, "HandleOutput", v:null),
-        \ "Dispose": function("Dispose"),
-        \ }
+  def NewProg(): any
+    var term = Prompt.new(2, "Output", v:null, {})
+    if term == v:null
+      call Logger.Error('Failed to start debugger term')
+      return v:null
+    endif
 
-  if !has('terminal')
-    call Logger.Error("+terminal not enabled in vim")
-    return v:null
-  endif
+    return term
+  enddef
 
-  var self = self
-
-  return self
-enddef
-
-def Dispose()
-  if self is v:null
-    return
-  endif
-
-  var self = v:null
-enddef
+  def Dispose()
+  enddef
+endclass

@@ -6,9 +6,9 @@ var pc_id = 30
 def Highlight(init: bool, old: string, new: string)
   var default = init ? 'default ' : ''
   if new ==# 'light' && old !=# 'light'
-    exe "hi " . default . "DbgPC term=reverse ctermbg=lightblue guibg=lightblue"
+    exe "hi "  ..  default  ..  "DbgPC term=reverse ctermbg=lightblue guibg=lightblue"
   elseif new ==# 'dark' && old !=# 'dark'
-    exe "hi " . default . "DbgPC term=reverse ctermbg=darkblue guibg=darkblue"
+    exe "hi "  ..  default  ..  "DbgPC term=reverse ctermbg=darkblue guibg=darkblue"
   endif
 enddef
 
