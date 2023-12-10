@@ -100,20 +100,26 @@ def process_cmd(cmd, cwd):
     cmdstr = "%s" % (" ".join(cmd))
     rcmd = ["bash", "-c", cmdstr]
 
-    proc = subprocess.Popen(rcmd,
-                            cwd=cwd,
-                            shell=False,
-                            stdin=subprocess.PIPE,
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE,
-                            startupinfo=st,
-                            universal_newlines=True)
+    try:
+        proc = subprocess.Popen(rcmd,
+                                cwd=cwd,
+                                shell=False,
+                                stdin=subprocess.PIPE,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE,
+                                startupinfo=st,
+                                universal_newlines=True)
 
-    stdout, stderr = proc.communicate()
-    if stderr:
-        logging.error("[err] %s" % (stderr))
+        stdout, stderr = proc.communicate()
+        if stderr:
+            logging.error("[err] %s" % (stderr))
 
-    return stdout, stderr
+        return stdout, stderr
+
+    except Exception as err:
+        logging.error("[err] %s" % (err))
+
+    return None, "execute failed: %s" % (rcmd)
 
 
 def get_vs_info():
@@ -145,7 +151,7 @@ def get_gcc_info():
 
     cmd = ["gcc", "--version"]
 
-    out, err = process_cmd(cmd, getcwd())
+    out, err = process_cmd(cmd, None)
     if err:
         return None
 
@@ -199,13 +205,13 @@ def get_system_header_path():
         if vinc:
             incs.append(vinc)
     elif platform.system() == "Linux":
-        ver = get_gcc_ver()
-        if not ver:
-            return []
-
         p = os.getenv("PREFIX")
         if not p:
             p = "/usr"
+
+        ver = get_gcc_ver()
+        if not ver:
+            return []
 
         incs = ["include/x86_64-linux-gnu",
                 "include",
