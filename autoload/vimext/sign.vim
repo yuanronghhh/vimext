@@ -82,7 +82,7 @@ function vimext#sign#Place(self, filename, linenum) abort
 endfunction
 
 function vimext#sign#Get(id) abort
-  let l:idx = indexof(s:signs, { v -> v:val.id is a:id})
+  let l:idx = index(s:signs, { v -> v:val.id is a:id})
   if l:idx == -1
     return v:null
   endif
@@ -126,6 +126,6 @@ endfunction
 function vimext#sign#Dispose(self) abort
   call vimext#sign#UnPlace(a:self)
   call sign_undefine('DbgSign'.a:self.id)
-  let l:idx = indexof(s:signs, { v -> v:val is a:self})
+  let l:idx = index(s:signs, { v -> v:val is a:self})
   call remove(s:signs, l:idx)
 endfunction
