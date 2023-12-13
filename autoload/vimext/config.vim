@@ -80,12 +80,9 @@ function vimext#config#LoadConfig()
     let $PATH .= ";".$vimext_home."/tools"
     set clipboard=unnamed
     set guifont=Fixedsys
-    set makeencoding=gbk
     let g:python_cmd="python"
     let $BashBin=vimext#config#GetWinBash()
-    set errorformat^=
-          \%f(%l\\,%c):\ %t%*[^\ ]\ C%n:\ %m,
-          \%f(%l\\,%c):\ fatal\ \ %t%*[^\ ]\ C%n:\ %m
+    set errorformat^=%f(%l\\,%c):\ %t%*[^\ ]\ C%n:\ %m,%f(%l\\,%c):\ fatal\ \ %t%*[^\ ]\ C%n:\ %m
 
     if len($BashBin) > 0
       set shell=$BashBin
@@ -143,13 +140,8 @@ function vimext#config#LoadConfig()
   let g:ale_c_parse_compile_commands = 1
   let g:ale_c_build_dir = 'build'
   let g:ale_linters_explicit = 1
-  let g:ale_linters =
-        \ {
-        \ 'cs': ['mcs'],
-        \ 'c': ['clangtidy', 'gcc', 'clangd'],
-        \ 'python': ['pylint']
-        \ }
-  let l:plugins = ["vim-multiple-cursors", "supertab", "nerdtree", "TagBar"]
+  let g:ale_linters = { 'cs': ['mcs'], 'c': ['clangtidy', 'gcc', 'clangd'], 'python': ['pylint'] }
+  let l:plugins = ["vim-multiple-cursors", "nerdtree", "supertab", "TagBar"]
   call vimext#plugins#LoadPlugin(l:plugins)
   call vimext#debug#Init()
 
@@ -163,7 +155,7 @@ function vimext#config#LoadConfig()
   autocmd! BufRead *.vue,*.cshtml :set ft=html
   autocmd! BufRead *.vala :set ft=cpp
   autocmd! BufRead *.cst :set ft=javascript
-  autocmd! BufRead *.cs :set shiftwidth=4
+  autocmd! BufEnter *.c,*.cs ++once :call vimext#SetEditor()
 
   tnoremap <C-j> <C-W>gt
   tnoremap <C-k> <C-W>gT

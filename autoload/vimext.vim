@@ -170,3 +170,17 @@ function vimext#GetTabInfo(winid)
   let l:tabnr = l:winfo[0]["tabnr"]
   return gettabinfo(l:tabnr)
 endfunction
+
+function vimext#SetEditor() abort
+  let l:cext = expand("%:e")
+
+  if cext == "c" || cext == "cpp"
+    if has("win32")
+      :set makeencoding=gbk
+    endif
+  elseif cext == "cs"
+    :set shiftwidth=4
+  else
+
+  endif
+endfunction
