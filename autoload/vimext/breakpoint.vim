@@ -44,12 +44,12 @@ function vimext#breakpoint#DeleteID(id)
 endfunction
 
 function vimext#breakpoint#DeleteN(id)
-  call remove(s:breaks, a:id)
 
   let l:signs = vimext#sign#GetByBreakID(a:id)
   for l:sign in l:signs
     call vimext#sign#Dispose(l:sign)
   endfor
+  call remove(s:breaks, a:id)
 endfunction
 
 function vimext#breakpoint#Delete(brk)
