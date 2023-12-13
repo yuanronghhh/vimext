@@ -81,8 +81,20 @@ function vimext#sign#Place(self, filename, linenum) abort
 
 endfunction
 
+function vimext#sign#Index(data, id) abort
+  let l:idx = -1
+
+  for l:i in range(len(a:data))
+    if a:data[l:i].id == a:id
+      return l:i
+    endif
+  endfor
+
+  return l:idx
+endfunction
+
 function vimext#sign#Get(id) abort
-  let l:idx = index(s:signs, { v -> v:val.id is a:id})
+  let l:idx = vimext#sign#Index(s:signs, a:id)
   if l:idx == -1
     return v:null
   endif
@@ -124,8 +136,13 @@ function vimext#sign#New(winid, breakid, text, enable) abort
 endfunction
 
 function vimext#sign#Dispose(self) abort
-  call vimext#sign#UnPlace(a:self)
+  let l:idx = vimext#sign#Index(s:signs, a:self.id)
+  if l:idx > -1
+    call remove(s:signs, l:idx)
+  else
+    call vimext#logger#Warning("sign id remove failed: " . string(a:self))
+  endif
+
   call sign_undefine('DbgSign'.a:self.id)
-  let l:idx = index(s:signs, { v -> v:val is a:self})
-  call remove(s:signs, l:idx)
+  call vimext#sign#UnPlace(a:self)
 endfunction
