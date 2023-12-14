@@ -26,13 +26,7 @@ function vimext#buffer#Wipe(buf) abort
 endfunction
 
 function vimext#buffer#WipeWin(win) abort
-  let l:was_buf = winbufnr(a:win)
-  if l:was_buf == -1
-    call vimext#logger#Warning("Wipe winid not exists: ". a:win)
-    return
-  endif
-
-  call vimext#buffer#Wipe(l:was_buf)
+  call win_execute(a:win, "close")
 endfunction
 
 function vimext#buffer#GetNameByWinID(wid) abort
