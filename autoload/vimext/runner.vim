@@ -325,6 +325,7 @@ function vimext#runner#PrintError(self, msg) abort
 endfunction
 
 function s:PromptOut(channel, msg) abort
+  " call vimext#logger#Info(a:msg)
   if s:self is v:null
     return
   endif

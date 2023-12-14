@@ -65,20 +65,20 @@ function vimext#sign#UnPlace(self) abort
 endfunction
 
 function vimext#sign#Place(self, filename, linenum) abort
-  let a:self.filename = a:filename
-  let a:self.linenum = a:linenum
-
-  if bufexists(a:filename)
-    call sign_place(a:self.id,
-          \ "DbgDebug",
-          \ "DbgSign" . a:self.id,
-          \ a:filename,
-          \ {
-          \ "lnum": a:linenum,
-          \ "priority": 110
-          \ })
+  if !bufexists(a:filename)
+    return
   endif
 
+  let a:self.linenum = a:linenum
+  let a:self.filename = a:filename
+  call sign_place(a:self.id,
+        \ "DbgDebug",
+        \ "DbgSign" . a:self.id,
+        \ a:filename,
+        \ {
+        \ "lnum": a:linenum,
+        \ "priority": 110
+        \ })
 endfunction
 
 function vimext#sign#Index(data, id) abort

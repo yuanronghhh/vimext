@@ -1,10 +1,20 @@
 const s:NullRepl = 'XXXNULLXXX'
-function vimext#debug#DecodeFilePath(quotedText)
-  let l:msg = substitute(a:quotedText, "\\", "/", "g")
-  let l:msg = substitute(l:msg, "//", "/", "g")
-  let l:msg = substitute(l:msg, "\"", "", "g")
+function vimext#debug#DecodeFilePath(filepath)
+  let msg = substitute(a:filepath, "\\", "/", "g")
+  let msg = substitute(msg, "//", "/", "g")
+  let msg = substitute(msg, "\"", "", "g")
 
-  return l:msg
+  if msg =~ '^/\(\w\)/'
+    let nameIdx = matchlist(msg, '^/\(\w\)/')
+    if len(nameIdx) == 0
+      return msg
+    endif
+
+    let disk = toupper(nameIdx[1])
+    let msg = disk .. ":" .. msg[2:]
+  endif
+
+  return msg
 endfunction
 
 function vimext#debug#DecodeMessage(quotedText, literal)
@@ -64,18 +74,18 @@ function s:StartDebug(bang, ...) abort
   if len(a:000) < 1
     return
   endif
-  let l:lang = a:000[0]
+  let lang = a:000[0]
 
-  let l:pargs = ""
+  let pargs = ""
   if len(a:000) > 1
-    let l:pargs = a:000[1:]
+    let pargs = a:000[1:]
   endif
 
-  if vimext#runner#Create(l:lang, l:pargs) is v:null
+  if vimext#runner#Create(lang, pargs) is v:null
     return
   endif
 
-  call vimext#runner#Run(l:pargs)
+  call vimext#runner#Run(pargs)
 endfunction
 
 function vimext#debug#Init() abort
