@@ -12,7 +12,7 @@ function vimext#breakpoint#Parse(args)
   let l:nameIdx = matchlist(a:args, '^\([^:]\+\):\(\d\+\)$')
   if len(l:nameIdx) > 0
     let l:info[0] = 1
-    let l:info[1] = vimext#debug#DecodeMessage('"' . l:nameIdx[1] . '"')
+    let l:info[1] = l:nameIdx[1]
     let l:info[2] = l:nameIdx[2]
 
     return l:info

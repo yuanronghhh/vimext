@@ -3,17 +3,17 @@ function vimext#buffer#WinExists(winid) abort
     return v:false
   endif
 
-  let l:bnr = winbufnr(a:winid)
-  return bufexists(l:bnr)
+  let bnr = winbufnr(a:winid)
+  return bufexists(bnr)
 endfunction
 
 function vimext#buffer#ClearWin(winid) abort
-  let l:cwin = win_getid()
+  let cwin = win_getid()
 
   call win_gotoid(a:winid)
   silent! %delete _
 
-  call win_gotoid(l:cwin)
+  call win_gotoid(cwin)
 endfunction
 
 function vimext#buffer#Wipe(buf) abort
@@ -30,8 +30,8 @@ function vimext#buffer#WipeWin(win) abort
 endfunction
 
 function vimext#buffer#GetNameByWinID(wid) abort
-  let l:bnr = winbufnr(a:wid)
-  return substitute(bufname(l:bnr), "\\", "/", "g")
+  let bnr = winbufnr(a:wid)
+  return substitute(bufname(bnr), "\\", "/", "g")
 endfunction
 
 function vimext#buffer#NewWindowLayout(name, dr) abort
@@ -52,15 +52,15 @@ function vimext#buffer#NewWindowLayout(name, dr) abort
 endfunction
 
 function vimext#buffer#NewWindow(name, dr, basewin) abort
-  let l:cwin = win_getid()
+  let cwin = win_getid()
 
   if a:basewin isnot v:null
     call win_gotoid(a:basewin)
   endif
 
-  let l:nwin = vimext#buffer#NewWindowLayout(a:name, a:dr)
+  let nwin = vimext#buffer#NewWindowLayout(a:name, a:dr)
 
-  call win_gotoid(l:cwin)
+  call win_gotoid(cwin)
 
-  return l:nwin
+  return nwin
 endfunction

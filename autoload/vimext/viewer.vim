@@ -50,6 +50,10 @@ function vimext#viewer#GetWinID(self) abort
   return a:self.winid
 endfunction
 
+function vimext#viewer#GetBuff(self) abort
+  return a:self.buff
+endfunction
+
 function vimext#viewer#Go(self) abort
   return win_gotoid(a:self.winid)
 endfunction

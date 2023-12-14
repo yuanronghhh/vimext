@@ -2,8 +2,8 @@ let s:gdb_cfg = g:vim_session."/gdb.cfg"
 let s:self = v:null
 
 function vimext#runner#Create(lang, args) abort
-  let l:bridge = v:null
-  let l:proto = v:null
+  let bridge = v:null
+  let proto = v:null
 
   if s:self isnot v:null
     call vimext#logger#Warning("call not start two debugger")
@@ -11,20 +11,20 @@ function vimext#runner#Create(lang, args) abort
   endif
 
   if a:lang == "csharp"
-    let l:proto = vimext#proto#Create("mi")
-    let l:dbg = vimext#netcoredbg#Create(l:proto)
+    let proto = vimext#proto#Create("mi")
+    let dbg = vimext#netcoredbg#Create(proto)
   elseif a:lang == "c"
-    let l:proto = vimext#proto#Create("mi2")
-    let l:dbg = vimext#gccdbg#Create(l:proto)
+    let proto = vimext#proto#Create("mi2")
+    let dbg = vimext#gccdbg#Create(proto)
   else
     return v:null
   endif
 
-  if l:dbg is v:null || l:proto is v:null
+  if dbg is v:null || proto is v:null
     return v:null
   endif
 
-  let l:funcs = {
+  let funcs = {
         \ 'HandleExit': function("s:PromptExit"),
         \ "HandleInput": function("s:PromptInput"),
         \ 'HandleOutput': function("s:PromptOut")
@@ -32,42 +32,42 @@ function vimext#runner#Create(lang, args) abort
 
   call vimext#sign#Init()
 
-  let l:self = {
-        \ "proto": l:proto,
+  let self = {
+        \ "proto": proto,
         \ "bridge": v:null,
-        \ "dbg": l:dbg,
+        \ "dbg": dbg,
         \ "dbg_term": v:null,
         \ "cmd_term": v:null,
         \ "source_viewer": v:null,
         \ "asm_viewer": v:null
         \ }
-  let s:self = l:self
+  let s:self = self
 
   if exists('#User#DbgDebugStartPre')
     doauto <nomodeline> User DbgDebugStartPre
   endif
-  let l:empty_win = win_getid()
+  let empty_win = win_getid()
 
-  let l:bridge = vimext#bridge#Create(l:dbg, l:funcs)
-  let l:self.bridge = l:bridge
+  let bridge = vimext#bridge#Create(dbg, funcs)
+  let self.bridge = bridge
 
-  let l:cmd_term = l:bridge.NewProg()
-  let l:self.cmd_term = l:cmd_term
+  let cmd_term = bridge.NewProg()
+  let self.cmd_term = cmd_term
 
-  call win_execute(l:empty_win, "close")
+  call win_execute(empty_win, "close")
 
-  let l:cmd = l:dbg.GetCmd(l:self.dbg, l:cmd_term, a:args)
-  let l:dbg_term = l:bridge.NewDbg(l:bridge, l:cmd)
-  let l:self.dbg_term = l:dbg_term
+  let cmd = dbg.GetCmd(self.dbg, cmd_term, a:args)
+  let dbg_term = bridge.NewDbg(bridge, cmd)
+  let self.dbg_term = dbg_term
 
-  call l:dbg.SetConfig(l:dbg, l:dbg_term, l:proto)
+  call dbg.SetConfig(dbg, dbg_term, proto)
   call vimext#breakpoint#Init()
 
   if exists('#User#DbgDebugStartPost')
     doauto <nomodeline> User DbgDebugStartPost
   endif
 
-  return l:self
+  return self
 endfunction
 
 function s:Call(cmd, args) abort
@@ -75,12 +75,12 @@ function s:Call(cmd, args) abort
     return
   endif
 
-  let l:term = s:self.dbg_term
+  let term = s:self.dbg_term
 
   if a:args is v:null
-    call l:term.Send(l:term, a:cmd)
+    call term.Send(term, a:cmd)
   else
-    call l:term.Send(l:term, a:cmd . " " . a:args)
+    call term.Send(term, a:cmd . " " . a:args)
   endif
 endfunction
 
@@ -109,8 +109,13 @@ function vimext#runner#Dispose() abort
 endfunction
 
 function vimext#runner#GetSouceWinPath(self) abort
-  let l:winid = vimext#viewer#GetWinID(a:self.source_viewer)
-  return vimext#buffer#GetNameByWinID(l:winid)
+  let winid = vimext#viewer#GetWinID(a:self.source_viewer)
+  return vimext#buffer#GetNameByWinID(winid)
+endfunction
+
+function vimext#runner#GetSouceName(self) abort
+  let buff = vimext#viewer#GetBuff(a:self.source_viewer)
+  return fnamemodify(buff, ":t")
 endfunction
 
 function vimext#runner#Asm() abort
@@ -133,8 +138,8 @@ function vimext#runner#Asm() abort
     call vimext#viewer#Show(s:self.asm_viewer)
     call vimext#runner#SetAsmEnv(s:self.asm_viewer)
   else
-    let l:source_win = vimext#viewer#GetWinID(s:self.source_viewer)
-    let l:asm_viewer = vimext#runner#CreateAsmViewer(l:source_win)
+    let source_win = vimext#viewer#GetWinID(s:self.source_viewer)
+    let asm_viewer = vimext#runner#CreateAsmViewer(source_win)
     let s:self.asm_viewer = asm_viewer
   endif
 
@@ -150,20 +155,20 @@ function vimext#runner#Source() abort
 endfunction
 
 function vimext#runner#Run(args) abort
-  let l:start = vimext#proto#GetStart(s:self.proto)
-  if l:start is v:null
+  let start = vimext#proto#GetStart(s:self.proto)
+  if start is v:null
     return
   endif
 
   if a:args isnot v:null
     if s:self.dbg.name == "gdb"
     else
-      let l:args = vimext#debug#DecodeFilePath(a:args)
-      if l:args[0] != "\""
-        let l:args = "\"" . l:args . "\""
+      let args = vimext#debug#DecodeFilePath(a:args)
+      if args[0] != "\""
+        let args = "\"" . args . "\""
       endif
 
-      call s:Call(s:self.proto.Arguments, l:args)
+      call s:Call(s:self.proto.Arguments, args)
     endif
   endif
 endfunction
@@ -200,23 +205,24 @@ function vimext#runner#Continue() abort
 endfunction
 
 function vimext#runner#Break(args) abort
-  let l:info = vimext#breakpoint#Parse(a:args)
-  if l:info is v:null
+  let info = vimext#breakpoint#Parse(a:args)
+  if info is v:null
     return
   endif
 
-  if l:info[0] == 1
-    let l:info[1] = vimext#runner#GetSouceWinPath(s:self)
+  if info[0] == 1
+    let info[1] = vimext#runner#GetSouceWinPath(s:self)
+    let fname = fnamemodify(info[1], ":t")
 
-    let l:brk = vimext#breakpoint#Get(l:info[1], l:info[2])
-    if l:brk isnot v:null
-      call vimext#breakpoint#Delete(l:brk)
-      call s:Call(s:self.proto.Clear, l:brk[1])
+    let brk = vimext#breakpoint#Get(info[1], info[2])
+    if brk isnot v:null
+      call vimext#breakpoint#Delete(brk)
+      call s:Call(s:self.proto.Clear, brk[1])
     else
-      call s:DeleteBreakPointByFName(s:self, l:info[1], l:info[2])
+      call s:Call(s:self.proto.Break, fname .. ":" .. info[2])
     endif
   else
-    call s:Call(s:self.proto.Break, l:info[1])
+    call s:Call(s:self.proto.Break, info[1])
   endif
 endfunction
 
@@ -235,34 +241,34 @@ function s:PromptExit(job, status) abort
 endfunction
 
 function s:PromptInput(cmd) abort
-  let l:info = s:self.proto.ProcessInput(s:self.proto, a:cmd)
+  let info = s:self.proto.ProcessInput(s:self.proto, a:cmd)
 
-  if l:info[0] == 1 " quit
+  if info[0] == 1 " quit
     if exists('#User#DbgDebugStopPre')
       doauto <nomodeline> User DbgDebugStopPre
     endif
   endif
 
-  if l:info[0] == 6
-    call vimext#runner#Break(l:info[2])
+  if info[0] == 6
+    call vimext#runner#Break(info[2])
     return v:null
   endif
 
-  if l:info[0] == 7 " print
-    if l:info[3] != 0
-      call s:Call(l:info[3], v:null)
+  if info[0] == 7 " print
+    if info[3] != 0
+      call s:Call(info[3], v:null)
     endif
   endif
 
-  call s:Call(l:info[1] . " " . l:info[2], v:null)
+  call s:Call(info[1] . " " . info[2], v:null)
 endfunction
 
 function s:DeleteBreakPointByFName(self, fname, lnum) abort
-  let l:brk = vimext#breakpoint#Get(a:fname, a:lnum)
-  if l:brk is v:null
+  let brk = vimext#breakpoint#Get(a:fname, a:lnum)
+  if brk is v:null
     call s:Call(a:self.proto.Break, a:fname . ":" . a:lnum)
   else
-    call vimext#breakpoint#Delete(l:brk)
+    call vimext#breakpoint#Delete(brk)
   endif
 endfunction
 
@@ -280,16 +286,16 @@ function vimext#runner#SetAsmEnv(viewer) abort
 endfunction
 
 function vimext#runner#CreateAsmViewer(basewin) abort
-  let l:viewer = vimext#viewer#CreateTextMode("asm", 3, a:basewin, 32)
-  call vimext#runner#SetAsmEnv(l:viewer)
-  return l:viewer
+  let viewer = vimext#viewer#CreateTextMode("asm", 3, a:basewin, 32)
+  call vimext#runner#SetAsmEnv(viewer)
+  return viewer
 endfunction
 
 function vimext#runner#LoadSource(self, fname, lnum) abort
   if a:self.source_viewer is v:null
-    let l:dbg_win = a:self.dbg_term.GetWinID(a:self.dbg_term)
+    let dbg_win = a:self.dbg_term.GetWinID(a:self.dbg_term)
 
-    let a:self.source_viewer = vimext#viewer#CreateFileMode("source", 1, l:dbg_win, 31)
+    let a:self.source_viewer = vimext#viewer#CreateFileMode("source", 1, dbg_win, 31)
     call vimext#viewer#Go(a:self.source_viewer)
     execute "wincmd H"
 
@@ -306,13 +312,13 @@ function vimext#runner#LoadSource(self, fname, lnum) abort
 endfunction
 
 function vimext#runner#PrintOutput(self, msg) abort
-  let l:msg = vimext#proto#ProcessMsg(a:msg)
-  if l:msg is v:null
+  let msg = vimext#proto#ProcessMsg(a:msg)
+  if msg is v:null
     return
   endif
 
-  let l:term = a:self.cmd_term
-  call l:term.Print(l:term, a:msg)
+  let term = a:self.cmd_term
+  call term.Print(term, a:msg)
 endfunction
 
 function vimext#runner#SaveBrks() abort
@@ -320,8 +326,8 @@ function vimext#runner#SaveBrks() abort
 endfunction
 
 function vimext#runner#PrintError(self, msg) abort
-  let l:term = a:self.cmd_term
-  call l:term.Print(l:term, a:msg)
+  let term = a:self.cmd_term
+  call term.Print(term, a:msg)
 endfunction
 
 function s:PromptOut(channel, msg) abort
@@ -330,10 +336,10 @@ function s:PromptOut(channel, msg) abort
     return
   endif
 
-  let l:proto = s:self.proto
+  let proto = s:self.proto
 
-  let l:info = l:proto.ProcessOutput(a:msg)
-  if l:info is v:null
+  let info = proto.ProcessOutput(a:msg)
+  if info is v:null
     return
   endif
 
@@ -342,7 +348,7 @@ function s:PromptOut(channel, msg) abort
 
   elseif info[0] == 4 " user set breakpoint
     "brkid,type,disp,enable,func,file,fullname,line
-    call vimext#breakpoint#Add(l:info[0:8])
+    call vimext#breakpoint#Add(info[0:8])
 
   elseif info[0] == 5 " exit end stepping range
     call vimext#runner#LoadSource(s:self, info[1], info[2])
@@ -357,16 +363,16 @@ function s:PromptOut(channel, msg) abort
     call vimext#runner#PrintError(s:self, info[1])
 
   elseif info[0] == 11 " breakpoint delete
-    call vimext#breakpoint#DeleteID(l:info[1])
+    call vimext#breakpoint#DeleteID(info[1])
 
   elseif info[0] == 14 " asm break
-    call vimext#viewer#SetSignText(s:self.asm_viewer, l:info[1])
+    call vimext#viewer#SetSignText(s:self.asm_viewer, info[1])
 
   elseif info[0] == 15 " asm start
-    call vimext#viewer#SetUniqueID(s:self.asm_viewer, l:info[1])
+    call vimext#viewer#SetUniqueID(s:self.asm_viewer, info[1])
 
   elseif info[0] == 16 " asm end
-    call vimext#viewer#SetLines(s:self.asm_viewer, l:info[1])
+    call vimext#viewer#SetLines(s:self.asm_viewer, info[1])
     call vimext#viewer#LoadByLines(s:self.asm_viewer)
   else
   endif
