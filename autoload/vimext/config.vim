@@ -141,7 +141,7 @@ function vimext#config#LoadConfig()
   let g:ale_c_build_dir = 'build'
   let g:ale_linters_explicit = 1
   let g:ale_linters = { 'cs': ['mcs'], 'c': ['clangtidy', 'gcc', 'clangd'], 'python': ['pylint'] }
-  let l:plugins = ["vim-multiple-cursors", "nerdtree", "supertab", "TagBar"]
+  let l:plugins = ["emmet-vim", "vim-multiple-cursors", "nerdtree", "supertab", "TagBar"]
   call vimext#plugins#LoadPlugin(l:plugins)
   call vimext#debug#Init()
 
@@ -155,7 +155,7 @@ function vimext#config#LoadConfig()
   autocmd! BufRead *.vue,*.cshtml :set ft=html
   autocmd! BufRead *.vala :set ft=cpp
   autocmd! BufRead *.cst :set ft=javascript
-  autocmd! BufEnter *.c,*.cs ++once :call vimext#SetEditor()
+  autocmd! BufRead *.c,*.cs ++once :call vimext#SetEditor()
 
   tnoremap <C-j> <C-W>gt
   tnoremap <C-k> <C-W>gT
