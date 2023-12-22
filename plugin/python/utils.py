@@ -151,7 +151,7 @@ def get_gcc_info():
 
     cmd = ["gcc", "--version"]
 
-    out, err = process_cmd(cmd, getcwd(), False, True, None)
+    out, err = process_cmd(cmd, getcwd(), False, True, True)
     if err:
         return None
 
