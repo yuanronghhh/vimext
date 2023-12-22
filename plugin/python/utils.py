@@ -88,8 +88,10 @@ def get_extension(file_path):
 def getcwd():
     return os.getcwd().replace("\\", "/")
 
-def process_cmd(cmd, cwd, use_shell = False):
+def process_cmd(cmd, cwd = None, use_shell = False, silent = True):
     """ Abstract subprocess """
+    if not cwd:
+        cwd = os.getcwd()
 
     st = None
     if platform.system() == "Windows":
@@ -97,20 +99,28 @@ def process_cmd(cmd, cwd, use_shell = False):
         st.dwFlags = subprocess.STARTF_USESHOWWINDOW
         st.wShowWindow = subprocess.SW_HIDE
 
-    proc = subprocess.Popen(cmd,
-                            cwd=cwd,
-                            shell=use_shell,
-                            stdin=subprocess.PIPE,
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE,
-                            startupinfo=st,
-                            universal_newlines=True)
+    if silent:
+        p = subprocess.Popen(cmd,
+                             cwd=cwd,
+                             shell=use_shell,
+                             stdin=subprocess.PIPE,
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE,
+                             startupinfo=st,
+                             universal_newlines=True)
+    else:
+        p = subprocess.Popen(cmd,
+                             cwd=cwd,
+                             shell=use_shell,
+                             startupinfo=st,
+                             universal_newlines=True)
 
-    stdout, stderr = proc.communicate()
+    stdout, stderr = p.communicate()
     if stderr:
-        logging.error("[err] %s,%s" % (cmd, stderr))
+        logging.error("[err] %s" % (stderr))
 
-    return stdout, stderr
+    return (stdout, stderr)
+
 
 
 def get_vs_info():
@@ -126,7 +136,7 @@ def get_vs_info():
     cmd = [vscmd,
            "-format","json"]
 
-    out, err = process_cmd(cmd, getcwd(), True)
+    out, err = process_cmd(cmd, getcwd(), False)
     if err:
         return None
 
