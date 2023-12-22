@@ -19,7 +19,7 @@ function s:GetLine(self, lnum) abort
 endfunction
 
 function vimext#term#New(cmd, opts) abort
-  let l:info = {
+  let info = {
         \ "buf": v:null,
         \ "job": v:null,
         \ "tty": v:null,
@@ -33,20 +33,20 @@ function vimext#term#New(cmd, opts) abort
         \ "Destroy": function("s:Destroy")
         \ }
 
-  let l:info.buf = term_start(a:cmd, a:opts)
-  if l:info.buf == 0
+  let info.buf = term_start(a:cmd, a:opts)
+  if info.buf == 0
     return v:null
   endif
 
-  let l:winid = win_getid()
-  let l:info.job = term_getjob(l:info.buf)
-  if l:info.job is v:null
+  let winid = win_getid()
+  let info.job = term_getjob(info.buf)
+  if info.job is v:null
     return v:null
   endif
-  let l:info.tty = job_info(l:info.job)['tty_out']
-  let l:info.winid = l:winid
+  let info.tty = job_info(info.job)['tty_out']
+  let info.winid = winid
 
-  return l:info
+  return info
 endfunction
 
 function s:Send(self, cmd) abort
@@ -63,31 +63,31 @@ function s:Running(self) abort
 endfunction
 
 function s:NewDbgTerm(cmd, out_func, exit_func) abort
-  let l:cmd_term = vimext#term#New("NONE", {
+  let cmd_term = vimext#term#New("NONE", {
         \ 'term_name': 'cmd hidden term',
         \ 'out_cb': a:out_func,
         \ 'hidden': 1,
         \ })
-  if l:cmd_term is v:null
+  if cmd_term is v:null
     call vimext#logger#Error('Failed to start cmd term')
     return v:null
   endif
 
-  let l:dbg_term = vimext#term#New(a:cmd, {
+  let dbg_term = vimext#term#New(a:cmd, {
         \ 'term_finish': 'close',
         \ 'exit_cb': a:exit_func,
         \ })
-  if l:dbg_term is v:null
+  if dbg_term is v:null
     call vimext#logger#Error('Failed to start dbg term')
     return v:null
   endif
 
   " cmd_term is hidden
-  let l:cmd_term.winid = l:dbg_term.winid
+  let cmd_term.winid = dbg_term.winid
 
-  call l:dbg_term.Send(l:dbg_term, 'server new-ui mi ' . l:cmd_term.tty)
+  call dbg_term.Send(dbg_term, 'server new-ui mi ' . cmd_term.tty)
 
-  return l:cmd_term
+  return cmd_term
 endfunction
 
 function s:NewDbg(self, cmd) abort
@@ -99,16 +99,16 @@ endfunction
 
 function s:NewProg() abort
   " start buffer
-  let l:term = vimext#term#New("NONE", {
+  let term = vimext#term#New("NONE", {
         \ 'term_name': 'term debugger',
         \ 'vertical': 1,
         \ })
-  if l:term is v:null
+  if term is v:null
     call vimext#logger#Error('Failed to start debugger term')
     return v:null
   endif
 
-  return  l:term
+  return  term
 endfunction
 
 function s:Print(self, msg) abort
@@ -117,10 +117,10 @@ endfunction
 "Term end
 
 function s:TermOut(channel, data) abort
-  let l:msgs = split(a:data, "\r\n")
+  let msgs = split(a:data, "\r\n")
 
-  for l:msg in l:msgs
-    call s:self.HandleOutput(a:channel, l:msg)
+  for msg in msgs
+    call s:self.HandleOutput(a:channel, msg)
   endfor
 endfunction
 
@@ -130,7 +130,7 @@ function s:TermExit(job, status) abort
 endfunction
 
 function vimext#term#Create(param) abort
-  let l:self = {
+  let self = {
         \ "term_pid": 0,
         \ "NewProg": function("s:NewProg"),
         \ "NewDbg": function("s:NewDbg"),
@@ -139,9 +139,9 @@ function vimext#term#Create(param) abort
         \ 'HandleOutput': get(a:param, "HandleOutput", v:null),
         \ "Dispose": function("s:Dispose"),
         \ }
-  let s:self = l:self
+  let s:self = self
 
-  return l:self
+  return self
 endfunction
 
 function s:Dispose(self) abort

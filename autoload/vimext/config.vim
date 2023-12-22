@@ -79,7 +79,10 @@ function vimext#config#LoadConfig()
   elseif has("win32")
     let $PATH .= ";".$vimext_home."/tools"
     set clipboard=unnamed
-    set guifont=Fixedsys
+
+    if !has("nvim")
+      set guifont=Fixedsys
+    endif
     let g:python_cmd="python"
     let $BashBin=vimext#config#GetWinBash()
     set errorformat^=%f(%l\\,%c):\ %t%*[^\ ]\ C%n:\ %m,%f(%l\\,%c):\ fatal\ \ %t%*[^\ ]\ C%n:\ %m
@@ -141,8 +144,8 @@ function vimext#config#LoadConfig()
   let g:ale_c_build_dir = 'build'
   let g:ale_linters_explicit = 1
   let g:ale_linters = { 'cs': ['mcs'], 'c': ['clangtidy', 'gcc', 'clangd'], 'python': ['pylint'] }
-  let l:plugins = ["vim-multiple-cursors", "emmet-vim", "nerdtree", "supertab", "tagbar", "hexmode"]
-  call vimext#plugins#LoadPlugin(l:plugins)
+  let plugins = ["vim-multiple-cursors", "emmet-vim", "nerdtree", "supertab", "tagbar", "hexmode"]
+  call vimext#plugins#LoadPlugin(plugins)
   call vimext#debug#Init()
 
   command! -nargs=? -complete=custom,vimext#session#SessionCompelete OpenSession :call vimext#session#OpenSession("<args>")
@@ -164,20 +167,20 @@ function vimext#config#LoadConfig()
 endfunction
 
 function vimext#config#GetWinBash()
-  let l:bpath = vimext#GetBinPath("bash.exe")
-  if len(l:bpath) == 0
+  let bpath = vimext#GetBinPath("bash.exe")
+  if len(bpath) == 0
     return ""
   endif
 
-  return shellescape(l:bpath)
+  return shellescape(bpath)
 endfunction
 
 function vimext#config#GitBash()
-  let l:cmd = "bash"
-  exec ":silent !start ".l:cmd
+  let cmd = "bash"
+  exec ":silent !start ".cmd
 endfunction
 
 function vimext#config#Edit()
-  let l:vimext_config = g:vim_plugin."/vimext/autoload/vimext/config.vim"
-  exec ":edit ".l:vimext_config
+  let vimext_config = g:vim_plugin."/vimext/autoload/vimext/config.vim"
+  exec ":edit ".vimext_config
 endfunction

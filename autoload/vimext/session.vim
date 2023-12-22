@@ -1,21 +1,21 @@
 let s:spath = "s.vim"
 
 function vimext#session#SaveSession(sfile) abort
-  let l:sfile = a:sfile
+  let sfile = a:sfile
   if strlen(a:sfile) == 0
-    let l:sfile = "s.vim"
+    let sfile = "s.vim"
   endif
 
-  if stridx(l:sfile, ".vim") == -1
-    let l:sfile = a:sfile.".vim"
+  if stridx(sfile, ".vim") == -1
+    let sfile = a:sfile.".vim"
   endif
 
   if winnr("$") > 1
     :NERDTreeClose
   endif
 
-  echo "mks! ".g:vim_session."/".l:sfile
-  exec "mks! ".g:vim_session."/".l:sfile
+  echo "mks! ".g:vim_session."/".sfile
+  exec "mks! ".g:vim_session."/".sfile
 endfunction
 
 function vimext#session#SessionCompelete(A,L,P) abort
@@ -25,19 +25,19 @@ function vimext#session#SessionCompelete(A,L,P) abort
 endfunction
 
 function vimext#session#OpenSession(sfile) abort
-  let l:sfile = a:sfile
+  let sfile = a:sfile
 
   if stridx(a:sfile, ".vim") == -1
-    let l:sfile = a:sfile.".vim"
+    let sfile = a:sfile.".vim"
   endif
 
   if strlen(a:sfile) == 0
-    let l:sfile = "s.vim"
+    let sfile = "s.vim"
   endif
 
-  let s:spath = l:sfile
-  echo "source ".g:vim_session."/".l:sfile
-  exec "source ".g:vim_session."/".l:sfile
+  let s:spath = sfile
+  echo "source ".g:vim_session."/".sfile
+  exec "source ".g:vim_session."/".sfile
   :NERDTreeFind
 endfunction
 

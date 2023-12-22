@@ -2,12 +2,12 @@ let s:self = v:null
 
 " bridge
 function s:BridgeCallback(cmd) abort
-  let l:cmd = s:self.HandleInput(a:cmd)
-  if l:cmd is v:null
+  let cmd = s:self.HandleInput(a:cmd)
+  if cmd is v:null
     return
   endif
 
-  call s:BridgeSend(s:self, l:cmd)
+  call s:BridgeSend(s:self, cmd)
 endfunction
 
 function s:BridgeInterrupt() abort
@@ -24,14 +24,14 @@ function vimext#bridge#Ref() abort
 endfunction
 
 function vimext#bridge#Create(dbg, funcs) abort
-  let l:self = v:null
+  let self = v:null
   if has("win32")
-    let l:self = vimext#prompt#Create(a:funcs)
+    let self = vimext#prompt#Create(a:funcs)
   else
-    let l:self = vimext#term#Create(a:funcs)
+    let self = vimext#term#Create(a:funcs)
   endif
 
-  if l:self is v:null
+  if self is v:null
     return v:null
   endif
 
@@ -40,7 +40,7 @@ function vimext#bridge#Create(dbg, funcs) abort
     return v:null
   endif
 
-  return l:self
+  return self
 endfunction
 
 function s:Dispose(self) abort

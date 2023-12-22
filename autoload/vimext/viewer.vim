@@ -1,5 +1,5 @@
 function vimext#viewer#Create(name, dr, basewin, sign_id, mode) abort
-  let l:self = {
+  let self = {
         \ "name": a:name,
         \ "mode": a:mode,
         \ "dr": a:dr,
@@ -16,21 +16,21 @@ function vimext#viewer#Create(name, dr, basewin, sign_id, mode) abort
         \ "Dispose": function("s:Dispose")
         \ }
 
-  call vimext#viewer#NewBuffer(l:self)
+  call vimext#viewer#NewBuffer(self)
 
-  return l:self
+  return self
 endfunction
 
 function vimext#viewer#NewBuffer(self) abort
-  let l:winid = vimext#buffer#NewWindow(a:self.name, a:self.dr, a:self.basewin)
+  let winid = vimext#buffer#NewWindow(a:self.name, a:self.dr, a:self.basewin)
 
   if a:self.mode == 1
     let a:self.buff = v:null
   else
-    let a:self.buff = winbufnr(l:winid)
+    let a:self.buff = winbufnr(winid)
   endif
 
-  let a:self.winid = l:winid
+  let a:self.winid = winid
   let a:self.unique_id = v:null
 endfunction
 
@@ -39,11 +39,11 @@ function vimext#viewer#CreateFileMode(name, dr, basewin, sign_id) abort
 endfunction
 
 function vimext#viewer#CreateTextMode(name, dr, basewin, sign_id) abort
-  let l:viewer = vimext#viewer#Create(a:name, a:dr, a:basewin, a:sign_id, 2)
+  let viewer = vimext#viewer#Create(a:name, a:dr, a:basewin, a:sign_id, 2)
 
-  let l:viewer.lines = []
+  let viewer.lines = []
 
-  return l:viewer
+  return viewer
 endfunction
 
 function vimext#viewer#GetWinID(self) abort
@@ -88,7 +88,7 @@ function vimext#viewer#LoadByFile(self, fname, lnum) abort
     return
   endif
 
-  let l:cwin = win_getid()
+  let cwin = win_getid()
   let a:self.fname = a:fname
   let a:self.lnum = a:lnum
 
@@ -104,23 +104,23 @@ function vimext#viewer#LoadByFile(self, fname, lnum) abort
 
   call vimext#viewer#SignByNum(a:self, a:lnum)
 
-  call win_gotoid(l:cwin)
+  call win_gotoid(cwin)
 endfunction
 
 " mode 2
 function vimext#viewer#SignByText(self, text) abort
-  let l:cwin = win_getid()
+  let cwin = win_getid()
 
   call win_gotoid(a:self.winid)
 
-  let l:lnum = search('^' . a:text)
-  if l:lnum == 0
+  let lnum = search('^' . a:text)
+  if lnum == 0
     return
   endif
 
-  call vimext#viewer#SignByNum(a:self, l:lnum)
+  call vimext#viewer#SignByNum(a:self, lnum)
 
-  call win_gotoid(l:cwin)
+  call win_gotoid(cwin)
 endfunction
 
 function vimext#viewer#SetLines(self, lines) abort
@@ -156,7 +156,7 @@ function vimext#viewer#SetSignText(self, text) abort
 endfunction
 
 function vimext#viewer#LoadByLines(self) abort
-  let l:cwin = win_getid()
+  let cwin = win_getid()
   call win_gotoid(a:self.winid)
 
   call insert(a:self.lines, a:self.unique_id . ":", 0)
@@ -166,7 +166,7 @@ function vimext#viewer#LoadByLines(self) abort
 
   call vimext#viewer#SignByText(a:self, a:self.sign_text)
 
-  call win_gotoid(l:cwin)
+  call win_gotoid(cwin)
 endfunction
 
 function vimext#viewer#IsShow(self) abort

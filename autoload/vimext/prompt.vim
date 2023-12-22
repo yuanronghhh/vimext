@@ -23,7 +23,7 @@ function s:Destroy(self) abort
 endfunction
 
 function vimext#prompt#New(mode, name, cmd, opts) abort
-  let l:self = {
+  let self = {
         \ "name": a:name,
         \ "mode": a:mode,
         \ "channel": v:null,
@@ -40,39 +40,39 @@ function vimext#prompt#New(mode, name, cmd, opts) abort
         \ }
 
   if a:mode == 1
-    let l:job = job_start(a:cmd, {
+    let job = job_start(a:cmd, {
           \ "exit_cb":  get(a:opts, "exit_cb", v:null),
           \ "out_cb": get(a:opts, "out_cb", v:null)
           \ })
-    if l:job is v:null
+    if job is v:null
       return v:null
     endif
 
-    let l:winid = vimext#buffer#NewWindow(a:name, 2, v:null)
-    call win_gotoid(l:winid)
+    let winid = vimext#buffer#NewWindow(a:name, 2, v:null)
+    call win_gotoid(winid)
 
-    let l:self.winid = l:winid
-    let l:self.buf = bufnr("%")
+    let self.winid = winid
+    let self.buf = bufnr("%")
 
-    let l:self.job = l:job
-    let l:self.channel = job_getchannel(l:job)
+    let self.job = job
+    let self.channel = job_getchannel(job)
 
     setlocal buftype=prompt
-    call prompt_setprompt(l:self.buf, '(gdb) ')
-    call prompt_setcallback(l:self.buf, get(a:opts, "callback", v:null))
-    call prompt_setinterrupt(l:self.buf, get(a:opts, "interrupt", v:null))
+    call prompt_setprompt(self.buf, '(gdb) ')
+    call prompt_setcallback(self.buf, get(a:opts, "callback", v:null))
+    call prompt_setinterrupt(self.buf, get(a:opts, "interrupt", v:null))
     startinsert
   elseif a:mode == 2
-    let l:winid = vimext#buffer#NewWindow(a:name, 1, v:null)
-    call win_gotoid(l:winid)
+    let winid = vimext#buffer#NewWindow(a:name, 1, v:null)
+    call win_gotoid(winid)
 
-    let l:self.winid = l:winid
-    let l:self.buf = bufnr('%')
+    let self.winid = winid
+    let self.buf = bufnr('%')
   else
     return v:null
   endif
 
-  return l:self
+  return self
 endfunction
 
 function s:Send(self, cmd) abort
@@ -92,33 +92,33 @@ function s:Running(self) abort
 endfunction
 
 function s:NewDbg(self, cmd) abort
-  let l:term = vimext#prompt#New(1, "Dbg", a:cmd, {
+  let term = vimext#prompt#New(1, "Dbg", a:cmd, {
         \ "exit_cb": a:self.HandleExit,
         \ "out_cb": a:self.HandleOutput,
         \ "callback": a:self.HandleInput,
         \ "interrupt": a:self.Interrupt,
         \ })
 
-  return l:term
+  return term
 endfunction
 
 function s:NewProg() abort
-  let l:term = vimext#prompt#New(2, "Output", v:null, {})
-  if l:term is v:null
+  let term = vimext#prompt#New(2, "Output", v:null, {})
+  if term is v:null
     call vimext#logger#Error('Failed to start debugger term')
     return v:null
   endif
 
-  return  l:term
+  return  term
 endfunction
 
 function s:Print(self, msg) abort
-  let l:cwin = win_getid()
+  let cwin = win_getid()
 
   call win_gotoid(a:self.winid)
   call append(line('$') - 1, a:msg)
 
-  call win_gotoid(l:cwin)
+  call win_gotoid(cwin)
 endfunction
 " term end"
 
@@ -136,7 +136,7 @@ endfunction
 
 " prompt manager
 function vimext#prompt#Create(funcs) abort
-  let l:self = {
+  let self = {
         \ "prompt_pid": 0,
         \ "prompt_buf": 0,
         \ "NewDbg": function("s:NewDbg"),
@@ -153,10 +153,10 @@ function vimext#prompt#Create(funcs) abort
     return v:null
   endif
 
-  let s:self = l:self
+  let s:self = self
   let s:parent = vimext#bridge#Ref()
 
-  return l:self
+  return self
 endfunction
 
 function s:Dispose(self) abort

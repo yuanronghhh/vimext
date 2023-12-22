@@ -32,8 +32,8 @@ function python#GetSystemHeaderPath()
     return ""
   endif
 
-  let l:ipath = py3eval("utils.get_system_header_str()")
-  return l:ipath
+  let ipath = py3eval("utils.get_system_header_str()")
+  return ipath
 endfunction
 
 function python#Operate(lnum)
@@ -80,17 +80,17 @@ function python#doc(word)
     return
   endif
 
-  let l:word = a:word
+  let word = a:word
 
-  if strlen(l:word) == 0
-    let l:line = getline(".")
-    let l:pre = l:line[:col(".") - 1]
-    let l:suf = l:line[col("."):]
-    let l:word = matchstr(pre, "[A-Za-z0-9_.]*$") . matchstr(suf, "^[A-Za-z0-9_]*")
+  if strlen(word) == 0
+    let line = getline(".")
+    let pre = line[:col(".") - 1]
+    let suf = line[col("."):]
+    let word = matchstr(pre, "[A-Za-z0-9_.]*$") . matchstr(suf, "^[A-Za-z0-9_]*")
   endif
 
   exe "botright 8new __doc__"
-  exec ":%!".g:python_cmd." -m pydoc ".l:word
+  exec ":%!".g:python_cmd." -m pydoc ".word
   pclose
   setlocal nomodified nomodifiable buftype=nofile bufhidden=delete noswapfile nowrap previewwindow filetype=rst
   redraw
@@ -109,8 +109,8 @@ function python#GetComment()
     return 0
   endif
 
-  let l:comment = py3eval("CommentParser.get_comment()")
-  call append(line('.')-1, l:comment)
+  let comment = py3eval("CommentParser.get_comment()")
+  call append(line('.')-1, comment)
 endfunction
 
 function python#GenGetter()
@@ -118,13 +118,13 @@ function python#GenGetter()
     return 0
   endif
 
-  let l:array = py3eval("GetterGenerator.gen_c_getter_setter()")
+  let array = py3eval("GetterGenerator.gen_c_getter_setter()")
 
-  if len(l:array) == 0
+  if len(array) == 0
     return 0
   endif
 
-  call append(line('.')-1, l:array)
+  call append(line('.')-1, array)
   call deletebufline('%', line('.'))
 endfunction
 

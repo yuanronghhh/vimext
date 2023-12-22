@@ -29,15 +29,15 @@ function vimext#sign#DeInit() abort
 endfunction
 
 function vimext#sign#GetByBreakID(breakid) abort
-  let l:v = []
+  let v = []
 
-  for l:sign in s:signs
-    if l:sign.breakid == a:breakid
-      call add(l:v, l:sign)
+  for sign in s:signs
+    if sign.breakid == a:breakid
+      call add(v, sign)
     endif
   endfor
 
-  return l:v
+  return v
 endfunction
 
 function vimext#sign#Line(pc_id, fname, lnum) abort
@@ -82,24 +82,24 @@ function vimext#sign#Place(self, filename, linenum) abort
 endfunction
 
 function vimext#sign#Index(data, id) abort
-  let l:idx = -1
+  let idx = -1
 
-  for l:i in range(len(a:data))
-    if a:data[l:i].id == a:id
-      return l:i
+  for i in range(len(a:data))
+    if a:data[i].id == a:id
+      return i
     endif
   endfor
 
-  return l:idx
+  return idx
 endfunction
 
 function vimext#sign#Get(id) abort
-  let l:idx = vimext#sign#Index(s:signs, a:id)
-  if l:idx == -1
+  let idx = vimext#sign#Index(s:signs, a:id)
+  if idx == -1
     return v:null
   endif
 
-  return s:signs[l:idx]
+  return s:signs[idx]
 endfunction
 
 function vimext#sign#New(winid, breakid, text, enable) abort
@@ -107,38 +107,38 @@ function vimext#sign#New(winid, breakid, text, enable) abort
     return v:null
   endif
 
-  let l:hiName = "dbgSignOn"
+  let hiName = "dbgSignOn"
   if a:enable == 0
-    let l:hiName = "dbgSignOff"
+    let hiName = "dbgSignOff"
   endif
-  let l:id = a:breakid
-  let l:osign = vimext#sign#Get(l:id)
-  if l:osign isnot v:null
-    call vimext#logger#Warning("sign id repeat: " . string(l:osign))
+  let id = a:breakid
+  let osign = vimext#sign#Get(id)
+  if osign isnot v:null
+    call vimext#logger#Warning("sign id repeat: " . string(osign))
     return v:null
   endif
 
-  let l:nsign = {
-        \ "id": l:id,
+  let nsign = {
+        \ "id": id,
         \ "winid": a:winid,
         \ "breakid": a:breakid,
         \ "filename": v:null,
         \ "linenum": 0,
         \ }
 
-  call sign_define('DbgSign'.l:id, {
+  call sign_define('DbgSign'.id, {
         \ "text": a:text,
-        \ "texthl": l:hiName})
+        \ "texthl": hiName})
 
-  call add(s:signs, l:nsign)
+  call add(s:signs, nsign)
 
-  return l:nsign
+  return nsign
 endfunction
 
 function vimext#sign#Dispose(self) abort
-  let l:idx = vimext#sign#Index(s:signs, a:self.id)
-  if l:idx > -1
-    call remove(s:signs, l:idx)
+  let idx = vimext#sign#Index(s:signs, a:self.id)
+  if idx > -1
+    call remove(s:signs, idx)
   else
     call vimext#logger#Warning("sign id remove failed: " . string(a:self))
   endif

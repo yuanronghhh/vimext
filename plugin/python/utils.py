@@ -88,7 +88,7 @@ def get_extension(file_path):
 def getcwd():
     return os.getcwd().replace("\\", "/")
 
-def process_cmd(cmd, cwd):
+def process_cmd(cmd, cwd, use_shell = False):
     """ Abstract subprocess """
 
     st = None
@@ -97,12 +97,9 @@ def process_cmd(cmd, cwd):
         st.dwFlags = subprocess.STARTF_USESHOWWINDOW
         st.wShowWindow = subprocess.SW_HIDE
 
-    cmdstr = "%s" % (" ".join(cmd))
-    rcmd = ["bash", "-c", cmdstr]
-
-    proc = subprocess.Popen(rcmd,
+    proc = subprocess.Popen(cmd,
                             cwd=cwd,
-                            shell=False,
+                            shell=use_shell,
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE,
@@ -111,7 +108,7 @@ def process_cmd(cmd, cwd):
 
     stdout, stderr = proc.communicate()
     if stderr:
-        logging.error("[err] %s" % (stderr))
+        logging.error("[err] %s,%s" % (cmd, stderr))
 
     return stdout, stderr
 
@@ -126,10 +123,10 @@ def get_vs_info():
     if not path.exists(vscmd):
         return
 
-    cmd = ["\"" + vscmd + "\"",
+    cmd = [vscmd,
            "-format","json"]
 
-    out, err = process_cmd(cmd, getcwd())
+    out, err = process_cmd(cmd, getcwd(), True)
     if err:
         return None
 

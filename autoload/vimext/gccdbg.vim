@@ -1,5 +1,5 @@
 function vimext#gccdbg#Create(proto) abort
-  let l:self = {
+  let self = {
         \ "proto": a:proto,
         \ "name": "gdb",
         \ "GetCmd": function("s:GetCmd"),
@@ -7,7 +7,7 @@ function vimext#gccdbg#Create(proto) abort
         \ "Dispose": function("s:Dispose")
         \ }
 
-  return l:self
+  return self
 endfunction
 
 function s:SetConfig(self, prompt, proto) abort
@@ -30,9 +30,9 @@ function vimext#gccdbg#FilterStart(term) abort
       return 0
     endif
 
-    for l:lnum in range(1, 200)
-      let l:lstr = a:term.GetLine(a:term, l:lnum)
-      if l:lstr =~ 'startupdone'
+    for lnum in range(1, 200)
+      let lstr = a:term.GetLine(a:term, lnum)
+      if lstr =~ 'startupdone'
         let try_count = 9999
         break
       endif
@@ -47,26 +47,26 @@ function vimext#gccdbg#FilterStart(term) abort
 endfunction
 
 function s:GetCmd(self, oterm, args) abort
-  let l:tty = a:oterm.tty
-  let l:protoname = a:self.proto.name
+  let tty = a:oterm.tty
+  let protoname = a:self.proto.name
 
-  return s:GetGccCmd(l:protoname, l:tty, a:args)
+  return s:GetGccCmd(protoname, tty, a:args)
 endfunction
 
 function s:GetGccCmd(protoname, tty, args) abort
-  let l:cmd = ["gdb"]
-  let l:cmd += ['-quiet']
-  let l:cmd += ['-iex', 'set pagination off']
-  let l:cmd += ['-iex', 'set mi-async on']
+  let cmd = ["gdb"]
+  let cmd += ['-quiet']
+  let cmd += ['-iex', 'set pagination off']
+  let cmd += ['-iex', 'set mi-async on']
 
   if a:protoname == "mi2" && has("win32")
-    let l:cmd += ['--interpreter=mi2']
+    let cmd += ['--interpreter=mi2']
   else
-    let l:cmd += ['-tty', a:tty]
+    let cmd += ['-tty', a:tty]
   endif
-  let l:cmd += a:args
+  let cmd += a:args
 
-  return l:cmd
+  return cmd
 endfunction
 
 function s:Dispose(self) abort

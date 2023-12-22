@@ -1,5 +1,5 @@
 function vimext#netcoredbg#Create(proto) abort
-  let l:self = {
+  let self = {
         \ "proto": a:proto,
         \ "name": "netcoredbg",
         \ "GetCmd": function("s:GetCmd"),
@@ -7,7 +7,7 @@ function vimext#netcoredbg#Create(proto) abort
         \ "Dispose": function("s:Dispose")
         \ }
 
-  return l:self
+  return self
 endfunction
 
 function s:SetConfig(self, prompt, proto) abort
@@ -16,10 +16,10 @@ function s:SetConfig(self, prompt, proto) abort
 endfunction
 
 function s:GetCmd(self, param) abort
-  let l:cmd = ["netcoredbg"]
-  let l:cmd += ["--interpreter=" . a:self.proto.name]
-  let l:cmd += ["--", "dotnet"]
-  return l:cmd
+  let cmd = ["netcoredbg"]
+  let cmd += ["--interpreter=" . a:self.proto.name]
+  let cmd += ["--", "dotnet"]
+  return cmd
 endfunction
 
 function s:Dispose(self) abort

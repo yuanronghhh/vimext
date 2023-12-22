@@ -1,29 +1,29 @@
 let g:vimext_c_plugins = []
 
 function vimext#plugins#LoadPlugin(plugins) abort
-  let l:ppath = ""
+  let ppath = ""
 
-  for l:p in a:plugins
-    if l:p[1] == ":" || l:p[0] == "/"
-      let l:ppath = l:p
+  for p in a:plugins
+    if p[1] == ":" || p[0] == "/"
+      let ppath = p
     else
-      let l:ppath = g:vim_plugin."/".l:p
+      let ppath = g:vim_plugin."/".p
     endif
 
-    exec "set rtp+=".l:ppath
+    exec "set rtp+=".ppath
   endfor
 endfunction
 
 function vimext#plugins#LoadCPlugin(plugins) abort
-  let l:ppath = ""
-  for l:p in a:plugins
-    if l:p[1] == ":" || l:p[0] == "/"
-      let l:ppath = l:p
+  let ppath = ""
+  for p in a:plugins
+    if p[1] == ":" || p[0] == "/"
+      let ppath = p
     else
-      let l:ppath = g:vim_plugin."/".l:p
+      let ppath = g:vim_plugin."/".p
     endif
 
-    add(g:vimext_c_plugins, l:ppath)
+    add(g:vimext_c_plugins, ppath)
   endfor
 endfunction
 
@@ -32,10 +32,10 @@ function vimext#plugins#CallCFunc(pindex, func_name, args) abort
     return '<None>'
   endif
 
-  let l:s = libcall(g:vimext_c_plugins[pindex], func_name, args)
-  if !l:s
+  let s = libcall(g:vimext_c_plugins[pindex], func_name, args)
+  if !s
     return '<None>'
   endif
 
-  return l:s
+  return s
 endfunction

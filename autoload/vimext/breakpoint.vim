@@ -5,38 +5,38 @@ function vimext#breakpoint#Parse(args)
     return v:null
   endif
 
-  let l:info = [0, 0, 0]
+  let info = [0, 0, 0]
   " type=1,fname,lnum
   " type=2,func_name
 
-  let l:nameIdx = matchlist(a:args, '^\([^:]\+\):\(\d\+\)$')
-  if len(l:nameIdx) > 0
-    let l:info[0] = 1
-    let l:info[1] = l:nameIdx[1]
-    let l:info[2] = l:nameIdx[2]
+  let nameIdx = matchlist(a:args, '^\([^:]\+\):\(\d\+\)$')
+  if len(nameIdx) > 0
+    let info[0] = 1
+    let info[1] = nameIdx[1]
+    let info[2] = nameIdx[2]
 
-    return l:info
+    return info
   endif
 
   if a:args =~ '^\(\d\+\)$'
-    let l:info[0] = 1
-    let l:info[1] = v:null
-    let l:info[2] = a:args
-    return l:info
+    let info[0] = 1
+    let info[1] = v:null
+    let info[2] = a:args
+    return info
   endif
 
   if a:args =~ '^\(\w\+\)'
-    let l:info[0] = 2
-    let l:info[1] = a:args
-    return l:info
+    let info[0] = 2
+    let info[1] = a:args
+    return info
   endif
 
   return v:null
 endfunction
 
 function vimext#breakpoint#DeleteID(id)
-  let l:brk = get(s:breaks, a:id, v:null)
-  if l:brk is v:null
+  let brk = get(s:breaks, a:id, v:null)
+  if brk is v:null
     return
   endif
 
@@ -45,9 +45,9 @@ endfunction
 
 function vimext#breakpoint#DeleteN(id)
 
-  let l:signs = vimext#sign#GetByBreakID(a:id)
-  for l:sign in l:signs
-    call vimext#sign#Dispose(l:sign)
+  let signs = vimext#sign#GetByBreakID(a:id)
+  for sign in signs
+    call vimext#sign#Dispose(sign)
   endfor
   call remove(s:breaks, a:id)
 endfunction
@@ -61,9 +61,9 @@ function vimext#breakpoint#Delete(brk)
 endfunction
 
 function vimext#breakpoint#Get(fname, lnum)
-  for l:brk in values(s:breaks)
-    if l:brk[7] == a:fname && l:brk[8] == a:lnum
-      return l:brk
+  for brk in values(s:breaks)
+    if brk[7] == a:fname && brk[8] == a:lnum
+      return brk
     endif
   endfor
 
@@ -71,7 +71,7 @@ function vimext#breakpoint#Get(fname, lnum)
 endfunction
 
 function vimext#breakpoint#Add(brk)
-  let l:winid = win_getid()
+  let winid = win_getid()
   if a:brk[0] != 4
     call vimext#logger#Warning("break brk not correct")
     return
@@ -82,40 +82,40 @@ function vimext#breakpoint#Add(brk)
   endif
 
   let s:breaks[a:brk[1]] = a:brk
-  let l:sign = vimext#sign#New(l:winid, a:brk[1], a:brk[1], 1)
-  if l:sign isnot v:null
-    call vimext#sign#Place(l:sign, a:brk[7], a:brk[8])
+  let sign = vimext#sign#New(winid, a:brk[1], a:brk[1], 1)
+  if sign isnot v:null
+    call vimext#sign#Place(sign, a:brk[7], a:brk[8])
   endif
 
 endfunction
 
 function s:SetBrks() abort
-  let l:fname = expand('<afile>:p')
-  let l:winid = win_getid()
+  let fname = expand('<afile>:p')
+  let winid = win_getid()
 
-  for l:brk in values(s:breaks)
-    if l:brk[7] != l:fname
+  for brk in values(s:breaks)
+    if brk[7] != fname
       continue
     endif
 
-    let l:signs = vimext#sign#GetByBreakID(l:brk[1])
-    for l:sign in l:signs
-      call vimext#sign#Place(l:sign, l:brk[7], l:brk[8])
+    let signs = vimext#sign#GetByBreakID(brk[1])
+    for sign in signs
+      call vimext#sign#Place(sign, brk[7], brk[8])
     endfor
   endfor
 endfunction
 
 function s:DeleteBrks() abort
-  let l:fname = expand('<afile>:p')
+  let fname = expand('<afile>:p')
 
-  for l:brk in values(s:breaks)
-    if l:brk[7] != l:fname
+  for brk in values(s:breaks)
+    if brk[7] != fname
       continue
     endif
 
-    let l:signs = vimext#sign#GetByBreakID(l:brk[1])
-    for l:sign in l:signs
-      call vimext#sign#UnPlace(l:sign)
+    let signs = vimext#sign#GetByBreakID(brk[1])
+    for sign in signs
+      call vimext#sign#UnPlace(sign)
     endfor
   endfor
 endfunction

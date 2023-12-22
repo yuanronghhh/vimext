@@ -99,25 +99,30 @@ class AutoTags:
         return self.find_tag_recursive(np)
 
     def ctag_update(self, cwd, tagfile, filename):
-        cmd = self.get_ctags_cmd(tagfile, filename)
+        cmd = self.get_ctags_cmd(tagfile, filename, cwd)
         if not cmd:
             return
 
         lock.acquire(blocking=True)
         if filename:
             clean_tags(tagfile, filename)
+
         out, err = process_cmd(cmd, cwd)
         lock.release()
 
-    def get_ctags_cmd(self, newtag, filename):
+    def get_ctags_cmd(self, newtag, filename, cwd = None):
         matches = self.matches
         cmd = None
+
+        rcmd = ["bash", "-c"]
+        if not cwd:
+            cwd = os.getcwd()
 
         spec_args = ["--fields=+iaS", "--extras=+q",\
                     "--c++-kinds=+p", "--tag-relative=always", "-a", "-f", newtag]
 
         if not filename:
-            cmd = ["find", "./", "-type", "f"]
+            cmd = ["find", cwd, "-type", "f"]
 
             for e in matches:
                 cmd.append("-name")
@@ -152,7 +157,9 @@ class AutoTags:
 
                 cmd.append(oinc)
 
-        return cmd
+        rcmd.append(" ".join(cmd))
+
+        return rcmd
 
     def regen_tags(self):
         self.gen_tags(False)
