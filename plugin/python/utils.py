@@ -88,7 +88,7 @@ def get_extension(file_path):
 def getcwd():
     return os.getcwd().replace("\\", "/")
 
-def process_cmd(cmd, cwd = None, use_shell = False, silent = True):
+def process_cmd(cmd, cwd = None, use_shell = False, silent = True, universal_newlines = False):
     """ Abstract subprocess """
     if not cwd:
         cwd = os.getcwd()
@@ -107,20 +107,19 @@ def process_cmd(cmd, cwd = None, use_shell = False, silent = True):
                              stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE,
                              startupinfo=st,
-                             universal_newlines=True)
+                             universal_newlines=universal_newlines)
     else:
         p = subprocess.Popen(cmd,
                              cwd=cwd,
                              shell=use_shell,
                              startupinfo=st,
-                             universal_newlines=True)
+                             universal_newlines=universal_newlines)
 
     stdout, stderr = p.communicate()
     if stderr:
         logging.error("[err] %s" % (stderr))
 
     return (stdout, stderr)
-
 
 
 def get_vs_info():
@@ -136,7 +135,7 @@ def get_vs_info():
     cmd = [vscmd,
            "-format","json"]
 
-    out, err = process_cmd(cmd, getcwd(), False)
+    out, err = process_cmd(cmd, getcwd(), False, True, True)
     if err:
         return None
 
@@ -152,7 +151,7 @@ def get_gcc_info():
 
     cmd = ["gcc", "--version"]
 
-    out, err = process_cmd(cmd, getcwd())
+    out, err = process_cmd(cmd, getcwd(), False, True, None)
     if err:
         return None
 
