@@ -47,6 +47,10 @@ function vimext#viewer#CreateTextMode(name, dr, basewin, sign_id) abort
 endfunction
 
 function vimext#viewer#GetWinID(self) abort
+  if a:self is v:null
+    return 0
+  endif
+
   return a:self.winid
 endfunction
 

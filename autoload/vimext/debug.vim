@@ -1,5 +1,9 @@
 const s:NullRepl = 'XXXNULLXXX'
 function vimext#debug#DecodeFilePath(filepath)
+  if a:filepath is v:null
+    return v:null
+  endif
+
   let msg = substitute(a:filepath, "\\", "/", "g")
   let msg = substitute(msg, "//", "/", "g")
   let msg = substitute(msg, "\"", "", "g")

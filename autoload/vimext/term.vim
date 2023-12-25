@@ -50,7 +50,6 @@ function vimext#term#New(cmd, opts) abort
 endfunction
 
 function s:Send(self, cmd) abort
-  "call vimext#logger#Info("[cmd] " . a:cmd)
   call term_sendkeys(a:self.buf, a:cmd . "\n")
 endfunction
 

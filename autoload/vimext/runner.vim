@@ -89,6 +89,7 @@ function vimext#runner#Dispose() abort
   call s:self.proto.Dispose(s:self.proto)
   call s:self.dbg.Dispose(s:self.dbg)
 
+  call vimext#viewer#Go(s:self.source_viewer)
   call vimext#sign#DeInit()
   call vimext#breakpoint#DeInit()
 
@@ -130,16 +131,12 @@ function vimext#runner#Asm() abort
     return
   endif
 
-  if s:self.source_viewer is v:null
-    return
-  endif
-
   if s:self.asm_viewer isnot v:null
     call vimext#viewer#Show(s:self.asm_viewer)
     call vimext#runner#SetAsmEnv(s:self.asm_viewer)
   else
     let source_win = vimext#viewer#GetWinID(s:self.source_viewer)
-    let asm_viewer = vimext#runner#CreateAsmViewer(source_win)
+    let asm_viewer = vimext#runner#CreateAsmViewer(v:null)
     let s:self.asm_viewer = asm_viewer
   endif
 
@@ -331,7 +328,6 @@ function vimext#runner#PrintError(self, msg) abort
 endfunction
 
 function s:PromptOut(channel, msg) abort
-  " call vimext#logger#Info(a:msg)
   if s:self is v:null
     return
   endif

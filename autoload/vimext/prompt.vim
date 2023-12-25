@@ -117,6 +117,7 @@ function s:Print(self, msg) abort
 
   call win_gotoid(a:self.winid)
   call append(line('$') - 1, a:msg)
+  call setcursorcharpos('$', 1)
 
   call win_gotoid(cwin)
 endfunction
@@ -124,8 +125,6 @@ endfunction
 
 " prompt
 function s:PromptInterrupt() abort
-  "call vimext#logger#Info("PromptInterrupt")
-
   if s:pid == 0
     call vimext#logger#Error('Cannot interrupt, not find a process ID')
     return

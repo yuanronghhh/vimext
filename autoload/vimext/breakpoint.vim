@@ -90,7 +90,7 @@ function vimext#breakpoint#Add(brk)
 endfunction
 
 function s:SetBrks() abort
-  let fname = expand('<afile>:p')
+  let fname = vimext#debug#DecodeFilePath(expand('%:p'))
   let winid = win_getid()
 
   for brk in values(s:breaks)
@@ -106,8 +106,7 @@ function s:SetBrks() abort
 endfunction
 
 function s:DeleteBrks() abort
-  let fname = expand('<afile>:p')
-
+  let fname = vimext#debug#DecodeFilePath(expand('%:p'))
   for brk in values(s:breaks)
     if brk[7] != fname
       continue
@@ -129,4 +128,5 @@ function vimext#breakpoint#Init()
 endfunction
 
 function vimext#breakpoint#DeInit()
+  call s:DeleteBrks()
 endfunction
