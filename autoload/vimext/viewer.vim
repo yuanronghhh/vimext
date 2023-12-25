@@ -48,6 +48,7 @@ endfunction
 
 function vimext#viewer#GetWinID(self) abort
   if a:self is v:null
+    call vimext#logger#Warning("vimext#viewer#GetWinID is null")
     return 0
   endif
 
@@ -55,10 +56,20 @@ function vimext#viewer#GetWinID(self) abort
 endfunction
 
 function vimext#viewer#GetBuff(self) abort
+  if a:self is v:null
+    call vimext#logger#Warning("vimext#viewer#GetBuff Go is null")
+    return
+  endif
+
   return a:self.buff
 endfunction
 
 function vimext#viewer#Go(self) abort
+  if a:self is v:null
+    call vimext#logger#Warning("vimext#viewer#Go is null")
+    return
+  endif
+
   return win_gotoid(a:self.winid)
 endfunction
 
