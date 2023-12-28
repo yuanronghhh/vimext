@@ -89,6 +89,10 @@ function vimext#config#LoadConfig()
 
     if len($BashBin) > 0
       set shell=$BashBin
+      set shellcmdflag=-c
+      if !has("nvim")
+        let $TMPDIR="/tmp/"
+      endif
     endif
 
     let g:tagbar_ctags_bin = vimext#GetBinPath("ctags.exe")

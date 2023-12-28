@@ -117,7 +117,7 @@ def process_cmd(cmd, cwd = None, use_shell = False, silent = True, universal_new
 
     stdout, stderr = p.communicate()
     if stderr:
-        logging.error("[err] %s" % (stderr))
+        logging.error("[err] %s" % (stderr.decode("utf-8")))
 
     return (stdout, stderr)
 
