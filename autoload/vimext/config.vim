@@ -80,17 +80,20 @@ function vimext#config#LoadConfig()
     let $PATH .= ";".$vimext_home."/tools"
     set clipboard=unnamed
 
-    if !has("nvim")
-      set guifont=Fixedsys
-    endif
     let g:python_cmd="python"
     let $BashBin=vimext#config#GetWinBash()
     set errorformat^=%f(%l\\,%c):\ %t%*[^\ ]\ C%n:\ %m,%f(%l\\,%c):\ fatal\ \ %t%*[^\ ]\ C%n:\ %m
 
     if len($BashBin) > 0
       set shell=$BashBin
-      set shellcmdflag=-c
-      let $TMPDIR="/tmp/"
+    endif
+
+    if has("nvim")
+      let &shellxquote = '('
+      let &shellslash = v:true
+      let &shellcmdflag = '-c'
+    else
+      set guifont=Fixedsys
     endif
 
     let g:tagbar_ctags_bin = vimext#GetBinPath("ctags.exe")
