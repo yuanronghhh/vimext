@@ -44,7 +44,6 @@ function vimext#breakpoint#DeleteID(id)
 endfunction
 
 function vimext#breakpoint#DeleteN(id)
-
   let signs = vimext#sign#GetByBreakID(a:id)
   for sign in signs
     call vimext#sign#Dispose(sign)
@@ -86,7 +85,6 @@ function vimext#breakpoint#Add(brk)
   if sign isnot v:null
     call vimext#sign#Place(sign, a:brk[7], a:brk[8])
   endif
-
 endfunction
 
 function s:SetBrks() abort
@@ -105,7 +103,7 @@ function s:SetBrks() abort
   endfor
 endfunction
 
-function s:DeleteBrks() abort
+function s:DeleteBrks(isDestroy) abort
   let fname = vimext#debug#DecodeFilePath(expand('%:p'))
   for brk in values(s:breaks)
     if brk[7] != fname
@@ -114,9 +112,19 @@ function s:DeleteBrks() abort
 
     let signs = vimext#sign#GetByBreakID(brk[1])
     for sign in signs
-      call vimext#sign#UnPlace(sign)
+      if a:isDestroy
+        call vimext#sign#Dispose(sign)
+      else
+        call vimext#sign#UnPlace(sign)
+      endif
     endfor
   endfor
+
+  if a:isDestroy
+    for brk in values(s:breaks)
+      call vimext#breakpoint#Delete(brk)
+    endfor
+  endif
 endfunction
 
 function vimext#breakpoint#Init()
@@ -124,9 +132,9 @@ function vimext#breakpoint#Init()
   hi default dbgBreakpointDisabled term=reverse ctermbg=gray guibg=gray
 
   au BufRead * call s:SetBrks()
-  au BufUnload * call s:DeleteBrks()
+  au BufUnload * call s:DeleteBrks(v:false)
 endfunction
 
 function vimext#breakpoint#DeInit()
-  call s:DeleteBrks()
+  call s:DeleteBrks(v:true)
 endfunction
