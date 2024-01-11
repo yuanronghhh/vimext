@@ -101,7 +101,13 @@ function python#JsonFormat()
     return
   endif
 
-  exec ":%!".g:python_cmd." -m json.tool"
+  let array = py3eval("utils.json_format()")
+  if len(array) == 0
+    return
+  endif
+
+  silent! %delete _
+  call append(line('.')-1, array)
 endfunction
 
 function python#GetComment()

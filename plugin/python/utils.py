@@ -5,6 +5,7 @@ import json
 import re
 import platform
 import logging
+import json
 import vimpy
 
 from os import path
@@ -235,3 +236,16 @@ def get_system_header_str():
         return ""
 
     return ",".join(hds).replace(" ", "\\ ")
+
+def json_format():
+    content = vimpy.vim_get_content("%")
+    if not content:
+        return []
+
+    try:
+        u = json.loads(content)
+        r = json.dumps(u, ensure_ascii=False, indent=2)
+        return r.split("\n")
+    except Exception as err:
+        logging.error("[json load error] %s" % (err))
+        return ""

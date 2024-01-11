@@ -1,4 +1,5 @@
 import vim
+import logging
 
 def vim_fullname():
     return vim.eval("expand(\"%:p\")")
@@ -21,6 +22,16 @@ def vim_get_line():
 
 def vim_lines_s(s):
     lines = vim.bindeval("vimext#GetLinesEnds(\"%s\")" % (s))
+    nline = ""
+    for l in lines:
+        nline += l.decode("utf-8") + "\n"
+    nline = nline[0:-1]
+
+    return nline
+
+def vim_get_content(buf):
+    lines = vim.bindeval("vimext#GetContent(\"%s\", 0, -1)" % (buf))
+
     nline = ""
     for l in lines:
         nline += l.decode("utf-8") + "\n"
