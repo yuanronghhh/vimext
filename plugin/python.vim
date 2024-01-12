@@ -149,3 +149,7 @@ function python#GenCtags()
 
   python3 g_atags.gen_tags()
 endfunction
+
+if has("python3")
+  call python#Init()
+endif

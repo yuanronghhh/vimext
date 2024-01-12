@@ -37,10 +37,6 @@ function vimext#Init()
   if has("libcall")
     let g:vimext_c_api = 1
   endif
-
-  if has("python3")
-    autocmd! BufRead * ++once call python#Init()
-  endif
 endfunction
 
 function vimext#FullScreen()
