@@ -92,8 +92,14 @@ function vimext#config#LoadConfig()
       let &shellxquote = '('
       let &shellslash = v:true
       let &shellcmdflag = '-c'
+
+      command! Terminal :call vimext#config#TerminalNew()
+      autocmd TermOpen * :call vimext#config#TerminalEnter()
+      autocmd TermClose * :call vimext#config#TerminalClose()
+      autocmd BufEnter term://* :call vimext#config#TerminalEnter()
+      autocmd BufLeave term://* :call vimext#config#TerminalLeave()
     else
-      set guifont=Fixedsys
+      set guifont=Consolas:h12
     endif
 
     let g:tagbar_ctags_bin = vimext#GetBinPath("ctags.exe")
@@ -101,7 +107,6 @@ function vimext#config#LoadConfig()
     command! -nargs=0 GitBash :call vimext#config#GitBash()
   elseif has("mac")
     set guiligatures
-    set noanti
   endif
 
   inoremap < <><ESC>i
@@ -188,4 +193,22 @@ endfunction
 function vimext#config#Edit()
   let vimext_config = g:vim_plugin."/vimext/autoload/vimext/config.vim"
   exec ":edit ".vimext_config
+endfunction
+
+function vimext#config#TerminalNew()
+  :split term://bash
+endfunction
+
+function vimext#config#TerminalEnter()
+  if &buftype == 'terminal'
+    :startinsert
+  endif
+endfunction
+
+function vimext#config#TerminalClose()
+  :bw!
+endfunction
+
+function vimext#config#TerminalLeave()
+  :stopinsert
 endfunction
