@@ -159,6 +159,7 @@ function vimext#runner#Run(args) abort
 
   if a:args isnot v:null
     if s:self.dbg.name == "gdb"
+      call s:Call(s:self.proto.Start, v:null)
     else
       let args = vimext#debug#DecodeFilePath(a:args)
       if args[0] != "\""
