@@ -167,6 +167,14 @@ function vimext#GetTabInfo(winid)
   return gettabinfo(l:tabnr)
 endfunction
 
+function vimext#LargeFile(buf) abort
+  let fsz = getfsize(buf)
+
+  if fsz > 1024 * 1024
+    :set fdm=manual
+  endif
+endfunction
+
 function vimext#SetEditor() abort
   let l:cext = expand("%:e")
 
@@ -177,10 +185,8 @@ function vimext#SetEditor() abort
   elseif cext == "cs"
     :set shiftwidth=4
   else
-
   endif
 endfunction
-
 
 function vimext#GetContent(buf, start, end) abort
   let end = "$"

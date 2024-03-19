@@ -52,11 +52,11 @@ function vimext#config#LoadConfig()
   set undofile
   set novisualbell
   set t_vb=
-  "set fdm=syntax
+  set fdm=syntax
   set t_Co=256
   " switch case 缩进问题
   set cinoptions=l1
-  set ssop=blank,buffers,curdir,folds,tabpages
+  set ssop=blank,buffers,curdir,tabpages
 
   if has("gui_running")
     colorscheme materialtheme
@@ -168,6 +168,7 @@ function vimext#config#LoadConfig()
   autocmd! BufRead *.vue,*.cshtml :set ft=html
   autocmd! BufRead *.vala :set ft=cpp
   autocmd! BufRead *.cst :set ft=javascript
+  autocmd! BufRead *.c,*.cs,*.h,*.cpp :call vimext#LargeFile("<file>")
   autocmd! BufEnter *.c,*.h,*.cs ++once :call vimext#SetEditor()
 
   tnoremap <C-j> <C-W>gt
