@@ -168,7 +168,7 @@ function vimext#config#LoadConfig()
   autocmd! BufRead *.vue,*.cshtml :set ft=html
   autocmd! BufRead *.vala :set ft=cpp
   autocmd! BufRead *.cst :set ft=javascript
-  autocmd! BufRead *.c,*.cs,*.h,*.cpp :call vimext#LargeFile("<file>")
+  autocmd! BufRead *.c,*.cs,*.h,*.cpp :call vimext#LargeFile()
   autocmd! BufEnter *.c,*.h,*.cs ++once :call vimext#SetEditor()
 
   tnoremap <C-j> <C-W>gt

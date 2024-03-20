@@ -167,8 +167,8 @@ function vimext#GetTabInfo(winid)
   return gettabinfo(l:tabnr)
 endfunction
 
-function vimext#LargeFile(buf) abort
-  let fsz = getfsize(buf)
+function vimext#LargeFile() abort
+  let fsz = getfsize(expand("%"))
 
   if fsz > 1024 * 1024
     :set fdm=manual
