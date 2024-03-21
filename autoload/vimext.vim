@@ -184,6 +184,8 @@ function vimext#SetEditor() abort
     endif
   elseif cext == "cs"
     :set shiftwidth=4
+    :set foldmethod=indent
+    :set foldlevel=2
   else
   endif
 endfunction
