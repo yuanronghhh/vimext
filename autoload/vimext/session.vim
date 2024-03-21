@@ -11,7 +11,7 @@ function vimext#session#SaveSession(sfile) abort
   endif
 
   if winnr("$") > 1
-    :NERDTreeClose
+    execute ":NERDTreeClose"
   endif
 
   echo "mks! ".g:vim_session."/".sfile
@@ -26,6 +26,7 @@ endfunction
 
 function vimext#session#OpenSession(sfile) abort
   let sfile = a:sfile
+  let wid = win_getid()
 
   if stridx(a:sfile, ".vim") == -1
     let sfile = a:sfile.".vim"
@@ -38,7 +39,9 @@ function vimext#session#OpenSession(sfile) abort
   let s:spath = sfile
   echo "source ".g:vim_session."/".sfile
   exec "source ".g:vim_session."/".sfile
-  :NERDTreeFind
+  execute ":NERDTreeFind"
+
+  call win_gotoid(wid)
 endfunction
 
 function vimext#session#AutoSave() abort
