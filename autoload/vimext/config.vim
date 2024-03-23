@@ -140,7 +140,9 @@ function vimext#config#LoadConfig()
   nnoremap <F2>  :NERDTreeFind<cr>
   nnoremap <F3>  :tabnew<cr>
   nnoremap <F4>  :close<cr>
-  nnoremap <C-[> :ALEFindReferences<cr>
+  nnoremap <C-M>[ :ALEFindReferences<cr>
+  nnoremap <C-M>] :ALEGoToDefinition<cr>
+  nnoremap <C-M>h :ALEHover<cr>
 
   let g:NERDTreeShowHidden = 1
   let g:NERDTreeShowLineNumbers = 0
@@ -149,11 +151,7 @@ function vimext#config#LoadConfig()
 
   let g:hexmode_xxd_options = '-p'
 
-  let g:ale_set_quickfix = 1
-  let g:ale_linters_explicit = 1
-  let g:ale_lint_on_save = 0
-  let g:ale_lint_delay = 1000
-  let g:ale_linters = { 'cs': ['mcs'], 'c': ['clangd'], 'python': ['pylint'] }
+  call vimext#config#ALEConfig()
 
   let plugins = ["vim-multiple-cursors", "emmet-vim", "nerdtree", "supertab", "tagbar", "hexmode", "ale"]
   call vimext#plugins#LoadPlugin(plugins)
@@ -165,10 +163,10 @@ function vimext#config#LoadConfig()
   command! -nargs=? EditConfig :call vimext#config#Edit()
   command! -nargs=? TabMan :call vimext#TabMan("<args>")
 
-  autocmd! BufRead *.vs,*.vert,*.glsl,*.frag,*.comp :set ft=c
-  autocmd! BufRead *.vue,*.cshtml :set ft=html
-  autocmd! BufRead *.vala :set ft=cpp
-  autocmd! BufRead *.cst :set ft=javascript
+  autocmd! BufRead *.vs,*.vert,*.glsl,*.frag,*.comp :set syntax=c
+  autocmd! BufRead *.vue,*.cshtml :set syntax=html
+  autocmd! BufRead *.vala :set syntax=cpp
+  autocmd! BufRead *.cst :set syntax=javascript
   autocmd! BufRead *.c,*.cs,*.h,*.cpp :call vimext#LargeFile()
   autocmd! BufEnter *.c,*.h,*.cs ++once :call vimext#SetEditor()
 
@@ -185,6 +183,15 @@ function vimext#config#GetWinBash()
   endif
 
   return shellescape(bpath)
+endfunction
+
+function vimext#config#ALEConfig()
+  let g:ale_set_quickfix = 1
+  let g:ale_set_balloons = 0
+  let g:ale_linters_explicit = 1
+  let g:ale_lint_on_save = 0
+  let g:ale_lint_delay = 1000
+  let g:ale_linters = { 'cs': ['mcs'], 'c': ['clangd'], 'python': ['pylint'] }
 endfunction
 
 function vimext#config#GitBash()
