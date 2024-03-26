@@ -52,7 +52,8 @@ function vimext#config#LoadConfig()
   set undofile
   set novisualbell
   set t_vb=
-  set fdm=syntax
+  set foldmethod=indent
+  set foldlevel=2
   set t_Co=256
   " switch case 缩进问题
   set cinoptions=l1
@@ -167,7 +168,7 @@ function vimext#config#LoadConfig()
   autocmd! BufRead *.vue,*.cshtml :set syntax=html
   autocmd! BufRead *.vala :set syntax=cpp
   autocmd! BufRead *.cst :set syntax=javascript
-  autocmd! BufRead *.c,*.cs,*.h,*.cpp :call vimext#LargeFile()
+  autocmd! BufRead * :call vimext#LargeFile()
   autocmd! BufEnter *.c,*.h,*.cs ++once :call vimext#SetEditor()
 
   tnoremap <C-j> <C-W>gt
@@ -186,12 +187,17 @@ function vimext#config#GetWinBash()
 endfunction
 
 function vimext#config#ALEConfig()
-  let g:ale_set_quickfix = 1
+  let g:ale_set_loclist = 0
   let g:ale_set_balloons = 0
   let g:ale_linters_explicit = 1
   let g:ale_lint_on_save = 0
   let g:ale_lint_delay = 1000
   let g:ale_linters = { 'cs': ['mcs'], 'c': ['clangd'], 'python': ['pylint'] }
+
+  if has("win32")
+    let g:ale_c_parse_compile_commands = 0
+    let g:ale_c_build_dir_names = []
+  endif
 endfunction
 
 function vimext#config#GitBash()
