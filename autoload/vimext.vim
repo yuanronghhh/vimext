@@ -169,14 +169,15 @@ endfunction
 
 function vimext#LargeFile() abort
   let fsz = getfsize(expand("%"))
+  let ext = expand("%:e")
 
-  if fsz > 1024 * 1024
+  if fsz > 1024 * 1024 || ext == "json"
     :set fdm=manual
   endif
 endfunction
 
 function vimext#SetEditor() abort
-  let l:cext = expand("%:e")
+  let cext = expand("%:e")
 
   if cext == "c" || cext == "cpp"
     if has("win32")
