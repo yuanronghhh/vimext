@@ -69,6 +69,7 @@ function vimext#config#LoadConfig()
   if v:version >= 800
     set ssop+=terminal
     packadd termdebug
+    packadd cfilter
   endif
 
   set grepprg=grep\ -nH
@@ -164,6 +165,7 @@ function vimext#config#LoadConfig()
   command! -nargs=? EditConfig :call vimext#config#Edit()
   command! -nargs=? TabMan :call vimext#TabMan("<args>")
 
+  autocmd! QuickfixCmdPost make :call vimext#config#QuickFixFunc()
   autocmd! BufRead *.vs,*.vert,*.glsl,*.frag,*.comp :set syntax=c
   autocmd! BufRead *.vue,*.cshtml :set syntax=html
   autocmd! BufRead *.vala :set syntax=cpp
@@ -227,4 +229,15 @@ endfunction
 
 function vimext#config#TerminalLeave()
   :stopinsert
+endfunction
+
+function vimext#config#QuickFixFunc()
+  if &ft != "cs"
+    return
+  endif
+
+  let all = getqflist()
+  let oerror = filter(all, "v:val.type == \"e\"")
+
+  call setqflist(oerror, "r")
 endfunction
