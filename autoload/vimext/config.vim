@@ -57,7 +57,7 @@ function vimext#config#LoadConfig()
   set t_Co=256
   " switch case 缩进问题
   set cinoptions=l1
-  set ssop=blank,buffers,curdir,tabpages
+  set sessionoptions=globals,blank,buffers,curdir,tabpages
 
   if has("gui_running")
     colorscheme materialtheme
@@ -67,7 +67,7 @@ function vimext#config#LoadConfig()
   endif
 
   if v:version >= 800
-    set ssop+=terminal
+    set sessionoptions+=terminal
     packadd termdebug
     packadd cfilter
   endif
@@ -142,9 +142,6 @@ function vimext#config#LoadConfig()
   nnoremap <F2>  :NERDTreeFind<cr>
   nnoremap <F3>  :tabnew<cr>
   nnoremap <F4>  :close<cr>
-  nnoremap <C-M>[ :ALEFindReferences<cr>
-  nnoremap <C-M>] :ALEGoToDefinition<cr>
-  nnoremap <C-M>h :ALEHover<cr>
 
   let g:NERDTreeShowHidden = 1
   let g:NERDTreeShowLineNumbers = 0
@@ -200,6 +197,10 @@ function vimext#config#ALEConfig()
     let g:ale_c_parse_compile_commands = 0
     let g:ale_c_build_dir_names = []
   endif
+
+  nnoremap <C-M>[ :ALEFindReferences -quickfix<cr>
+  nnoremap <C-M>] :ALEGoToDefinition -split<cr>
+  nnoremap <C-M>h :ALEHover<cr>
 endfunction
 
 function vimext#config#GitBash()
