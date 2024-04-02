@@ -171,7 +171,7 @@ function vimext#LargeFile() abort
   let fsz = getfsize(expand("%"))
   let ext = expand("%:e")
 
-  if fsz > 1024 * 1024 || ext == "json"
+  if fsz > (1024 * 1024) || ext == "json"
     :set fdm=manual
   endif
 endfunction

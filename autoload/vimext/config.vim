@@ -52,7 +52,7 @@ function vimext#config#LoadConfig()
   set undofile
   set novisualbell
   set t_vb=
-  set foldmethod=indent
+  set foldmethod=syntax
   set foldlevel=2
   set t_Co=256
   " switch case 缩进问题
