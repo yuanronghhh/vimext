@@ -159,7 +159,8 @@ function vimext#runner#Run(args) abort
 
   if a:args isnot v:null
     if s:self.dbg.name == "gdb"
-      call s:Call(s:self.proto.Start, v:null)
+      call vimext#runner#Restore()
+      " call s:Call(s:self.proto.Start, v:null)
     else
       let args = vimext#debug#DecodeFilePath(a:args)
       if args[0] != "\""
@@ -222,6 +223,8 @@ function vimext#runner#Break(args) abort
   else
     call s:Call(s:self.proto.Break, info[1])
   endif
+
+  call vimext#runner#SaveBrks()
 endfunction
 
 function vimext#runner#Clear(args) abort
@@ -298,7 +301,6 @@ function vimext#runner#LoadSource(self, fname, lnum) abort
     execute "wincmd H"
 
     call vimext#viewer#LoadByFile(a:self.source_viewer, a:fname, a:lnum)
-    call vimext#runner#Restore()
   else
     call vimext#viewer#Show(s:self.source_viewer)
     call vimext#viewer#LoadByFile(a:self.source_viewer, a:fname, a:lnum)
