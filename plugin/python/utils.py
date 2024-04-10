@@ -5,7 +5,6 @@ import json
 import re
 import platform
 import logging
-import json
 import vimpy
 
 from os import path
@@ -89,10 +88,8 @@ def get_extension(file_path):
 def getcwd():
     return os.getcwd().replace("\\", "/")
 
-def process_cmd(cmd, cwd = None, use_shell = False, silent = True, universal_newlines = False):
+def process_cmd(cmd, cwd):
     """ Abstract subprocess """
-    if not cwd:
-        cwd = os.getcwd()
 
     st = None
     if platform.system() == "Windows":
@@ -100,27 +97,29 @@ def process_cmd(cmd, cwd = None, use_shell = False, silent = True, universal_new
         st.dwFlags = subprocess.STARTF_USESHOWWINDOW
         st.wShowWindow = subprocess.SW_HIDE
 
-    if silent:
-        p = subprocess.Popen(cmd,
-                             cwd=cwd,
-                             shell=use_shell,
-                             stdin=subprocess.PIPE,
-                             stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE,
-                             startupinfo=st,
-                             universal_newlines=universal_newlines)
-    else:
-        p = subprocess.Popen(cmd,
-                             cwd=cwd,
-                             shell=use_shell,
-                             startupinfo=st,
-                             universal_newlines=universal_newlines)
+    cmdstr = "%s" % (" ".join(cmd))
+    rcmd = ["bash", "-c", cmdstr]
 
-    stdout, stderr = p.communicate()
-    if stderr:
-        logging.error("[err] %s" % (stderr.decode("utf-8")))
+    try:
+        proc = subprocess.Popen(rcmd,
+                                cwd=cwd,
+                                shell=False,
+                                stdin=subprocess.PIPE,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE,
+                                startupinfo=st,
+                                universal_newlines=True)
 
-    return (stdout, stderr)
+        stdout, stderr = proc.communicate()
+        if stderr:
+            logging.error("[err] %s" % (stderr))
+
+        return stdout, stderr
+
+    except Exception as err:
+        logging.error("[err] %s" % (err))
+
+    return None, "execute failed: %s" % (rcmd)
 
 
 def get_vs_info():
@@ -133,10 +132,10 @@ def get_vs_info():
     if not path.exists(vscmd):
         return
 
-    cmd = [vscmd,
+    cmd = ["\"" + vscmd + "\"",
            "-format","json"]
 
-    out, err = process_cmd(cmd, getcwd(), False, True, True)
+    out, err = process_cmd(cmd, getcwd())
     if err:
         return None
 
@@ -152,7 +151,7 @@ def get_gcc_info():
 
     cmd = ["gcc", "--version"]
 
-    out, err = process_cmd(cmd, getcwd(), False, True, True)
+    out, err = process_cmd(cmd, None)
     if err:
         return None
 
@@ -206,13 +205,13 @@ def get_system_header_path():
         if vinc:
             incs.append(vinc)
     elif platform.system() == "Linux":
-        ver = get_gcc_ver()
-        if not ver:
-            return []
-
         p = os.getenv("PREFIX")
         if not p:
             p = "/usr"
+
+        ver = get_gcc_ver()
+        if not ver:
+            return []
 
         incs = ["include/x86_64-linux-gnu",
                 "include",
@@ -236,16 +235,3 @@ def get_system_header_str():
         return ""
 
     return ",".join(hds).replace(" ", "\\ ")
-
-def json_format():
-    content = vimpy.vim_get_content("%")
-    if not content:
-        return []
-
-    try:
-        u = json.loads(content)
-        r = json.dumps(u, ensure_ascii=False, indent=2)
-        return r.split("\n")
-    except Exception as err:
-        logging.error("[json load error] %s" % (err))
-        return ""
