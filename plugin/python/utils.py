@@ -10,7 +10,7 @@ import vimpy
 from os import path
 from enum import IntEnum
 
-# logging.basicConfig(filename="E:/tmp/log.log", format="%(message)s", level=logging.INFO)
+logging.basicConfig(filename="/home/greyhound/.vim/plugins/vimext/tools/log.log", format="%(message)s", level=logging.INFO)
 
 vs = None
 compilerInfo = None
@@ -235,3 +235,6 @@ def get_system_header_str():
         return ""
 
     return ",".join(hds).replace(" ", "\\ ")
+
+def log(fmt, msg):
+    logging.info(fmt, msg)

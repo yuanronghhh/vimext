@@ -5,12 +5,14 @@ import sys
 
 from os import path
 from utils import process_cmd, get_system_header_path, getcwd
-from threading import Thread, Lock
+from threading import Thread
+import AsyncQueue
 
-logging.basicConfig(format="%(message)s", level=logging.INFO)
-lock = Lock()
+
+logging.basicConfig(filename="/home/greyhound/.vim/plugins/vimext/tools/log.log", format="%(message)s", level=logging.INFO)
 
 maxsize = 100 # mb
+queue = AsyncQueue.AsyncQueue()
 
 def os_pwrite(fp, p, bs, recp):
     fp.seek(p)
@@ -57,6 +59,22 @@ def clean_tags(tagfile, filename):
             fp1.truncate(0)
             fp1.writelines(lines)
 
+
+def ctag_update(cmd, cwd, tagfile, filename):
+    if not cmd:
+        return
+
+    if filename:
+        clean_tags(tagfile, filename)
+
+    process_cmd(cmd, cwd)
+
+class CtagsTask:
+    def __init__(self, cwd, tagfile, filename):
+        self.cwd = None
+        self.tagfile = None
+        self.filename = None
+
 class AutoTags:
     def __init__(self):
         self.th = None
@@ -85,6 +103,12 @@ class AutoTags:
 
         self.sys_incs = get_system_header_path()
 
+        self.th = Thread(target=self.ctag_thread, args=())
+        self.th.setDaemon(True)
+        self.th.start()
+
+    def deinit(self):
+        logging.info("deinit")
 
     def find_tag_recursive(self, p):
         tag = p + "/tags"
@@ -98,23 +122,23 @@ class AutoTags:
 
         return self.find_tag_recursive(np)
 
-    def ctag_update(self, cwd, tagfile, filename):
-        cmd = self.get_ctags_cmd(tagfile, filename, cwd)
-        if not cmd:
-            return
+    def ctag_thread(self):
+        logging.info("ctag thread start")
 
-        lock.acquire(blocking=True)
-        if filename:
-            clean_tags(tagfile, filename)
+        while True:
+            task = queue.dequeue()
+            logging.info("get task2")
 
-        out, err = process_cmd(cmd, cwd)
-        lock.release()
+            cmd = self.get_ctags_cmd(task.tagfile, task.filename, task.cwd)
+            ctag_update(cmd, task.cwd, task.tagfile, task.filename)
+
+        logging.info("thread exit")
 
     def get_ctags_cmd(self, newtag, filename, cwd = None):
         matches = self.matches
         cmd = None
 
-        rcmd = ["bash", "-c"]
+        rcmd = []
         if not cwd:
             cwd = os.getcwd()
 
@@ -200,7 +224,7 @@ class AutoTags:
 
         self.tagfile = tagfile
 
-        self.th = Thread(target=self.ctag_update, args=(cwd, tagfile, filename))
-        self.th.start()
+        task = CtagsTask(cwd, tagfile, filename)
+        queue.enqueue(task)
 
 g_atags = AutoTags()

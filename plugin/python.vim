@@ -150,6 +150,11 @@ function python#GenCtags()
   python3 g_atags.gen_tags()
 endfunction
 
+function python#DeInit()
+  python3 g_atags.deinit()
+endfunction
+
 if has("python3")
   call python#Init()
+  autocmd! ExitPre * :call python#DeInit()
 endif
