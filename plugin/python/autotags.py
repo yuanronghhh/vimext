@@ -9,7 +9,6 @@ from threading import Thread
 import AsyncQueue
 
 maxsize = 100 # mb
-queue = AsyncQueue.AsyncQueue()
 
 def os_pwrite(fp, p, bs, recp):
     fp.seek(p)
@@ -100,6 +99,8 @@ class AutoTags:
 
         self.sys_incs = get_system_header_path()
 
+
+        self.queue = AsyncQueue.AsyncQueue()
         self.th = Thread(target=self.ctag_thread, args=())
         self.th.setDaemon(True)
         self.th.start()
@@ -121,13 +122,13 @@ class AutoTags:
 
     def ctag_thread(self):
         while True:
-            task = queue.dequeue()
+            task = self.queue.dequeue()
             if task is None:
                 break
 
             cmd = self.get_ctags_cmd(task.tagfile, task.filename, task.cwd)
             ctag_update(cmd, task.cwd, task.tagfile, task.filename)
-            queue.task_done()
+            self.queue.task_done()
 
     def get_ctags_cmd(self, newtag, filename, cwd = None):
         matches = self.matches
@@ -220,6 +221,6 @@ class AutoTags:
         self.tagfile = tagfile
 
         task = CtagsTask(cwd, tagfile, filename)
-        queue.enqueue(task)
+        self.queue.enqueue(task)
 
 g_atags = AutoTags()
