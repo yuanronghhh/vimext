@@ -114,7 +114,7 @@ class AutoTags:
         matches = self.matches
         cmd = None
 
-        rcmd = ["bash", "-c"]
+        rcmd = []
         if not cwd:
             cwd = os.getcwd()
 

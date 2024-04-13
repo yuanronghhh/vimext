@@ -10,7 +10,7 @@ import vimpy
 from os import path
 from enum import IntEnum
 
-# logging.basicConfig(filename="E:/tmp/log.log", format="%(message)s", level=logging.INFO)
+# logging.basicConfig(filename="./tools/log.log", format="%(message)s", level=logging.INFO)
 
 vs = None
 compilerInfo = None
