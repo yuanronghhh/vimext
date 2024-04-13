@@ -8,11 +8,7 @@ from utils import process_cmd, get_system_header_path, getcwd
 from threading import Thread
 import AsyncQueue
 
-
-logging.basicConfig(filename="/home/greyhound/.vim/plugins/vimext/tools/log.log", format="%(message)s", level=logging.INFO)
-
 maxsize = 100 # mb
-queue = AsyncQueue.AsyncQueue()
 
 def os_pwrite(fp, p, bs, recp):
     fp.seek(p)
@@ -71,9 +67,9 @@ def ctag_update(cmd, cwd, tagfile, filename):
 
 class CtagsTask:
     def __init__(self, cwd, tagfile, filename):
-        self.cwd = None
-        self.tagfile = None
-        self.filename = None
+        self.cwd = cwd
+        self.tagfile = tagfile
+        self.filename = filename
 
 class AutoTags:
     def __init__(self):
@@ -103,6 +99,8 @@ class AutoTags:
 
         self.sys_incs = get_system_header_path()
 
+
+        self.queue = AsyncQueue.AsyncQueue()
         self.th = Thread(target=self.ctag_thread, args=())
         self.th.setDaemon(True)
         self.th.start()
@@ -123,16 +121,14 @@ class AutoTags:
         return self.find_tag_recursive(np)
 
     def ctag_thread(self):
-        logging.info("ctag thread start")
-
         while True:
-            task = queue.dequeue()
-            logging.info("get task2")
+            task = self.queue.dequeue()
+            if task is None:
+                break
 
             cmd = self.get_ctags_cmd(task.tagfile, task.filename, task.cwd)
             ctag_update(cmd, task.cwd, task.tagfile, task.filename)
-
-        logging.info("thread exit")
+            self.queue.task_done()
 
     def get_ctags_cmd(self, newtag, filename, cwd = None):
         matches = self.matches
@@ -225,6 +221,6 @@ class AutoTags:
         self.tagfile = tagfile
 
         task = CtagsTask(cwd, tagfile, filename)
-        queue.enqueue(task)
+        self.queue.enqueue(task)
 
 g_atags = AutoTags()

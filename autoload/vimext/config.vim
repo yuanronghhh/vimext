@@ -152,7 +152,15 @@ function vimext#config#LoadConfig()
 
   call vimext#config#ALEConfig()
 
-  let plugins = ["vim-multiple-cursors", "emmet-vim", "nerdtree", "supertab", "tagbar", "hexmode", "ale"]
+  let plugins = [
+        \ "vim-multiple-cursors",
+        \ "emmet-vim",
+        \ "supertab",
+        \ "tagbar",
+        \ "hexmode",
+        \ "ale",
+        \ "nerdtree"
+        \ ]
   call vimext#plugins#LoadPlugin(plugins)
   call vimext#debug#Init()
 

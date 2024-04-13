@@ -3,7 +3,12 @@ let g:vimext_python = 0
 function python#Init()
 python3 << EOF
 import vim
-sys.path.insert(0, vim.eval("$vimext_home") + "/plugin/python")
+import os
+
+g_module_path = vim.eval("$vimext_home") + "/plugin/python"
+sys.path.insert(0, g_module_path)
+os.chdir(vim.eval("$vimext_home"))
+
 import utils
 import CommentParser, GetterGenerator
 from autotags import g_atags

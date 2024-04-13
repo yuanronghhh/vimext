@@ -12,8 +12,6 @@ class AsyncQueue(Queue):
     def enqueue(self, item):
         self.cond.acquire()
 
-        utils.log("%s", ("enqueue"))
-
         self.put_nowait(item)
         self.cond.notify_all()
 
@@ -29,7 +27,6 @@ class AsyncQueue(Queue):
             if nitem:
                 break
 
-        self.task_done()
         self.cond.release()
 
         return nitem
