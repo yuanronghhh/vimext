@@ -8,7 +8,8 @@ import shutil
 import tempfile
 from os import path
 
-# logging.basicConfig(filename="./tools/log.log", format="%(message)s", level=logging.INFO)
+logfile = VimPy.vimext_home() +  "/tools/log.log"
+logging.basicConfig(filename=logfile, format="%(message)s", level=logging.INFO)
 
 def insert_patch(s, ps, ch):
     if not s:

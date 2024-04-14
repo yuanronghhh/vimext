@@ -7,7 +7,6 @@ import os
 
 g_module_path = vim.eval("$vimext_home") + "/plugin/python"
 sys.path.insert(0, g_module_path)
-os.chdir(vim.eval("$vimext_home"))
 
 import VimPy
 import Util
