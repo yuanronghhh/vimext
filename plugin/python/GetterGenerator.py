@@ -1,6 +1,5 @@
 import subprocess
 import sys
-import os
 import json
 import re
 import platform
@@ -9,7 +8,6 @@ import VimPy
 import Util
 
 from os import path
-from enum import IntEnum
 
 c_setter_common = """\
   self->${prop} = ${prop};

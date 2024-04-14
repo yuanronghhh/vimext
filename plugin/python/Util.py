@@ -1,19 +1,14 @@
+import VimPy
 import subprocess
-import sys
 import os
 import json
-import re
 import platform
 import logging
-
+import shutil
+import tempfile
 from os import path
-from enum import IntEnum
 
-logging.basicConfig(filename="./tools/log.log", format="%(message)s", level=logging.INFO)
-
-vs = None
-compilerInfo = None
-
+# logging.basicConfig(filename="./tools/log.log", format="%(message)s", level=logging.INFO)
 
 def insert_patch(s, ps, ch):
     if not s:
@@ -77,7 +72,6 @@ def get_filename(file_path):
 
      return basename[0: -len(path.splitext(file_path)[1])]
 
-
 def get_fullname_without_ext(file_path):
      return file_path[0: -len(path.splitext(file_path)[1])]
 
@@ -86,6 +80,9 @@ def get_extension(file_path):
 
 def getcwd():
     return os.getcwd().replace("\\", "/")
+
+def stat(filename):
+    return os.stat(filename)
 
 def process_cmd(cmd, cwd):
     """ Abstract subprocess """
@@ -122,11 +119,6 @@ def process_cmd(cmd, cwd):
 
 
 def get_vs_info():
-    global compilerInfo
-
-    if compilerInfo:
-        return compilerInfo
-
     vscmd = "C:/Program Files (x86)/Microsoft Visual Studio/Installer/vswhere.exe"
     if not path.exists(vscmd):
         return
@@ -141,15 +133,9 @@ def get_vs_info():
     compilerInfo = json.loads(out)
     return compilerInfo
 
-
 def get_gcc_info():
-    global compilerInfo
-
-    if compilerInfo:
-        return compilerInfo
-
     cmd = ["gcc", "--version"]
-
+    v = None
     out, err = process_cmd(cmd, None)
     if err:
         return None
@@ -160,77 +146,109 @@ def get_gcc_info():
 
     return v
 
-
-def get_gcc_ver():
-    inc_path = None
-
-    global vs
-    if not vs:
-        vss = get_gcc_info()
-        if not vss:
-            return None
-
-        vs = vss.split(".")[0]
-
-    return int(vs)
-
-def get_vs_header_path():
-    inc_path = None
-
-    global vs
-    if not vs:
-        vss = get_vs_info()
-        if not vss:
-            return None
-
-        vs = vss[-1]
-
-    # vs 2017
-    if vs["installationVersion"].startswith("15."):
-        inc_path = "%s/VC/Tools/MSVC/14.16.27023/include" % (vs["installationPath"])
-    else:
-        inc_path = "%s/VC/Tools/MSVC/14.29.30133/include" % (vs["installationPath"])
-
-    return inc_path.replace("\\", "/")
-
+def get_compiler_ver():
+    return g_util_info.get_compiler_info()
 
 def get_system_header_path():
-    incs = None
-
-    if platform.system() == "Windows":
-        vinc = get_vs_header_path()
-        incs = ["C:/Program Files (x86)/Windows Kits/10/Include/10.0.17763.0/um",
-                "C:/Program Files (x86)/Windows Kits/10/Include/10.0.17763.0/ucrt"]
-        if vinc:
-            incs.append(vinc)
-    elif platform.system() == "Linux":
-        p = os.getenv("PREFIX")
-        if not p:
-            p = "/usr"
-
-        ver = get_gcc_ver()
-        if not ver:
-            return []
-
-        incs = ["include/x86_64-linux-gnu",
-                "include",
-                "local/include",
-                "lib/gcc/x86_64-linux-gnu/%d/include",
-                "include/c++/%d",
-                "include/x86_64-linux-gnu/c++/%d",
-                "include/c++/%d/backward"]
-        for i in range(0, len(incs)):
-            inc = incs[i]
-            if inc.find("%d") > -1:
-                incs[i] = incs[i] % (ver)
-
-            incs[i] = "%s/%s" % (p, incs[i])
-
-    return incs
+    return g_util_info.get_system_header_path()
 
 def get_system_header_str():
-    hds = get_system_header_path()
+    hds = g_util_info.get_system_header_path()
     if not hds:
         return ""
 
     return ",".join(hds).replace(" ", "\\ ")
+
+def move_file(src, dst):
+    shutil.move(src, dst)
+
+def newtmp(mode):
+    return tempfile.NamedTemporaryFile(mode, delete=False)
+
+def json_format():
+    content = VimPy.get_content("%", 0)
+    if not content:
+        return []
+
+    try:
+        u = json.loads(content)
+        r = json.dumps(u, ensure_ascii=False, indent=2)
+        return r.split("\n")
+    except Exception as err:
+        logging.error("[json load error] %s" % (err))
+        return ""
+
+class UtilInfo:
+    def __init__(self):
+        version = None
+        compilerInfo = None
+        self.platform = platform.system()
+
+        if self.platform == "Windows":
+            compilerInfo = get_vs_info()
+
+            if compilerInfo:
+                version = int(self.compilerInfo[-1])
+        elif self.platform == "Linux":
+            compilerInfo = get_gcc_info()
+            if compilerInfo:
+                version = int(compilerInfo.split(".")[0])
+
+        self.compilerInfo = compilerInfo
+        self.version = version
+
+    def get_compiler_ver(self):
+        return self.version
+
+    def get_compiler_info(self):
+        return self.compilerInfo
+
+    def get_system_header_path(self):
+        incs = None
+
+        if self.platform == "Windows":
+            vinc = self.get_vs_header_path()
+            incs = ["C:/Program Files (x86)/Windows Kits/10/Include/10.0.17763.0/um",
+                    "C:/Program Files (x86)/Windows Kits/10/Include/10.0.17763.0/ucrt"]
+            if vinc:
+                incs.append(vinc)
+        elif self.platform == "Linux":
+            p = os.getenv("PREFIX")
+            if not p:
+                p = "/usr"
+
+            ver = self.version
+            if not ver:
+                return []
+
+            incs = ["include/x86_64-linux-gnu",
+                    "include",
+                    "local/include",
+                    "lib/gcc/x86_64-linux-gnu/%d/include",
+                    "include/c++/%d",
+                    "include/x86_64-linux-gnu/c++/%d",
+                    "include/c++/%d/backward"]
+            for i in range(0, len(incs)):
+                inc = incs[i]
+                if inc.find("%d") > -1:
+                    incs[i] = incs[i] % (ver)
+
+                incs[i] = "%s/%s" % (p, incs[i])
+        else:
+            return None
+
+        return incs
+
+    def get_vs_header_path(self):
+        inc_path = None
+        vs = self.compilerInfo
+
+        # vs 2017
+        if vs["installationVersion"].startswith("15."):
+            inc_path = "%s/VC/Tools/MSVC/14.16.27023/include" % (vs["installationPath"])
+        else:
+            inc_path = "%s/VC/Tools/MSVC/14.29.30133/include" % (vs["installationPath"])
+
+        return inc_path.replace("\\", "/")
+
+g_util_info = UtilInfo()

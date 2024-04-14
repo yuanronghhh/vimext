@@ -4,11 +4,14 @@ import logging
 def fullname():
     return vim.eval("expand(\"%:p\")")
 
-def eval(s):
-    return vim.eval(s)
+def vimext_home():
+    return g_vimpy_info.vimext_home
 
-def ctags_bin():
-    return vim.eval("$vimext_home") + "/tools/ctags"
+def is_unix():
+    return g_vimpy_info.is_unix
+
+def gui():
+    return g_vimpy_info.gui
 
 def excutable(name):
     return vim.eval('execuable("%s")' % (name))
@@ -29,8 +32,13 @@ def lines_s(s):
 
     return nline
 
-def get_content(buf):
-    lines = vim.bindeval("vimext#GetContent(\"%s\", 0, -1)" % (buf))
+def get_content(buf, start, end = -1):
+    lines = []
+
+    if end == -1:
+        lines = vim.bindeval("getbufline(\"%s\", %d, \"$\")" % (buf, start))
+    else:
+        lines = vim.bindeval("getbufline(\"%s\", %d, %d)" % (buf, start, end))
 
     nline = ""
     for l in lines:
@@ -41,3 +49,11 @@ def get_content(buf):
 
 def search(s, flag):
     vim.eval("search(\"%s\", \"%s\")" % (s, flag))
+
+class VimPyInfo:
+    def __init__(self):
+        self.is_unix = has("unix")
+        self.gui = has("gui")
+        self.vimext_home = vim.eval("$vimext_home")
+
+g_vimpy_info = VimPyInfo()

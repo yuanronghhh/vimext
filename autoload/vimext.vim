@@ -190,13 +190,3 @@ function vimext#SetEditor() abort
   else
   endif
 endfunction
-
-function vimext#GetContent(buf, start, end) abort
-  let end = "$"
-
-  if a:end > 0
-    let end = a:end
-  endif
-
-  return getbufline(a:buf, a:start, end)
-endfunction
