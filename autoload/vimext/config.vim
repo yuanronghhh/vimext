@@ -168,7 +168,7 @@ function vimext#config#LoadConfig()
   command! -nargs=? -complete=custom,vimext#session#SessionCompelete SaveSession :call vimext#session#SaveSession("<args>")
   command! -nargs=? HeaderOrCode :call vimext#HeaderOrCode()
   command! -nargs=? EditConfig :call vimext#config#Edit()
-  command! -nargs=? TabMan :call vimext#TabMan("<args>")
+  command! -nargs=? ManTab :call vimext#ManTab("<args>")
 
   autocmd! QuickfixCmdPost make :call vimext#config#QuickFixFunc()
   autocmd! BufRead *.vs,*.vert,*.glsl,*.frag,*.comp :set syntax=c

@@ -42,9 +42,6 @@ ${prop_type} ${type_name}_get_${prop}(${TypeName} *self) {
 }\
 """
 
-# logging.basicConfig(filename="E:/tmp/log.log", format="%(message)s", level=logging.INFO)
-
-
 class GetterGenerator:
     def __init__(self, filename, line):
         self.line = line

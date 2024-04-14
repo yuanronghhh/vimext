@@ -80,7 +80,7 @@ function vimext#GetCWDPath()
   return l:bpath
 endfunction
 
-function vimext#TabMan(word)
+function vimext#ManTab(word)
   let l:word = a:word
 
   if strlen(l:word) == 0
