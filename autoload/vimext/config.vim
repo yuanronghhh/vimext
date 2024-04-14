@@ -200,6 +200,7 @@ function vimext#config#ALEConfig()
   let g:ale_lint_on_save = 0
   let g:ale_lint_delay = 1000
   let g:ale_linters = { 'cs': ['mcs'], 'c': ['clangd'], 'python': ['pylint'] }
+  let g:ale_python_pylint_options = "--errors-only"
 
   if has("win32")
     let g:ale_c_parse_compile_commands = 0

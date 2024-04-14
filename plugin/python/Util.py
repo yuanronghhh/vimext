@@ -60,8 +60,6 @@ def update_camecase_patch(s):
     return nstr
 
 def to_camecase_name(type_name):
-    uidx = []
-
     if not type_name:
         return None
 
@@ -188,7 +186,7 @@ class UtilInfo:
             compilerInfo = get_vs_info()
 
             if compilerInfo:
-                version = int(self.compilerInfo[-1])
+                version = int(compilerInfo[-1])
         elif self.platform == "Linux":
             compilerInfo = get_gcc_info()
             if compilerInfo:
