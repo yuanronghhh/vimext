@@ -1,7 +1,8 @@
+import threading
+import logging
+
 from queue import Queue
 from threading import Lock, Condition
-import logging
-import utils
 
 
 class AsyncQueue(Queue):
@@ -13,7 +14,7 @@ class AsyncQueue(Queue):
         self.cond.acquire()
 
         self.put_nowait(item)
-        self.cond.notify_all()
+        self.cond.notify()
 
         self.cond.release()
 

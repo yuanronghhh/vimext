@@ -5,8 +5,8 @@ import json
 import re
 import platform
 import logging
-import vimpy
-import utils
+import VimPy
+import Util
 
 from os import path
 from enum import IntEnum
@@ -66,12 +66,12 @@ class GetterGenerator:
             return False
 
         if plen == 2:
-            bname = utils.get_filename(self.filename)
-            self.type_name = utils.to_under_line_name(bname)
-            self.TypeName = utils.to_camecase_name(self.type_name)
+            bname = Util.get_filename(self.filename)
+            self.type_name = Util.to_under_line_name(bname)
+            self.TypeName = Util.to_camecase_name(self.type_name)
         elif plen == 3:
             self.type_name = param[2].strip()
-            self.TypeName = utils.to_camecase_name(self.type_name)
+            self.TypeName = Util.to_camecase_name(self.type_name)
         elif plen == 4:
             self.type_name = param[2].strip()
             self.TypeName = param[3].strip()
@@ -148,8 +148,8 @@ def write_to_h_file(h_file, content):
         fp.close()
 
 def gen_c_getter_setter():
-    line = vimpy.vim_get_line()
-    filename = vimpy.vim_fullname()
+    line = VimPy.get_line()
+    filename = VimPy.fullname()
 
     if not filename.endswith(".c"):
         return []
@@ -161,7 +161,7 @@ def gen_c_getter_setter():
     hstr = gen.gen_h()
     cstr = gen.gen_c()
 
-    h_file = "%s.h" % (utils.get_fullname_without_ext(filename))
+    h_file = "%s.h" % (Util.get_fullname_without_ext(filename))
     write_to_h_file(h_file, hstr)
 
     return cstr.split("\n")

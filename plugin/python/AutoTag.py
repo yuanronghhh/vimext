@@ -1,14 +1,15 @@
 import logging
 import os
-import vimpy
 import sys
+import Util
+import VimPy
 
 from os import path
-from utils import process_cmd, get_system_header_path, getcwd
 from threading import Thread
 import AsyncQueue
 
 maxsize = 100 # mb
+queue = AsyncQueue.AsyncQueue()
 
 def os_pwrite(fp, p, bs, recp):
     fp.seek(p)
@@ -60,10 +61,16 @@ def ctag_update(cmd, cwd, tagfile, filename):
     if not cmd:
         return
 
+    if not path.exists(tagfile):
+        return
+
+    if not path.exists(filename):
+        return
+
     if filename:
         clean_tags(tagfile, filename)
 
-    process_cmd(cmd, cwd)
+    Util.process_cmd(cmd, cwd)
 
 class CtagsTask:
     def __init__(self, cwd, tagfile, filename):
@@ -71,7 +78,7 @@ class CtagsTask:
         self.tagfile = tagfile
         self.filename = filename
 
-class AutoTags:
+class AutoTag:
     def __init__(self):
         self.th = None
         self.tagfile = None
@@ -87,7 +94,7 @@ class AutoTags:
 
 
         if sys.platform == "win32":
-            self.tags_cmd = vimpy.vim_ctags_bin()
+            self.tags_cmd = VimPy.ctags_bin()
             self.tags_cmd = self.tags_cmd + ".exe"
             self.igns = ["__THROW", "_Check_return_wat_", "__cdecl", "_ACRTIMP", "_In_",
                     "_Check_return_", "_Success_", "_In_z_", "_Check_return_opt_",
@@ -97,10 +104,7 @@ class AutoTags:
         else:
             pass
 
-        self.sys_incs = get_system_header_path()
-
-
-        self.queue = AsyncQueue.AsyncQueue()
+        self.sys_incs = Util.get_system_header_path()
         self.th = Thread(target=self.ctag_thread, args=())
         self.th.setDaemon(True)
         self.th.start()
@@ -122,13 +126,19 @@ class AutoTags:
 
     def ctag_thread(self):
         while True:
-            task = self.queue.dequeue()
+            task = queue.dequeue()
             if task is None:
                 break
 
             cmd = self.get_ctags_cmd(task.tagfile, task.filename, task.cwd)
             ctag_update(cmd, task.cwd, task.tagfile, task.filename)
-            self.queue.task_done()
+            queue.task_done()
+
+    def new_thread_update(self, task):
+        cmd = self.get_ctags_cmd(task.tagfile, task.filename, task.cwd)
+        th = Thread(target=ctag_update, args=(cmd, task.cwd, task.tagfile, task.filename))
+        th.setDaemon(True)
+        th.start()
 
     def get_ctags_cmd(self, newtag, filename, cwd = None):
         matches = self.matches
@@ -189,7 +199,7 @@ class AutoTags:
         tagfile = self.tagfile
 
         if not is_cmd:
-            filename = vimpy.vim_fullname()
+            filename = VimPy.fullname()
             if not filename:
                 return
 
@@ -215,12 +225,16 @@ class AutoTags:
             cwd = path.dirname(tagfile)
         else:
             tagfile = "tags"
-            cwd = getcwd()
+            cwd = Util.getcwd()
             filename = None
 
         self.tagfile = tagfile
 
         task = CtagsTask(cwd, tagfile, filename)
-        self.queue.enqueue(task)
 
-g_atags = AutoTags()
+        if VimPy.has("unix") and VimPy.has("gui"):
+            self.new_thread_update(task)
+        else:
+            queue.enqueue(task)
+
+g_atag = AutoTag()

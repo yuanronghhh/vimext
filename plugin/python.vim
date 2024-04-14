@@ -9,9 +9,10 @@ g_module_path = vim.eval("$vimext_home") + "/plugin/python"
 sys.path.insert(0, g_module_path)
 os.chdir(vim.eval("$vimext_home"))
 
-import utils
+import VimPy
+import Util
 import CommentParser, GetterGenerator
-from autotags import g_atags
+from AutoTag import g_atag
 EOF
   let g:vimext_python = 1
 
@@ -37,7 +38,7 @@ function python#GetSystemHeaderPath()
     return ""
   endif
 
-  let ipath = py3eval("utils.get_system_header_str()")
+  let ipath = py3eval("Util.get_system_header_str()")
   return ipath
 endfunction
 
@@ -106,7 +107,7 @@ function python#JsonFormat()
     return
   endif
 
-  let array = py3eval("utils.json_format()")
+  let array = py3eval("Util.json_format()")
   if len(array) == 0
     return
   endif
@@ -144,7 +145,7 @@ function python#ReGenCtags()
     return
   endif
 
-  python3 g_atags.regen_tags()
+  python3 g_atag.regen_tags()
 endfunction
 
 function python#GenCtags()
@@ -152,11 +153,11 @@ function python#GenCtags()
     return
   endif
 
-  python3 g_atags.gen_tags()
+  python3 g_atag.gen_tags()
 endfunction
 
 function python#DeInit()
-  python3 g_atags.deinit()
+  python3 g_atag.deinit()
 endfunction
 
 if has("python3")

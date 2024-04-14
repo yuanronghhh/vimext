@@ -5,7 +5,7 @@ import json
 import re
 import platform
 import logging
-import vimpy
+import VimPy
 
 from os import path
 from enum import IntEnum
@@ -233,14 +233,14 @@ class CommentParser:
         return pstr
 
     def get_comment(self):
-        filename = vimpy.vim_fullname()
+        filename = VimPy.fullname()
         lang = self.get_filelang(filename)
         comment = None
 
         if lang in [FileType.LANG_C, FileType.LANG_JS, FileType.LANG_CSHARP]:
-            self.line = vimpy.vim_lines_s("{")
+            self.line = VimPy.lines_s("{")
         elif lang == FileType.LANG_PYTHON:
-            self.line = vimpy.vim_lines_s(":")
+            self.line = VimPy.lines_s(":")
 
         if not self.line:
             return
