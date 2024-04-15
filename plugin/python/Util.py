@@ -146,7 +146,10 @@ def get_gcc_info():
     return v
 
 def get_compiler_ver():
-    return g_util_info.get_compiler_info()
+    return g_util_info.version
+
+def get_compiler_info():
+    return g_util_info.compilerInfo
 
 def get_system_header_path():
     return g_util_info.get_system_header_path()
@@ -187,7 +190,8 @@ class UtilInfo:
             compilerInfo = get_vs_info()
 
             if compilerInfo:
-                version = int(compilerInfo[-1])
+                compilerInfo = compilerInfo[-1]
+                version = compilerInfo["installationVersion"]
         elif self.platform == "Linux":
             compilerInfo = get_gcc_info()
             if compilerInfo:
@@ -195,12 +199,6 @@ class UtilInfo:
 
         self.compilerInfo = compilerInfo
         self.version = version
-
-    def get_compiler_ver(self):
-        return self.version
-
-    def get_compiler_info(self):
-        return self.compilerInfo
 
     def get_system_header_path(self):
         incs = None
