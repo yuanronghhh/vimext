@@ -36,7 +36,7 @@ ${SetterHandle}\
 }
 
 ${prop_type} ${type_name}_get_${prop}(${TypeName} *self) {
-  sys_return_val_if_fail(self != NULL, NULL);
+  sys_return_val_if_fail(self != NULL, ${default_return});
 
   return self->${prop};
 }\
@@ -46,6 +46,12 @@ class GetterGenerator:
     def __init__(self, filename, line):
         self.line = line
         self.filename = filename
+        self.default_set = {
+            "SysBool": "false",
+            "SysInt": "-1",
+            "SysUInt": "0",
+            "SysDouble": "-1"
+        }
 
     def parse(self):
         param = self.line.split(",")
@@ -95,11 +101,16 @@ class GetterGenerator:
         return fname
 
     def relace_vars(self, tpl):
+        default_return = "NULL"
+        if self.prop_type in self.default_set:
+            default_return = self.default_set[self.prop_type]
+
         return tpl\
                 .replace("${TypeName}", self.TypeName)\
                 .replace("${type_name}", self.type_name)\
                 .replace("${prop}", self.prop)\
-                .replace("${prop_type}", self.prop_type)
+                .replace("${prop_type}", self.prop_type)\
+                .replace("${default_return}", default_return)
 
     def gen_c(self):
         ntpl = c_getter_setter_template_c
