@@ -70,7 +70,7 @@ class AutoTag:
 
 
         if sys.platform == "win32":
-            self.tags_cmd =  VimPy.vimext_home() + "/tools/ctags.exe"
+            self.tags_cmd =  VimPy.vimext_home() + "/tools/ctags"
             self.tags_cmd = self.tags_cmd + ".exe"
             self.igns = ["__THROW", "_Check_return_wat_", "__cdecl", "_ACRTIMP", "_In_",
                     "_Check_return_", "_Success_", "_In_z_", "_Check_return_opt_",
