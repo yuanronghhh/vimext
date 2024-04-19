@@ -16,7 +16,6 @@ function vimext#config#LoadConfig()
   filetype indent on
 
   set showmatch
-  set guioptions=r
   set fileformats=dos,unix,mac
   set fileencoding=utf-8
   set encoding=utf-8
@@ -62,6 +61,7 @@ function vimext#config#LoadConfig()
   if has("gui_running")
     colorscheme materialtheme
     set columns=120 lines=45
+    set guioptions=!r
   else
     colorscheme molokai
   endif
@@ -242,12 +242,17 @@ function vimext#config#TerminalLeave()
 endfunction
 
 function vimext#config#QuickFixFunc()
-  if &ft != "cs"
-    return
+  :redraw!
+
+  if &ft == "cs"
+    let all = getqflist()
+    let oerror = filter(all, "v:val.type == \"e\"")
+
+    call setqflist(oerror, "r")
   endif
+endfunction
 
-  let all = getqflist()
-  let oerror = filter(all, "v:val.type == \"e\"")
-
-  call setqflist(oerror, "r")
+function vimext#config#SMake() 
+  :silent make
+  :redraw!
 endfunction
