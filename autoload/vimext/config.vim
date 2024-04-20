@@ -54,16 +54,14 @@ function vimext#config#LoadConfig()
   set foldmethod=syntax
   set foldlevel=2
   set t_Co=256
+  colorscheme jellybeans
   " switch case 缩进问题
   set cinoptions=l1
   set sessionoptions=globals,blank,buffers,curdir,tabpages
 
   if has("gui_running")
-    colorscheme materialtheme
     set columns=120 lines=45
     set guioptions=!r
-  else
-    colorscheme molokai
   endif
 
   if v:version >= 800
