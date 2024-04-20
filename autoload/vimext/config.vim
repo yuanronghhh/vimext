@@ -61,7 +61,7 @@ function vimext#config#LoadConfig()
 
   if has("gui_running")
     set columns=120 lines=45
-    set guioptions=!r
+    set guioptions=r
   endif
 
   if v:version >= 800
