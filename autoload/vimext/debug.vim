@@ -63,13 +63,14 @@ function s:StartPost() abort
 endfunction
 
 function s:StopPre() abort
+endfunction
+
+function s:StopPost() abort
   unmap <F5>
   unmap <F6>
   unmap <F7>
   unmap <F8>
-endfunction
 
-function s:StopPost() abort
   call vimext#runner#Dispose()
   execute ":redraw!"
 endfunction
