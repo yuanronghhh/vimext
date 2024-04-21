@@ -9,6 +9,7 @@ endif
 
 set t_Co=256
 let g:colors_name = "jellybeans"
+let g:terminal_ansi_colors = ['#1c1c1c', '#d75f5f', '#87af87', '#afaf87', '#5f87af', '#af87af', '#5f8787', '#9e9e9e', '#767676', '#d7875f', '#afd7af', '#d7d787', '#87afd7', '#d7afd7', '#87afaf', '#bcbcbc']
 
 "hi IncSearch -- no settings --
 "hi WildMenu -- no settings --
@@ -97,4 +98,6 @@ hi Structure guifg=#8fbfdc guibg=NONE guisp=NONE gui=NONE ctermfg=110 ctermbg=NO
 hi Macro guifg=#8fbfdc guibg=NONE guisp=NONE gui=NONE ctermfg=110 ctermbg=NONE cterm=NONE
 hi DiffAdd guifg=NONE guibg=#032218 guisp=#032218 gui=NONE ctermfg=NONE ctermbg=23 cterm=NONE
 hi TabLine guifg=#000000 guibg=#b0b8c0 guisp=#b0b8c0 gui=italic ctermfg=NONE ctermbg=7 cterm=NONE
+hi Terminal guifg=#bcbcbc guibg=#1c1c1c
+hi ColorColumn term=reverse ctermbg=4 guifg=#ffffff guibg=#1c1c1c
 set background=dark
