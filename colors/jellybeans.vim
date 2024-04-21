@@ -16,7 +16,7 @@ let g:terminal_ansi_colors = ['#1c1c1c', '#d75f5f', '#87af87', '#afaf87', '#5f87
 "hi CTagsMember -- no settings --
 "hi CTagsGlobalConstant -- no settings --
 "hi Ignore -- no settings --
-hi Normal guifg=#e8e8d3 guibg=#151515 guisp=#151515 gui=NONE ctermfg=187 ctermbg=NONE cterm=NONE
+hi Normal guifg=#dcdcdc guibg=#252525 guisp=#151515 gui=NONE ctermfg=187 ctermbg=NONE cterm=NONE
 "hi CTagsImport -- no settings --
 "hi CTagsGlobalVariable -- no settings --
 "hi SpellRare -- no settings --
