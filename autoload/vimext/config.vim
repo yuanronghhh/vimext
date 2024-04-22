@@ -240,17 +240,11 @@ function vimext#config#TerminalLeave()
 endfunction
 
 function vimext#config#QuickFixFunc()
-  :redraw!
-
   if &ft == "cs"
     let all = getqflist()
     let oerror = filter(all, "v:val.type == \"e\"")
 
     call setqflist(oerror, "r")
   endif
-endfunction
-
-function vimext#config#SMake() 
-  :silent make
-  :redraw!
+  :redraw
 endfunction
