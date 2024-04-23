@@ -41,7 +41,6 @@ function vimext#session#OpenSession(sfile) abort
   exec "source ".g:vim_session."/".sfile
   call win_gotoid(wid)
 
-  call vimext#logger#Info(exists(":NERDTree"))
   if exists(":NERDTree")
     execute ":NERDTreeFind"
   endif
