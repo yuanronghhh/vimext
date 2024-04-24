@@ -5,7 +5,7 @@ import logging
 import sys
 
 from os import path
-from threading import Thread
+from threading import Thread, Lock
 
 maxsize = 100 # mb
 
@@ -68,6 +68,9 @@ class AutoTag:
                 "stdlib.h", "string.h", "time.h", "uchar.h", "wchar.h", "malloc.h" \
                 "wctype.h"]
 
+        self.lock = Lock()
+        if not self.is_unix_gui:
+            self.queue = AsyncQueue.AsyncQueue()
 
         if sys.platform == "win32":
             self.tags_cmd =  VimPy.vimext_home() + "/tools/ctags"
@@ -82,7 +85,6 @@ class AutoTag:
 
         self.sys_incs = Util.get_system_header_path()
         self.gen_lock = False
-        self.queue = AsyncQueue.AsyncQueue()
 
         if not self.is_unix_gui:
             self.th = Thread(target=self.ctag_thread, args=())
@@ -105,6 +107,8 @@ class AutoTag:
         return self.find_tag_recursive(np)
 
     def ctag_update(self, cmd, cwd, tagfile, filename):
+        self.lock.acquire()
+
         if not cmd:
             return
 
@@ -112,6 +116,8 @@ class AutoTag:
             clean_tags(tagfile, filename)
 
         Util.process_cmd(cmd, cwd)
+
+        self.lock.release()
 
     def ctag_thread(self):
         while True:
