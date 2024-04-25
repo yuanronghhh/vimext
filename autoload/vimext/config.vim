@@ -57,7 +57,7 @@ function vimext#config#LoadConfig()
   colorscheme jellybeans
   " switch case 缩进问题
   set cinoptions=l1
-  set sessionoptions=globals,blank,buffers,curdir,tabpages
+  set sessionoptions=blank,buffers,curdir,tabpages,unix
 
   if has("gui_running")
     set columns=120 lines=45
