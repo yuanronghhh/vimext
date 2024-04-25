@@ -210,6 +210,7 @@ class UtilInfo:
             if vinc:
                 incs.append(vinc)
         elif self.platform == "Linux":
+            # for termux
             p = os.getenv("PREFIX")
             if not p:
                 p = "/usr"

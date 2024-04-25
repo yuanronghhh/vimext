@@ -171,7 +171,7 @@ function vimext#config#LoadConfig()
   autocmd! QuickfixCmdPost make :call vimext#config#QuickFixFunc()
   autocmd! BufRead *.vs,*.vert,*.glsl,*.frag,*.comp :set syntax=c
   autocmd! BufRead *.vue,*.cshtml :set syntax=html
-  autocmd! BufRead *.vala :set syntax=cpp
+  autocmd! BufRead *.vala,*.mojom :set syntax=cs
   autocmd! BufRead *.cst :set syntax=javascript
   autocmd! BufRead * :call vimext#LargeFile()
   autocmd! BufEnter *.c,*.h,*.cs ++once :call vimext#SetEditor()
