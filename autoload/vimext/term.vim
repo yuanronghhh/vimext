@@ -10,8 +10,8 @@ function s:Go(self) abort
 endfunction
 
 function s:Destroy(self) abort
-  call job_stop(a:self.job, "kill")
-  call vimext#buffer#Wipe(a:self.buf)
+  :call job_stop(a:self.job, "kill")
+  :call vimext#buffer#Wipe(a:self.buf)
 endfunction
 
 function s:GetLine(self, lnum) abort
@@ -50,7 +50,7 @@ function vimext#term#New(cmd, opts) abort
 endfunction
 
 function s:Send(self, cmd) abort
-  call term_sendkeys(a:self.buf, a:cmd . "\n")
+  :call term_sendkeys(a:self.buf, a:cmd . "\n")
 endfunction
 
 function s:Running(self) abort
@@ -68,7 +68,7 @@ function s:NewDbgTerm(cmd, out_func, exit_func) abort
         \ 'hidden': 1,
         \ })
   if cmd_term is v:null
-    call vimext#logger#Error('Failed to start cmd term')
+    :call vimext#logger#Error('Failed to start cmd term')
     return v:null
   endif
 
@@ -77,14 +77,14 @@ function s:NewDbgTerm(cmd, out_func, exit_func) abort
         \ 'exit_cb': a:exit_func,
         \ })
   if dbg_term is v:null
-    call vimext#logger#Error('Failed to start dbg term')
+    :call vimext#logger#Error('Failed to start dbg term')
     return v:null
   endif
 
   " cmd_term is hidden
   let cmd_term.winid = dbg_term.winid
 
-  call dbg_term.Send(dbg_term, 'server new-ui mi ' . cmd_term.tty)
+  :call dbg_term.Send(dbg_term, 'server new-ui mi ' . cmd_term.tty)
 
   return cmd_term
 endfunction
@@ -103,7 +103,7 @@ function s:NewProg() abort
         \ 'vertical': 1,
         \ })
   if term is v:null
-    call vimext#logger#Error('Failed to start debugger term')
+    :call vimext#logger#Error('Failed to start debugger term')
     return v:null
   endif
 
@@ -119,13 +119,13 @@ function s:TermOut(channel, data) abort
   let msgs = split(a:data, "\r\n")
 
   for msg in msgs
-    call s:self.HandleOutput(a:channel, msg)
+    :call s:self.HandleOutput(a:channel, msg)
   endfor
 endfunction
 
 " term
 function s:TermExit(job, status) abort
-  call s:self.HandleExit(a:job, a:status)
+  :call s:self.HandleExit(a:job, a:status)
 endfunction
 
 function vimext#term#Create(param) abort

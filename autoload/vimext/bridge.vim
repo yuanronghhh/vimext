@@ -7,16 +7,16 @@ function s:BridgeCallback(cmd) abort
     return
   endif
 
-  call s:BridgeSend(s:self, cmd)
+  :call s:BridgeSend(s:self, cmd)
 endfunction
 
 function s:BridgeInterrupt() abort
   if s:pid == 0
-    call vimext#logger#Error('Cannot interrupt, not find a process ID')
+    :call vimext#logger#Error('Cannot interrupt, not find a process ID')
     return
   endif
 
-  call debugbreak(s:bridge_pid)
+  :call debugbreak(s:bridge_pid)
 endfunction
 
 function vimext#bridge#Ref() abort
@@ -36,7 +36,7 @@ function vimext#bridge#Create(dbg, funcs) abort
   endif
 
   if !has('terminal')
-    call vimext#logger#Error("+terminal not enabled in vim")
+    :call vimext#logger#Error("+terminal not enabled in vim")
     return v:null
   endif
 

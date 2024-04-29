@@ -302,7 +302,7 @@ function s:MIProcessOutput(msg) abort
       let info[1] = nameIdx[1]
       let info[2] = nameIdx[2]
       let info[3] = substitute(msg, "^=>[ ]*", "", "")
-      call add(s:self.lines, info[3])
+      :call add(s:self.lines, info[3])
     endif
   elseif msg[0] == '~'
 
@@ -311,7 +311,7 @@ function s:MIProcessOutput(msg) abort
       let line = vimext#debug#DecodeMessage(msg[1:], v:false)
       let line = substitute(line, '^[ ]*', "", "g")
       let line = substitute(line, '^=>[ ]*', "", "g")
-      call add(s:self.lines, line)
+      :call add(s:self.lines, line)
     else
       let info[0] = 8
       let info[1] = vimext#debug#DecodeMessage(msg[1:], v:false)

@@ -46,9 +46,9 @@ endfunction
 function vimext#breakpoint#DeleteN(id)
   let signs = vimext#sign#GetByBreakID(a:id)
   for sign in signs
-    call vimext#sign#Dispose(sign)
+    :call vimext#sign#Dispose(sign)
   endfor
-  call remove(s:breaks, a:id)
+  :call remove(s:breaks, a:id)
 endfunction
 
 function vimext#breakpoint#Delete(brk)
@@ -56,7 +56,7 @@ function vimext#breakpoint#Delete(brk)
     return
   endif
 
-  call vimext#breakpoint#DeleteID(a:brk[1])
+  :call vimext#breakpoint#DeleteID(a:brk[1])
 endfunction
 
 function vimext#breakpoint#Get(fname, lnum)
@@ -72,7 +72,7 @@ endfunction
 function vimext#breakpoint#Add(brk)
   let winid = win_getid()
   if a:brk[0] != 4
-    call vimext#logger#Warning("break brk not correct")
+    :call vimext#logger#Warning("break brk not correct")
     return
   endif
 
@@ -83,7 +83,7 @@ function vimext#breakpoint#Add(brk)
   let s:breaks[a:brk[1]] = a:brk
   let sign = vimext#sign#New(winid, a:brk[1], a:brk[1], 1)
   if sign isnot v:null
-    call vimext#sign#Place(sign, a:brk[7], a:brk[8])
+    :call vimext#sign#Place(sign, a:brk[7], a:brk[8])
   endif
 endfunction
 
@@ -98,7 +98,7 @@ function s:SetBrks() abort
 
     let signs = vimext#sign#GetByBreakID(brk[1])
     for sign in signs
-      call vimext#sign#Place(sign, brk[7], brk[8])
+      :call vimext#sign#Place(sign, brk[7], brk[8])
     endfor
   endfor
 endfunction
@@ -113,28 +113,28 @@ function s:DeleteBrks(isDestroy) abort
     let signs = vimext#sign#GetByBreakID(brk[1])
     for sign in signs
       if a:isDestroy
-        call vimext#sign#Dispose(sign)
+        :call vimext#sign#Dispose(sign)
       else
-        call vimext#sign#UnPlace(sign)
+        :call vimext#sign#UnPlace(sign)
       endif
     endfor
   endfor
 
   if a:isDestroy
     for brk in values(s:breaks)
-      call vimext#breakpoint#Delete(brk)
+      :call vimext#breakpoint#Delete(brk)
     endfor
   endif
 endfunction
 
 function vimext#breakpoint#Init()
-  hi default dbgBreakpoint term=reverse ctermbg=red guibg=red
-  hi default dbgBreakpointDisabled term=reverse ctermbg=gray guibg=gray
+  :highlight default dbgBreakpoint term=reverse ctermbg=red guibg=red
+  :highlight default dbgBreakpointDisabled term=reverse ctermbg=gray guibg=gray
 
-  au BufRead * call s:SetBrks()
-  au BufUnload * call s:DeleteBrks(v:false)
+  au BufRead * :call s:SetBrks()
+  au BufUnload * :call s:DeleteBrks(v:false)
 endfunction
 
 function vimext#breakpoint#DeInit()
-  call s:DeleteBrks(v:true)
+  :call s:DeleteBrks(v:true)
 endfunction

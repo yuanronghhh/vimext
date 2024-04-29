@@ -10,7 +10,7 @@ function vimext#plugins#LoadPlugin(plugins) abort
       let ppath = g:vim_plugin."/".p
     endif
 
-    exec "set rtp+=".ppath
+    :execute "set rtp+=".ppath
   endfor
 endfunction
 

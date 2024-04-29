@@ -11,11 +11,11 @@ function vimext#session#SaveSession(sfile) abort
   endif
 
   if exists(":NERDTree")
-    execute ":tabdo NERDTreeClose"
+    :execute ":tabdo NERDTreeClose"
   endif
 
-  echo "mks! ".g:vim_session."/".sfile
-  exec "mks! ".g:vim_session."/".sfile
+  :call vimext#logger#Info("mks! ".g:vim_session."/".sfile)
+  :execute "mks! ".g:vim_session."/".sfile
 endfunction
 
 function vimext#session#SessionCompelete(A,L,P) abort
@@ -37,17 +37,16 @@ function vimext#session#OpenSession(sfile) abort
   endif
 
   let s:spath = sfile
-  echo "source ".g:vim_session."/".sfile
-  exec "source ".g:vim_session."/".sfile
-  call win_gotoid(wid)
+  :execute "source ".g:vim_session."/".sfile
+  :call win_gotoid(wid)
 
   if exists(":NERDTree")
-    execute ":NERDTreeFind"
+    :execute ":NERDTreeFind"
   endif
 endfunction
 
 function vimext#session#AutoSave() abort
-  call vimext#session#SaveSession(s:spath)
+  :call vimext#session#SaveSession(s:spath)
 endfunction
 
 function vimext#session#Init() abort
@@ -55,5 +54,5 @@ function vimext#session#Init() abort
     return
   endif
 
-  :autocmd VimLeave * call vimext#session#AutoSave()
+  :autocmd VimLeave * :call vimext#session#AutoSave()
 endfunction

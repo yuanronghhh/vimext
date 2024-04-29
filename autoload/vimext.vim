@@ -25,14 +25,14 @@ function vimext#Init()
   let g:vim_plugin = g:vim_home."/plugins"
 
   if !isdirectory(g:vim_session)
-    call mkdir(g:vim_session)
+    :call mkdir(g:vim_session)
   endif
 
   if !isdirectory(&undodir)
-    call mkdir(&undodir)
+    :call mkdir(&undodir)
   endif
 
-  call vimext#session#Init()
+  :call vimext#session#Init()
 
   if has("libcall")
     let g:vimext_c_api = 1
@@ -41,10 +41,10 @@ endfunction
 
 function vimext#FullScreen()
   if s:is_fullscreen == 0
-    exec ":simalt ~x"
+    :execute ":simalt ~x"
     let s:is_fullscreen = 1
   else
-    exec ":simalt ~r"
+    :execute ":simalt ~r"
     let s:is_fullscreen = 0
   endif
 endfunction
@@ -87,7 +87,7 @@ function vimext#ManTab(word)
     let l:word = expand("<cword>")
   endif
 
-  exec ":tab Man -s2,3 ".l:word
+  :execute ":tab Man -s2,3 ".l:word
 endfunction
 
 function vimext#HeaderOrCode()
@@ -115,23 +115,23 @@ function vimext#HeaderOrCode()
       endif
 
       let l:nname = l:tname
-      exec ":edit ".l:nname
+      :execute ":edit ".l:nname
 
       break
     endfor
 
     if !l:item[1] && len(l:ftags) > 0
-      exec ":silent! tag! ".l:content
+      :execute ":silent! tag! ".l:content
     endif
 
     break
   endfor
 
   if l:nname == "" && len(l:ftags) > 0
-    exec ":silent! tag! ".l:content
+    :execute ":silent! tag! ".l:content
   endif
 
-  call search(l:content, 'c')
+  :call search(l:content, 'c')
 endfunction
 
 function vimext#GetLinesEnds(endstr)

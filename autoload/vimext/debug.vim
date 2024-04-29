@@ -23,7 +23,7 @@ endfunction
 
 function vimext#debug#DecodeMessage(quotedText, literal)
   if a:quotedText[0] != '"'
-    call vimext#logger#Error('DecodeMessage(): missing quote in ' . a:quotedText)
+    :call vimext#logger#Error('DecodeMessage(): missing quote in ' . a:quotedText)
     return
   endif
 
@@ -51,12 +51,12 @@ function vimext#debug#DecodeMessage(quotedText, literal)
 endfunction
 
 function s:StartPre() abort
-  nnoremap <F5>  :call vimext#runner#Continue()<cr>
-  nnoremap <F6>  :call vimext#runner#Next()<cr>
-  nnoremap <F7>  :call vimext#runner#Step()<cr>
-  nnoremap <F8>  :call vimext#runner#Break(line("."))<cr>
+  :nnoremap <F5>  :call vimext#runner#Continue()<cr>
+  :nnoremap <F6>  :call vimext#runner#Next()<cr>
+  :nnoremap <F7>  :call vimext#runner#Step()<cr>
+  :nnoremap <F8>  :call vimext#runner#Break(line("."))<cr>
 
-  execute ":silent tabnew"
+  :execute ":silent tabnew"
 endfunction
 
 function s:StartPost() abort
@@ -66,13 +66,13 @@ function s:StopPre() abort
 endfunction
 
 function s:StopPost() abort
-  unmap <F5>
-  unmap <F6>
-  unmap <F7>
-  unmap <F8>
+  :unmap <F5>
+  :unmap <F6>
+  :unmap <F7>
+  :unmap <F8>
 
-  call vimext#runner#Dispose()
-  execute ":redraw!"
+  :call vimext#runner#Dispose()
+  :execute ":redraw!"
 endfunction
 
 function s:StartDebug(bang, ...) abort
@@ -90,21 +90,21 @@ function s:StartDebug(bang, ...) abort
     return
   endif
 
-  call vimext#runner#Run(pargs)
+  :call vimext#runner#Run(pargs)
 endfunction
 
 function vimext#debug#Init() abort
-  autocmd! User DbgDebugStartPre :call s:StartPre()
-  autocmd! User DbgDebugStartPost :call s:StartPost()
-  autocmd! User DbgDebugStopPre :call s:StopPre()
-  autocmd! User DbgDebugStopPost :call s:StopPost()
+  :autocmd! User DbgDebugStartPre :call s:StartPre()
+  :autocmd! User DbgDebugStartPost :call s:StartPost()
+  :autocmd! User DbgDebugStopPre :call s:StopPre()
+  :autocmd! User DbgDebugStopPost :call s:StopPost()
 
-  command -nargs=* -complete=file -bang DbgDebug call s:StartDebug(<bang>0, <f-args>)
-  command DbgAsm call vimext#runner#Asm()
-  command DbgSource call vimext#runner#Source()
-  command DbgSave call vimext#runner#SaveBrks()
+  :command -nargs=* -complete=file -bang DbgDebug :call s:StartDebug(<bang>0, <f-args>)
+  :command DbgAsm :call vimext#runner#Asm()
+  :command DbgSource :call vimext#runner#Source()
+  :command DbgSave :call vimext#runner#SaveBrks()
 endfunction
 
 function vimext#debug#DeInit() abort
-  delcommand DbgDebug
+  :delcommand DbgDebug
 endfunction

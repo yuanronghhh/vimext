@@ -198,10 +198,10 @@ function! s:SetOption(name,default)
         let l:ewrap='\"'
     endif
     if !exists("g:solarized_".a:name) || g:solarized_{a:name}==a:default
-        exe 'let g:solarized_'.a:name.'='.l:wrap.a:default.l:wrap.'"'
-        exe 'call add(s:defaults_list, "\" let g:solarized_'.a:name.'='.l:ewrap.g:solarized_{a:name}.l:ewrap.'")'
+        :execute 'let g:solarized_'.a:name.'='.l:wrap.a:default.l:wrap.'"'
+        :execute 'call add(s:defaults_list, "\" let g:solarized_'.a:name.'='.l:ewrap.g:solarized_{a:name}.l:ewrap.'")'
     else
-        exe 'call add(s:options_list,  "let g:solarized_'.a:name.'='.l:ewrap.g:solarized_{a:name}.l:ewrap.'    \"default value is '.a:default.'")'
+        :execute 'call add(s:options_list,  "let g:solarized_'.a:name.'='.l:ewrap.g:solarized_{a:name}.l:ewrap.'    \"default value is '.a:default.'")'
     endif
 endfunction
 
@@ -491,24 +491,24 @@ exe "let s:fmt_revbb    = ' ".s:vmode."=NONE".s:r.s:bb.   " term=NONE".s:r.s:bb.
 exe "let s:fmt_revbbu   = ' ".s:vmode."=NONE".s:r.s:bb.s:u." term=NONE".s:r.s:bb.s:u."'"
 
 if has("gui_running")
-    exe "let s:sp_none      = ' guisp=".s:none   ."'"
-    exe "let s:sp_back      = ' guisp=".s:back   ."'"
-    exe "let s:sp_base03    = ' guisp=".s:base03 ."'"
-    exe "let s:sp_base02    = ' guisp=".s:base02 ."'"
-    exe "let s:sp_base01    = ' guisp=".s:base01 ."'"
-    exe "let s:sp_base00    = ' guisp=".s:base00 ."'"
-    exe "let s:sp_base0     = ' guisp=".s:base0  ."'"
-    exe "let s:sp_base1     = ' guisp=".s:base1  ."'"
-    exe "let s:sp_base2     = ' guisp=".s:base2  ."'"
-    exe "let s:sp_base3     = ' guisp=".s:base3  ."'"
-    exe "let s:sp_green     = ' guisp=".s:green  ."'"
-    exe "let s:sp_yellow    = ' guisp=".s:yellow ."'"
-    exe "let s:sp_orange    = ' guisp=".s:orange ."'"
-    exe "let s:sp_red       = ' guisp=".s:red    ."'"
-    exe "let s:sp_magenta   = ' guisp=".s:magenta."'"
-    exe "let s:sp_violet    = ' guisp=".s:violet ."'"
-    exe "let s:sp_blue      = ' guisp=".s:blue   ."'"
-    exe "let s:sp_cyan      = ' guisp=".s:cyan   ."'"
+    :execute "let s:sp_none      = ' guisp=".s:none   ."'"
+    :execute "let s:sp_back      = ' guisp=".s:back   ."'"
+    :execute "let s:sp_base03    = ' guisp=".s:base03 ."'"
+    :execute "let s:sp_base02    = ' guisp=".s:base02 ."'"
+    :execute "let s:sp_base01    = ' guisp=".s:base01 ."'"
+    :execute "let s:sp_base00    = ' guisp=".s:base00 ."'"
+    :execute "let s:sp_base0     = ' guisp=".s:base0  ."'"
+    :execute "let s:sp_base1     = ' guisp=".s:base1  ."'"
+    :execute "let s:sp_base2     = ' guisp=".s:base2  ."'"
+    :execute "let s:sp_base3     = ' guisp=".s:base3  ."'"
+    :execute "let s:sp_green     = ' guisp=".s:green  ."'"
+    :execute "let s:sp_yellow    = ' guisp=".s:yellow ."'"
+    :execute "let s:sp_orange    = ' guisp=".s:orange ."'"
+    :execute "let s:sp_red       = ' guisp=".s:red    ."'"
+    :execute "let s:sp_magenta   = ' guisp=".s:magenta."'"
+    :execute "let s:sp_violet    = ' guisp=".s:violet ."'"
+    :execute "let s:sp_blue      = ' guisp=".s:blue   ."'"
+    :execute "let s:sp_cyan      = ' guisp=".s:cyan   ."'"
 else
     let s:sp_none      = ""
     let s:sp_back      = ""
@@ -534,7 +534,7 @@ endif
 " Basic highlighting"{{{
 " ---------------------------------------------------------------------
 " note that link syntax to avoid duplicate configuration doesn't work with the
-" exe compiled formats
+" :execute compiled formats
 
 exe "hi! Normal"         .s:fmt_none   .s:fg_base0  .s:bg_back
 
@@ -600,14 +600,14 @@ exe "hi! Todo"           .s:fmt_bold   .s:fg_magenta.s:bg_none
 " Extended highlighting "{{{
 " ---------------------------------------------------------------------
 if      (g:solarized_visibility=="high")
-    exe "hi! SpecialKey" .s:fmt_revr   .s:fg_red    .s:bg_none
-    exe "hi! NonText"    .s:fmt_bold   .s:fg_red    .s:bg_none
+    :execute "hi! SpecialKey" .s:fmt_revr   .s:fg_red    .s:bg_none
+    :execute "hi! NonText"    .s:fmt_bold   .s:fg_red    .s:bg_none
 elseif  (g:solarized_visibility=="low")
-    exe "hi! SpecialKey" .s:fmt_bold   .s:fg_base02 .s:bg_none
-    exe "hi! NonText"    .s:fmt_bold   .s:fg_base02 .s:bg_none
+    :execute "hi! SpecialKey" .s:fmt_bold   .s:fg_base02 .s:bg_none
+    :execute "hi! NonText"    .s:fmt_bold   .s:fg_base02 .s:bg_none
 else
-    exe "hi! SpecialKey" .s:fmt_bold   .s:fg_base00 .s:bg_base02
-    exe "hi! NonText"    .s:fmt_bold   .s:fg_base00 .s:bg_none
+    :execute "hi! SpecialKey" .s:fmt_bold   .s:fg_base00 .s:bg_base02
+    :execute "hi! NonText"    .s:fmt_bold   .s:fg_base00 .s:bg_none
 endif
 exe "hi! StatusLine"     .s:fmt_none   .s:fg_base1  .s:bg_base02 .s:fmt_revbb
 exe "hi! StatusLineNC"   .s:fmt_none   .s:fg_base00 .s:bg_base02 .s:fmt_revbb
@@ -621,9 +621,9 @@ exe "hi! ModeMsg"        .s:fmt_none   .s:fg_blue   .s:bg_none
 exe "hi! LineNr"         .s:fmt_none   .s:fg_base01 .s:bg_base02
 exe "hi! Question"       .s:fmt_bold   .s:fg_cyan   .s:bg_none
 if ( has("gui_running") || &t_Co > 8 )
-    exe "hi! VertSplit"  .s:fmt_none   .s:fg_base00 .s:bg_base00
+    :execute "hi! VertSplit"  .s:fmt_none   .s:fg_base00 .s:bg_base00
 else
-    exe "hi! VertSplit"  .s:fmt_revbb  .s:fg_base00 .s:bg_base02
+    :execute "hi! VertSplit"  .s:fmt_revbb  .s:fg_base00 .s:bg_base02
 endif
 exe "hi! Title"          .s:fmt_bold   .s:fg_orange .s:bg_none
 exe "hi! VisualNOS"      .s:fmt_stnd   .s:fg_none   .s:bg_base02 .s:fmt_revbb
@@ -987,7 +987,7 @@ hi! link pandocMetadataTitle             pandocMetadata
 " mode (detected with the script scope s:vmode variable). It also allows for
 " other potential terminal customizations that might make gui mode suboptimal.
 "
-autocmd GUIEnter * if (s:vmode != "gui") | exe "colorscheme " . g:colors_name | endif
+autocmd GUIEnter * if (s:vmode != "gui") | :execute "colorscheme " . g:colors_name | endif
 "}}}
 " Highlight Trailing Space {{{
 " Experimental: Different highlight when on cursorline
@@ -996,14 +996,14 @@ function! s:SolarizedHiTrail()
         hi! clear solarizedTrailingSpace
     else
         syn match solarizedTrailingSpace "\s*$"
-        exe "hi! solarizedTrailingSpace " .s:fmt_undr .s:fg_red .s:bg_none .s:sp_red
+        :execute "hi! solarizedTrailingSpace " .s:fmt_undr .s:fg_red .s:bg_none .s:sp_red
     endif
 endfunction
 augroup SolarizedHiTrail
     autocmd!
     if g:solarized_hitrail==1
-        autocmd! Syntax * call s:SolarizedHiTrail()
-        autocmd! ColorScheme * if g:colors_name == "solarized" | call s:SolarizedHiTrail() | else | augroup! s:SolarizedHiTrail | endif
+        autocmd! Syntax * :call s:SolarizedHiTrail()
+        autocmd! ColorScheme * if g:colors_name == "solarized" | :call s:SolarizedHiTrail() | else | augroup! s:SolarizedHiTrail | endif
     endif
 augroup END
 " }}}
@@ -1055,18 +1055,18 @@ function! SolarizedMenu()
         amenu &Solarized.&Background.&Help:\ ToggleBG     :help togglebg<CR>
 
         if g:solarized_bold==0 | let l:boldswitch="On" | else | let l:boldswitch="Off" | endif
-        exe "amenu &Solarized.&Styling.&Turn\\ Bold\\ ".l:boldswitch." :let g:solarized_bold=(abs(g:solarized_bold-1)) \\| colorscheme solarized<CR>"
+        :execute "amenu &Solarized.&Styling.&Turn\\ Bold\\ ".l:boldswitch." :let g:solarized_bold=(abs(g:solarized_bold-1)) \\| colorscheme solarized<CR>"
         if g:solarized_italic==0 | let l:italicswitch="On" | else | let l:italicswitch="Off" | endif
-        exe "amenu &Solarized.&Styling.&Turn\\ Italic\\ ".l:italicswitch." :let g:solarized_italic=(abs(g:solarized_italic-1)) \\| colorscheme solarized<CR>"
+        :execute "amenu &Solarized.&Styling.&Turn\\ Italic\\ ".l:italicswitch." :let g:solarized_italic=(abs(g:solarized_italic-1)) \\| colorscheme solarized<CR>"
         if g:solarized_underline==0 | let l:underlineswitch="On" | else | let l:underlineswitch="Off" | endif
-        exe "amenu &Solarized.&Styling.&Turn\\ Underline\\ ".l:underlineswitch." :let g:solarized_underline=(abs(g:solarized_underline-1)) \\| colorscheme solarized<CR>"
+        :execute "amenu &Solarized.&Styling.&Turn\\ Underline\\ ".l:underlineswitch." :let g:solarized_underline=(abs(g:solarized_underline-1)) \\| colorscheme solarized<CR>"
 
         amenu &Solarized.&Diff\ Mode.&Low\ Diff\ Mode    :let g:solarized_diffmode="low"     \| colorscheme solarized<CR>
         amenu &Solarized.&Diff\ Mode.&Normal\ Diff\ Mode :let g:solarized_diffmode="normal"  \| colorscheme solarized<CR>
         amenu &Solarized.&Diff\ Mode.&High\ Diff\ Mode   :let g:solarized_diffmode="high"    \| colorscheme solarized<CR>
 
         if g:solarized_hitrail==0 | let l:hitrailswitch="On" | else | let l:hitrailswitch="Off" | endif
-        exe "amenu &Solarized.&Experimental.&Turn\\ Highlight\\ Trailing\\ Spaces\\ ".l:hitrailswitch." :let g:solarized_hitrail=(abs(g:solarized_hitrail-1)) \\| colorscheme solarized<CR>"
+        :execute "amenu &Solarized.&Experimental.&Turn\\ Highlight\\ Trailing\\ Spaces\\ ".l:hitrailswitch." :let g:solarized_hitrail=(abs(g:solarized_hitrail-1)) \\| colorscheme solarized<CR>"
         an    &Solarized.&Experimental.-sep-               <Nop>
         amenu &Solarized.&Experimental.&Help:\ HiTrail    :help 'solarized_hitrail'<CR>
 
@@ -1087,7 +1087,7 @@ function! SolarizedMenu()
     endif
 endfunction
 
-autocmd ColorScheme * if g:colors_name != "solarized" | silent! aunmenu Solarized | else | call SolarizedMenu() | endif
+autocmd ColorScheme * if g:colors_name != "solarized" | silent! aunmenu Solarized | else | :call SolarizedMenu() | endif
 
 "}}}
 " License "{{{

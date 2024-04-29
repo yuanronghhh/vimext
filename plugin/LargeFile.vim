@@ -32,18 +32,18 @@ endif
 " (based on vimtip#611)
 augroup LargeFile
  au!
- au BufReadPre	* call <SID>LargeFile(0,expand("<afile>"))
- au BufReadPost	* call <SID>LargeFilePost()
+ au BufReadPre	* :call <SID>LargeFile(0,expand("<afile>"))
+ au BufReadPost	* :call <SID>LargeFilePost()
 augroup END
 
 " ---------------------------------------------------------------------
 " s:LargeFile: {{{2
 fun! s:LargeFile(force,fname)
-"  call Dfunc("s:LargeFile(force=".a:force." fname<".a:fname.">) buf#".bufnr("%")."<".bufname("%")."> g:LargeFile=".g:LargeFile)
+"  :call Dfunc("s:LargeFile(force=".a:force." fname<".a:fname.">) buf#".bufnr("%")."<".bufname("%")."> g:LargeFile=".g:LargeFile)
   let fsz= getfsize(a:fname)
-"  call Decho("fsz=".fsz)
+"  :call Decho("fsz=".fsz)
   if a:force || fsz >= g:LargeFile*1024*1024 || fsz <= -2
-   sil! call s:ParenMatchOff()
+   sil! :call s:ParenMatchOff()
    syn clear
    let b:LF_bhkeep      = &l:bh
    let b:LF_bkkeep      = &l:bk
@@ -66,34 +66,34 @@ fun! s:LargeFile(force,fname)
    endif
    augroup LargeFileAU
     if v:version < 704 || (v:version == 704 && !has("patch073"))
-     au LargeFile BufEnter  <buffer> call s:LargeFileEnter()
-     au LargeFile BufLeave  <buffer> call s:LargeFileLeave()
+     au LargeFile BufEnter  <buffer> :call s:LargeFileEnter()
+     au LargeFile BufLeave  <buffer> :call s:LargeFileLeave()
 	endif
     au LargeFile BufUnload <buffer> augroup LargeFileAU|au! * <buffer>|augroup END
    augroup END
    let b:LargeFile_mode = 1
-"   call Decho("turning  b:LargeFile_mode to ".b:LargeFile_mode)
-   echomsg "***note*** handling a large file" 
+"   :call Decho("turning  b:LargeFile_mode to ".b:LargeFile_mode)
+   :echomsg "***note*** handling a large file" 
   endif
-"  call Dret("s:LargeFile")
+"  :call Dret("s:LargeFile")
 endfun
 
 " ---------------------------------------------------------------------
 " s:LargeFilePost: determines if the file is large enough to warrant LargeFile treatment.  Called via a BufReadPost event.  {{{2
 fun! s:LargeFilePost()
-"  call Dfunc("s:LargeFilePost() ".line2byte(line("$")+1)."bytes g:LargeFile=".g:LargeFile.(exists("b:LargeFile_mode")? " b:LargeFile_mode=".b:LargeFile_mode : ""))
+"  :call Dfunc("s:LargeFilePost() ".line2byte(line("$")+1)."bytes g:LargeFile=".g:LargeFile.(exists("b:LargeFile_mode")? " b:LargeFile_mode=".b:LargeFile_mode : ""))
   if line2byte(line("$")+1) >= g:LargeFile*1024*1024
    if !exists("b:LargeFile_mode") || b:LargeFile_mode == 0
 	call s:LargeFile(1,expand("<afile>"))
    endif
   endif
-"  call Dret("s:LargeFilePost")
+"  :call Dret("s:LargeFilePost")
 endfun
 
 " ---------------------------------------------------------------------
 " s:ParenMatchOff: {{{2
 fun! s:ParenMatchOff()
-"  call Dfunc("s:ParenMatchOff()")
+"  :call Dfunc("s:ParenMatchOff()")
    redir => matchparen_enabled
     com NoMatchParen
    redir END
@@ -101,15 +101,15 @@ fun! s:ParenMatchOff()
 	let b:LF_nmpkeep= 1
 	NoMatchParen
    endif
-"  call Dret("s:ParenMatchOff")
+"  :call Dret("s:ParenMatchOff")
 endfun
 
 " ---------------------------------------------------------------------
 " s:Unlarge: this function will undo what the LargeFile autocmd does {{{2
 fun! s:Unlarge()
-"  call Dfunc("s:Unlarge()")
+"  :call Dfunc("s:Unlarge()")
   let b:LargeFile_mode= 0
-"  call Decho("turning  b:LargeFile_mode to ".b:LargeFile_mode)
+"  :call Decho("turning  b:LargeFile_mode to ".b:LargeFile_mode)
   if exists("b:LF_bhkeep") |let &l:bh  = b:LF_bhkeep |unlet b:LF_bhkeep |endif
   if exists("b:LF_bkkeep") |let &l:bk  = b:LF_bkkeep |unlet b:LF_bkkeep |endif
   if exists("b:LF_cptkeep")|let &cpt   = b:LF_cptkeep|unlet b:LF_cptkeep|endif
@@ -128,17 +128,17 @@ fun! s:Unlarge()
   augroup LargeFileAU
    au! * <buffer>
   augroup END
-  call s:LargeFileLeave()
-  echomsg "***note*** stopped large-file handling"
-"  call Dret("s:Unlarge")
+  :call s:LargeFileLeave()
+  :echomsg "***note*** stopped large-file handling"
+"  :call Dret("s:Unlarge")
 endfun
 
 " ---------------------------------------------------------------------
 " s:LargeFileEnter: {{{2
 fun! s:LargeFileEnter()
-"  call Dfunc("s:LargeFileEnter() buf#".bufnr("%")."<".bufname("%").">")
+"  :call Dfunc("s:LargeFileEnter() buf#".bufnr("%")."<".bufname("%").">")
   if has("persistent_undo")
-"   call Decho("(s:LargeFileEnter) handling persistent undo: write undo history")
+"   :call Decho("(s:LargeFileEnter) handling persistent undo: write undo history")
    " Write all undo history:
    "   Turn off all events/autocmds.
    "   Split the buffer so bufdo will always work (ie. won't abandon the current buffer)
@@ -147,12 +147,12 @@ fun! s:LargeFileEnter()
    let eikeep= &ei
    set ei=all
    1split
-   bufdo exe "wundo! ".fnameescape(undofile(bufname("%")))
+   bufdo :execute "wundo! ".fnameescape(undofile(bufname("%")))
    q!
    let &ei= eikeep
   endif
   set ul=-1
-"  call Dret("s:LargeFileEnter")
+"  :call Dret("s:LargeFileEnter")
 endfun
 
 " ---------------------------------------------------------------------
@@ -160,10 +160,10 @@ endfun
 "                   This routine is useful for having a LargeFile still open,
 "                   but one has changed windows/tabs to edit a different file.
 fun! s:LargeFileLeave()
-"  call Dfunc("s:LargeFileLeave() buf#".bufnr("%")."<".bufname("%").">")
+"  :call Dfunc("s:LargeFileLeave() buf#".bufnr("%")."<".bufname("%").">")
   " restore undo trees
   if has("persistent_undo")
-"   call Decho("(s:LargeFileLeave) handling persistent undo: restoring undo history")
+"   :call Decho("(s:LargeFileLeave) handling persistent undo: restoring undo history")
    " Read all undo history:
    "   Turn off all events/autocmds.
    "   Split the buffer so bufdo will always work (ie. won't abandon the current buffer)
@@ -172,7 +172,7 @@ fun! s:LargeFileLeave()
    let eikeep= &ei
    set ei=all
    1split
-   bufdo exe "sil! rundo ".fnameescape(undofile(bufname("%")))|call delete(undofile(bufname("%")))
+   bufdo :execute "sil! rundo ".fnameescape(undofile(bufname("%")))|call delete(undofile(bufname("%")))
    q!
    let &ei= eikeep
   endif
@@ -186,7 +186,7 @@ fun! s:LargeFileLeave()
   if exists("b:LF_ulkeep")
    let &ul= b:LF_ulkeep
   endif
-"  call Dret("s:LargeFileLeave")
+"  :call Dret("s:LargeFileLeave")
 endfun
 
 " ---------------------------------------------------------------------

@@ -12,11 +12,11 @@ endfunction
 
 function s:SetConfig(self, prompt, proto) abort
   if has("win32")
-    call a:prompt.Send(a:prompt, a:proto.Set . " new-console on")
-    call a:prompt.Send(a:prompt, a:proto.Set . " print pretty on")
-    call a:prompt.Send(a:prompt, a:proto.Set . " breakpoint pending on")
+    :call a:prompt.Send(a:prompt, a:proto.Set . " new-console on")
+    :call a:prompt.Send(a:prompt, a:proto.Set . " print pretty on")
+    :call a:prompt.Send(a:prompt, a:proto.Set . " breakpoint pending on")
   else
-    call a:prompt.Send(a:prompt, "set breakpoint pending on")
+    :call a:prompt.Send(a:prompt, "set breakpoint pending on")
   endif
 
 endfunction
@@ -26,7 +26,7 @@ function vimext#gccdbg#FilterStart(term) abort
 
   while 1
     if !a:term.Running(a:term)
-      call vimext#logger#Error('Exited unexpectedly: '. join(a:cmd, " "))
+      :call vimext#logger#Error('Exited unexpectedly: '. join(a:cmd, " "))
       return 0
     endif
 

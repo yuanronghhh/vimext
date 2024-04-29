@@ -16,10 +16,10 @@ endfunction
 
 function s:Destroy(self) abort
   if a:self.mode == 1
-    call job_stop(a:self.job, "kill")
+    :call job_stop(a:self.job, "kill")
   endif
 
-  call vimext#buffer#Wipe(a:self.buf)
+  :call vimext#buffer#Wipe(a:self.buf)
 endfunction
 
 function vimext#prompt#New(mode, name, cmd, opts) abort
@@ -49,7 +49,7 @@ function vimext#prompt#New(mode, name, cmd, opts) abort
     endif
 
     let winid = vimext#buffer#NewWindow(a:name, 2, v:null)
-    call win_gotoid(winid)
+    :call win_gotoid(winid)
 
     let self.winid = winid
     let self.buf = bufnr("%")
@@ -58,13 +58,13 @@ function vimext#prompt#New(mode, name, cmd, opts) abort
     let self.channel = job_getchannel(job)
 
     setlocal buftype=prompt
-    call prompt_setprompt(self.buf, '(gdb) ')
-    call prompt_setcallback(self.buf, get(a:opts, "callback", v:null))
-    call prompt_setinterrupt(self.buf, get(a:opts, "interrupt", v:null))
+    :call prompt_setprompt(self.buf, '(gdb) ')
+    :call prompt_setcallback(self.buf, get(a:opts, "callback", v:null))
+    :call prompt_setinterrupt(self.buf, get(a:opts, "interrupt", v:null))
     startinsert
   elseif a:mode == 2
     let winid = vimext#buffer#NewWindow(a:name, 1, v:null)
-    call win_gotoid(winid)
+    :call win_gotoid(winid)
 
     let self.winid = winid
     let self.buf = bufnr('%')
@@ -80,7 +80,7 @@ function s:Send(self, cmd) abort
     return
   endif
 
-  call ch_sendraw(a:self.channel, a:cmd . "\n")
+  :call ch_sendraw(a:self.channel, a:cmd . "\n")
 endfunction
 
 function s:Running(self) abort
@@ -105,7 +105,7 @@ endfunction
 function s:NewProg() abort
   let term = vimext#prompt#New(2, "Output", v:null, {})
   if term is v:null
-    call vimext#logger#Error('Failed to start debugger term')
+    :call vimext#logger#Error('Failed to start debugger term')
     return v:null
   endif
 
@@ -115,22 +115,22 @@ endfunction
 function s:Print(self, msg) abort
   let cwin = win_getid()
 
-  call win_gotoid(a:self.winid)
-  call append(line('$') - 1, a:msg)
-  call setcursorcharpos('$', 1)
+  :call win_gotoid(a:self.winid)
+  :call append(line('$') - 1, a:msg)
+  :call setcursorcharpos('$', 1)
 
-  call win_gotoid(cwin)
+  :call win_gotoid(cwin)
 endfunction
 " term end"
 
 " prompt
 function s:PromptInterrupt() abort
   if s:pid == 0
-    call vimext#logger#Error('Cannot interrupt, not find a process ID')
+    :call vimext#logger#Error('Cannot interrupt, not find a process ID')
     return
   endif
 
-  call debugbreak(s:prompt_pid)
+  :call debugbreak(s:prompt_pid)
 endfunction
 
 " prompt manager
@@ -148,7 +148,7 @@ function vimext#prompt#Create(funcs) abort
         \ }
 
   if !has('terminal')
-    call vimext#logger#Error("+terminal not enabled in vim")
+    :call vimext#logger#Error("+terminal not enabled in vim")
     return v:null
   endif
 

@@ -4,28 +4,28 @@ let s:pc_id = 30
 function s:Highlight(init, old, new) abort
   let default = a:init ? 'default ' : ''
   if a:new ==# 'light' && a:old !=# 'light'
-    exe "hi " . default . "DbgPC term=reverse ctermbg=lightblue guibg=lightblue"
+    :execute "hi " . default . "DbgPC term=reverse ctermbg=lightblue guibg=lightblue"
   elseif a:new ==# 'dark' && a:old !=# 'dark'
-    exe "hi " . default . "DbgPC term=reverse ctermbg=darkblue guibg=darkblue"
+    :execute "hi " . default . "DbgPC term=reverse ctermbg=darkblue guibg=darkblue"
   endif
 endfunction
 
 function vimext#sign#Init() abort
-  call s:Highlight(1, '', &background)
-  hi default dbgSignOn term=reverse ctermbg=red guibg=red
-  hi default dbgSignOff term=reverse ctermbg=gray guibg=gray
+  :call s:Highlight(1, '', &background)
+  :highlight default dbgSignOn term=reverse ctermbg=red guibg=red
+  :highlight default dbgSignOff term=reverse ctermbg=gray guibg=gray
 
-  call sign_define('DbgPC', {
+  :call sign_define('DbgPC', {
         \ "linehl": 'DbgPC'
         \ })
 endfunction
 
 function vimext#sign#DeInit() abort
-  call sign_unplace('DbgDebug', {
+  :call sign_unplace('DbgDebug', {
         \ "id": s:pc_id
         \})
 
-  call sign_undefine('DbgPC')
+  :call sign_undefine('DbgPC')
 endfunction
 
 function vimext#sign#GetByBreakID(breakid) abort
@@ -33,7 +33,7 @@ function vimext#sign#GetByBreakID(breakid) abort
 
   for sign in s:signs
     if sign.breakid == a:breakid
-      call add(v, sign)
+      :call add(v, sign)
     endif
   endfor
 
@@ -41,13 +41,13 @@ function vimext#sign#GetByBreakID(breakid) abort
 endfunction
 
 function vimext#sign#Line(pc_id, fname, lnum) abort
-  exe a:lnum
-  normal! zv
+  :execute a:lnum
+  :normal! zv
 
-  call sign_unplace('DbgDebug', {
+  :call sign_unplace('DbgDebug', {
         \ "id": a:pc_id
         \})
-  call sign_place(a:pc_id, 'DbgDebug', 'DbgPC', a:fname, {
+  :call sign_place(a:pc_id, 'DbgDebug', 'DbgPC', a:fname, {
         \ "lnum": a:lnum,
         \ "priority": 110
         \ })
@@ -58,7 +58,7 @@ function vimext#sign#UnPlace(self) abort
     return
   endif
 
-  call sign_unplace("DbgDebug", {
+  :call sign_unplace("DbgDebug", {
         \ "buffer": a:self.filename,
         \ "id": a:self.id
         \ })
@@ -71,7 +71,7 @@ function vimext#sign#Place(self, filename, linenum) abort
 
   let a:self.linenum = a:linenum
   let a:self.filename = a:filename
-  call sign_place(a:self.id,
+  :call sign_place(a:self.id,
         \ "DbgDebug",
         \ "DbgSign" . a:self.id,
         \ a:filename,
@@ -114,7 +114,7 @@ function vimext#sign#New(winid, breakid, text, enable) abort
   let id = a:breakid
   let osign = vimext#sign#Get(id)
   if osign isnot v:null
-    call vimext#logger#Warning("sign id repeat: " . string(osign))
+    :call vimext#logger#Warning("sign id repeat: " . string(osign))
     return v:null
   endif
 
@@ -126,11 +126,11 @@ function vimext#sign#New(winid, breakid, text, enable) abort
         \ "linenum": 0,
         \ }
 
-  call sign_define('DbgSign'.id, {
+  :call sign_define('DbgSign'.id, {
         \ "text": a:text,
         \ "texthl": hiName})
 
-  call add(s:signs, nsign)
+  :call add(s:signs, nsign)
 
   return nsign
 endfunction
@@ -138,11 +138,11 @@ endfunction
 function vimext#sign#Dispose(self) abort
   let idx = vimext#sign#Index(s:signs, a:self.id)
   if idx > -1
-    call remove(s:signs, idx)
+    :call remove(s:signs, idx)
   else
-    call vimext#logger#Warning("sign id remove failed: " . string(a:self))
+    :call vimext#logger#Warning("sign id remove failed: " . string(a:self))
   endif
 
-  call sign_undefine('DbgSign'.a:self.id)
-  call vimext#sign#UnPlace(a:self)
+  :call sign_undefine('DbgSign'.a:self.id)
+  :call vimext#sign#UnPlace(a:self)
 endfunction

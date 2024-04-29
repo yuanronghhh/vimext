@@ -25,7 +25,7 @@ EOF
   autocmd! FileType python :nnoremap <buffer> <leader>b :call python#Operate(line('.'))<cr>
 
   augroup autotag
-    autocmd BufWritePost * call python#ReGenCtags()
+    :autocmd BufWritePost * :call python#ReGenCtags()
   augroup END
 
   let $C_HEADERS=python#GetSystemHeaderPath()
@@ -50,7 +50,7 @@ function python#Operate(lnum)
   let g:vimext_breakpoint_cmd = 'import pdb; pdb.set_trace()  # XXX BREAKPOINT'
 
   if strridx(line, g:vimext_breakpoint_cmd) != -1
-    normal dd
+    :normal dd
   else
     let plnum = prevnonblank(a:lnum)
     if &expandtab
@@ -59,8 +59,8 @@ function python#Operate(lnum)
       let indents = repeat("\t", plnum / &shiftwidth)
     endif
 
-    call append(line('.')-1, indents.g:vimext_breakpoint_cmd)
-    normal k
+    :call append(line('.')-1, indents.g:vimext_breakpoint_cmd)
+    :normal k
   endif
 endfunction
 
@@ -73,7 +73,7 @@ function python#save()
     try
       noautocmd write
     catch /E212/
-      call python#error("File modified and I can't save it. Please save it manually.")
+      :call python#error("File modified and I can't save it. Please save it manually.")
       return 0
     endtry
   endif
@@ -94,8 +94,8 @@ function python#doc(word)
     let word = matchstr(pre, "[A-Za-z0-9_.]*$") . matchstr(suf, "^[A-Za-z0-9_]*")
   endif
 
-  exe "botright 8new __doc__"
-  exec ":%!".g:python_cmd." -m pydoc ".word
+  :execute "botright 8new __doc__"
+  :execute ":%!".g:python_cmd." -m pydoc ".word
   pclose
   setlocal nomodified nomodifiable buftype=nofile bufhidden=delete noswapfile nowrap previewwindow filetype=rst
   redraw
@@ -112,7 +112,7 @@ function python#JsonFormat()
   endif
 
   silent! %delete _
-  call append(line('.')-1, array)
+  :call append(line('.')-1, array)
 endfunction
 
 function python#GetComment()
@@ -121,7 +121,7 @@ function python#GetComment()
   endif
 
   let comment = py3eval("CommentParser.get_comment()")
-  call append(line('.')-1, comment)
+  :call append(line('.')-1, comment)
 endfunction
 
 function python#GenGetter()
@@ -135,8 +135,8 @@ function python#GenGetter()
     return 0
   endif
 
-  call append(line('.')-1, array)
-  call deletebufline('%', line('.'))
+  :call append(line('.')-1, array)
+  :call deletebufline('%', line('.'))
 endfunction
 
 function python#ReGenCtags()
@@ -160,6 +160,6 @@ function python#DeInit()
 endfunction
 
 if has("python3")
-  call python#Init()
+  :call python#Init()
   autocmd! ExitPre * :call python#DeInit()
 endif

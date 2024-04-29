@@ -3,9 +3,9 @@ function vimext#logger#Warning(msg) abort
     return
   endif
 
-  echohl WarningMsg
-  echomsg '[warning] '.string(a:msg)
-  echohl None
+  :echohl WarningMsg
+  :echomsg '[warning] '.string(a:msg)
+  :echohl None
 endfunction
 
 function vimext#logger#Error(msg) abort
@@ -13,9 +13,9 @@ function vimext#logger#Error(msg) abort
     return
   endif
 
-  echohl ErrorMsg
-  echoerr '[error] '.string(a:msg)
-  echohl None
+  :echohl ErrorMsg
+  :echoerr '[error] '.string(a:msg)
+  :echohl None
 endfunction
 
 function vimext#logger#Info(msg) abort
@@ -23,14 +23,14 @@ function vimext#logger#Info(msg) abort
     return
   endif
 
-  echomsg '[info] '.string(a:msg)
+  :echomsg '[info] '.string(a:msg)
 endfunction
 
 function vimext#logger#ProfileStart(funcname) abort
-  execute ':profile start vim-profile.log'
-  execute ':profile func '. a:funcname
+  :execute ':profile start vim-profile.log'
+  :execute ':profile func '. a:funcname
 endfunction
 
 function vimext#logger#ProfileEnd() abort
-  execute ':profile pause'
+  :execute ':profile pause'
 endfunction
