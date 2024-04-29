@@ -47,7 +47,7 @@ function vimext#config#LoadConfig()
   set backspace=start,indent,eol
   set whichwrap+=<,>,h,l
   set colorcolumn=80
-  set scrolloff=3
+  "set scrolloff=3
   set undofile
   set novisualbell
   set t_vb=
@@ -88,58 +88,33 @@ function vimext#config#LoadConfig()
       set shell=$BashBin
     endif
 
-    if has("nvim")
-      let &shellxquote = '('
-      let &shellslash = v:true
-      let &shellcmdflag = '-c'
-
-      command! Terminal :call vimext#config#TerminalNew()
-      autocmd TermOpen * :call vimext#config#TerminalEnter()
-      autocmd TermClose * :call vimext#config#TerminalClose()
-      autocmd BufEnter term://* :call vimext#config#TerminalEnter()
-      autocmd BufLeave term://* :call vimext#config#TerminalLeave()
-    else
-      set guifont=Consolas:h12
-    endif
-
     let g:tagbar_ctags_bin = vimext#GetBinPath("ctags.exe")
-    command! -nargs=0 FullScreen :call vimext#FullScreen()
-    command! -nargs=0 GitBash :call vimext#config#GitBash()
+    command! -nargs=0 FullScreen call vimext#FullScreen()
+    command! -nargs=0 GitBash call vimext#config#GitBash()
   elseif has("mac")
     set guiligatures
   endif
 
-  inoremap < <><ESC>i
-  inoremap > <c-r>=vimext#ClosePair('>')<CR>
-  inoremap ( ()<ESC>i
-  inoremap ) <c-r>=vimext#ClosePair(')')<CR>
-  inoremap } <c-r>=vimext#ClosePair('}')<CR>
-  inoremap [ []<ESC>i
-  inoremap ] <c-r>=vimext#ClosePair(']')<CR>
-  inoremap " ""<ESC>i
-  inoremap ' ''<ESC>i
-  inoremap <c-o> <ESC>o
-  inoremap { {}<ESC>i
-  nnoremap x "_x
-  nnoremap X "_X
-  vnoremap x "_x
-  vnoremap X "_X
+  if has("nvim")
+    let &shellxquote = '('
+    let &shellslash = v:true
+    let &shellcmdflag = '-c'
 
-  " for c develop
-  nnoremap <leader>c :GetComment<cr>
-  nnoremap <F9>  :HeaderOrCode<cr>
+    tnoremap <Esc> <C-\><C-N>
+    tnoremap <expr> <C-R> '<C-\><C-N>"'.nr2char(getchar()).'pi'
+    tnoremap <C-W> <C-\><C-N><C-W>
 
-  nnoremap <F10> :cp<cr>
-  nnoremap <F11> :cn<cr>
-
-  nnoremap <C-h> <C-w>h
-  nnoremap <C-j> gt
-  nnoremap <C-k> gT
-  nnoremap <C-l> <C-w>l
-  nnoremap <C-s> :w<cr>
-  nnoremap <F2>  :NERDTreeFind<cr>
-  nnoremap <F3>  :tabnew<cr>
-  nnoremap <F4>  :close<cr>
+    command Terminal call vimext#config#TerminalNew()
+    autocmd TermOpen * call vimext#config#TerminalEnter()
+    autocmd TermClose * call vimext#config#TerminalClose()
+    autocmd BufEnter term://* call vimext#config#TerminalEnter()
+    autocmd BufLeave term://* call vimext#config#TerminalLeave()
+    tnoremap <C-j> <C-\><C-N><C-W>gt
+    tnoremap <C-k> <C-\><C-N><C-W>gT
+  else
+    tnoremap <C-j> <C-W>gt
+    tnoremap <C-k> <C-W>gT
+  endif
 
   let g:NERDTreeShowHidden = 1
   let g:NERDTreeShowLineNumbers = 0
@@ -162,22 +137,51 @@ function vimext#config#LoadConfig()
   call vimext#plugins#LoadPlugin(plugins)
   call vimext#debug#Init()
 
-  command! -nargs=? -complete=custom,vimext#session#SessionCompelete OpenSession :call vimext#session#OpenSession("<args>")
-  command! -nargs=? -complete=custom,vimext#session#SessionCompelete SaveSession :call vimext#session#SaveSession("<args>")
-  command! -nargs=? HeaderOrCode :call vimext#HeaderOrCode()
-  command! -nargs=? EditConfig :call vimext#config#Edit()
-  command! -nargs=? ManTab :call vimext#ManTab("<args>")
+  command! -nargs=? -complete=custom,vimext#session#SessionCompelete OpenSession call vimext#session#OpenSession("<args>")
+  command! -nargs=? -complete=custom,vimext#session#SessionCompelete SaveSession call vimext#session#SaveSession("<args>")
+  command! -nargs=? HeaderOrCode call vimext#HeaderOrCode()
+  command! -nargs=? EditConfig call vimext#config#Edit()
+  command! -nargs=? ManTab call vimext#ManTab("<args>")
 
-  autocmd! QuickfixCmdPost make :call vimext#config#QuickFixFunc()
-  autocmd! BufRead *.vs,*.vert,*.glsl,*.frag,*.comp :set syntax=c
-  autocmd! BufRead *.vue,*.cshtml :set syntax=html
-  autocmd! BufRead *.vala,*.mojom :set syntax=cs
-  autocmd! BufRead *.cst :set syntax=javascript
-  autocmd! BufRead * :call vimext#LargeFile()
-  autocmd! BufEnter *.c,*.h,*.cs ++once :call vimext#SetEditor()
+  autocmd! QuickfixCmdPost make call vimext#config#QuickFixFunc()
+  autocmd! BufRead *.vs,*.vert,*.glsl,*.frag,*.comp set syntax=c
+  autocmd! BufRead *.vue,*.cshtml set syntax=html
+  autocmd! BufRead *.vala,*.mojom set syntax=cs
+  autocmd! BufRead *.cst set syntax=javascript
+  autocmd! BufRead * call vimext#LargeFile()
+  autocmd! BufEnter *.c,*.h,*.cs ++once call vimext#SetEditor()
 
-  tnoremap <C-j> <C-W>gt
-  tnoremap <C-k> <C-W>gT
+  inoremap < <><ESC>i
+  inoremap > <c-r>=vimext#ClosePair('>')<CR>
+  inoremap ( ()<ESC>i
+  inoremap ) <c-r>=vimext#ClosePair(')')<CR>
+  inoremap } <c-r>=vimext#ClosePair('}')<CR>
+  inoremap [ []<ESC>i
+  inoremap ] <c-r>=vimext#ClosePair(']')<CR>
+  inoremap " ""<ESC>i
+  inoremap ' ''<ESC>i
+  inoremap <c-o> <ESC>o
+  inoremap { {}<ESC>i
+  nnoremap x "_x
+  nnoremap X "_X
+  vnoremap x "_x
+  vnoremap X "_X
+
+  " for c develop
+  nnoremap <leader>c :GetComment<cr>
+  nnoremap <F9> :HeaderOrCode<cr>
+
+  nnoremap <F10> :cprevious<cr>
+  nnoremap <F11> :cnext<cr>
+
+  nnoremap <C-j> gt
+  nnoremap <C-k> gT
+  nnoremap <C-h> <C-w>h
+  nnoremap <C-l> <C-w>l
+  nnoremap <C-s> w<cr>
+  nnoremap <F2>  :NERDTreeFind<cr>
+  nnoremap <F3>  :tabnew<cr>
+  nnoremap <F4>  :close<cr>
 
   let g:vimext_loaded = 1
 endfunction
@@ -189,6 +193,9 @@ function vimext#config#GetWinBash()
   endif
 
   return shellescape(bpath)
+endfunction
+
+function vimext#config#nvimConfig()
 endfunction
 
 function vimext#config#ALEConfig()
@@ -206,9 +213,9 @@ function vimext#config#ALEConfig()
     let g:ale_c_build_dir_names = []
   endif
 
-  nnoremap <C-M>[ :ALEFindReferences -quickfix<cr>
-  nnoremap <C-M>] :ALEGoToDefinition -split<cr>
-  nnoremap <C-M>h :ALEHover<cr>
+  nnoremap <C-M>[ ALEFindReferences -quickfix<cr>
+  nnoremap <C-M>] ALEGoToDefinition -split<cr>
+  nnoremap <C-M>h ALEHover<cr>
 endfunction
 
 function vimext#config#GitBash()
@@ -222,22 +229,21 @@ function vimext#config#Edit()
 endfunction
 
 function vimext#config#TerminalNew()
-  :split term://bash
+  split term://bash
 endfunction
 
 function vimext#config#TerminalEnter()
   if &buftype == 'terminal'
-    :startinsert
+    startinsert
   endif
 endfunction
 
 function vimext#config#TerminalClose()
   execute 'bdelete!'
-  :call nvim_input("<CR>")
 endfunction
 
 function vimext#config#TerminalLeave()
-  :stopinsert
+  stopinsert
 endfunction
 
 function vimext#config#QuickFixFunc()
@@ -247,5 +253,5 @@ function vimext#config#QuickFixFunc()
 
     call setqflist(oerror, "r")
   endif
-  :redraw
+  redraw
 endfunction

@@ -44,7 +44,6 @@ hi Title guifg=#70b950 guibg=NONE guisp=NONE gui=bold ctermfg=107 ctermbg=NONE c
 hi Folded guifg=#a0a8b0 guibg=#384048 guisp=#384048 gui=italic ctermfg=103 ctermbg=238 cterm=NONE
 hi PreCondit guifg=#8fbfdc guibg=NONE guisp=NONE gui=NONE ctermfg=110 ctermbg=NONE cterm=NONE
 hi Include guifg=#8fbfdc guibg=NONE guisp=NONE gui=NONE ctermfg=110 ctermbg=NONE cterm=NONE
-hi TabLineSel guifg=#000000 guibg=#f0f0f0 guisp=#f0f0f0 gui=italic ctermfg=NONE ctermbg=255 cterm=NONE
 hi StatusLineNC guifg=#a0a0a0 guibg=#181818 guisp=#181818 gui=italic ctermfg=247 ctermbg=234 cterm=NONE
 hi NonText guifg=#808080 guibg=#202020 guisp=#151515 gui=NONE ctermfg=8 ctermbg=NONE cterm=NONE
 hi DiffText guifg=NONE guibg=#000940 guisp=#000940 gui=NONE ctermfg=NONE ctermbg=17 cterm=NONE
@@ -61,7 +60,7 @@ hi LineNr guifg=#605958 guibg=#151515 guisp=#151515 gui=NONE ctermfg=59 ctermbg=
 hi StatusLine guifg=#f0f0f0 guibg=#101010 guisp=#101010 gui=italic ctermfg=255 ctermbg=233 cterm=NONE
 hi Label guifg=#ffb964 guibg=NONE guisp=NONE gui=NONE ctermfg=215 ctermbg=NONE cterm=NONE
 hi PMenuSel guifg=#101010 guibg=#eeeeee guisp=#eeeeee gui=NONE ctermfg=233 ctermbg=255 cterm=NONE
-hi Search guifg=#f0a0c0 guibg=#302028 guisp=#302028 gui=underline ctermfg=218 ctermbg=236 cterm=underline
+hi Search guifg=#f0a0c0 guibg=#302028 guisp=#302028 gui=NONE ctermfg=218 ctermbg=236 cterm=NONE
 hi Delimiter guifg=#668799 guibg=NONE guisp=NONE gui=NONE ctermfg=66 ctermbg=NONE cterm=NONE
 hi Statement guifg=#8197bf guibg=NONE guisp=NONE gui=NONE ctermfg=103 ctermbg=NONE cterm=NONE
 hi Comment guifg=#888888 guibg=NONE guisp=NONE gui=NONE ctermfg=102 ctermbg=NONE cterm=NONE
@@ -70,7 +69,7 @@ hi Number guifg=#cf6a4c guibg=NONE guisp=NONE gui=NONE ctermfg=173 ctermbg=NONE 
 hi Boolean guifg=#8197bf guibg=NONE guisp=NONE gui=NONE ctermfg=103 ctermbg=NONE cterm=NONE
 hi Operator guifg=#e8e8d3 guibg=#151515 guisp=#151515 gui=NONE ctermfg=187 ctermbg=233 cterm=NONE
 hi CursorLine guifg=NONE guibg=#1c1c1c guisp=#1c1c1c gui=NONE ctermfg=NONE ctermbg=234 cterm=NONE
-hi TabLineFill guifg=#9098a0 guibg=NONE guisp=NONE gui=NONE ctermfg=247 ctermbg=NONE cterm=NONE
+hi CursorLineNr guifg=NONE guibg=NONE guisp=NONE gui=NONE ctermfg=NONE ctermbg=234 cterm=NONE
 hi DiffDelete guifg=#220000 guibg=#220000 guisp=#220000 gui=NONE ctermfg=52 ctermbg=52 cterm=NONE
 hi CursorColumn guifg=NONE guibg=#1c1c1c guisp=#1c1c1c gui=NONE ctermfg=NONE ctermbg=234 cterm=NONE
 hi Define guifg=#8fbfdc guibg=NONE guisp=NONE gui=NONE ctermfg=110 ctermbg=NONE cterm=NONE
@@ -96,8 +95,10 @@ hi Repeat guifg=#ffb964 guibg=NONE guisp=NONE gui=NONE ctermfg=215 ctermbg=NONE 
 hi Directory guifg=#dad085 guibg=NONE guisp=NONE gui=NONE ctermfg=186 ctermbg=NONE cterm=NONE
 hi Structure guifg=#8fbfdc guibg=NONE guisp=NONE gui=NONE ctermfg=110 ctermbg=NONE cterm=NONE
 hi Macro guifg=#8fbfdc guibg=NONE guisp=NONE gui=NONE ctermfg=110 ctermbg=NONE cterm=NONE
-hi DiffAdd guifg=NONE guibg=#032218 guisp=#032218 gui=NONE ctermfg=NONE ctermbg=23 cterm=NONE
-hi TabLine guifg=#000000 guibg=#b0b8c0 guisp=#b0b8c0 gui=italic ctermfg=NONE ctermbg=7 cterm=NONE
+hi DiffAdd guifg=NONE guibg=#032218 guisp=#032218 gui=NONE ctermfg=233 ctermbg=232 cterm=NONE
+hi TabLine guifg=#000000 guibg=#b0b8c0 guisp=#b0b8c0 gui=NONE ctermfg=232 ctermbg=249 cterm=NONE
+hi TabLineFill guifg=#9098a0 guibg=NONE guisp=NONE gui=NONE ctermfg=NONE ctermbg=NONE cterm=NONE
+hi TabLineSel guifg=#000000 guibg=#f0f0f0 guisp=#f0f0f0 gui=NONE ctermfg=232 ctermbg=253 cterm=BOLD
 hi Terminal guifg=#bcbcbc guibg=#1c1c1c
-hi ColorColumn term=reverse ctermbg=4 guifg=#ffffff guibg=#1c1c1c
+hi ColorColumn term=NONE ctermbg=234 guifg=#ffffff guibg=#1c1c1c
 set background=dark
