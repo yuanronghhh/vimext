@@ -79,6 +79,7 @@ function vimext#config#LoadConfig()
   elseif has("win32")
     let $PATH .= ";".$vimext_home."/tools"
     :set clipboard=unnamed
+    :set guifont=Consolas:h12
 
     let g:python_cmd="python"
     let $BashBin=vimext#config#GetWinBash()
@@ -104,13 +105,13 @@ function vimext#config#LoadConfig()
     :tnoremap <expr> <C-R> '<C-\><C-N>"'.nr2char(getchar()).'pi'
     :tnoremap <C-W> <C-\><C-N><C-W>
 
-    :command Terminal :call vimext#config#TerminalNew()
-    :autocmd TermOpen * :call vimext#config#TerminalEnter()
-    :autocmd TermClose * :call vimext#config#TerminalClose()
-    :autocmd BufEnter term://* :call vimext#config#TerminalEnter()
-    :autocmd BufLeave term://* :call vimext#config#TerminalLeave()
-    :tnoremap <C-j> <C-\><C-N><C-W>gt
-    :tnoremap <C-k> <C-\><C-N><C-W>gT
+    :command! Terminal :call vimext#config#TerminalNew()
+    :autocmd! TermOpen * :call vimext#config#TerminalEnter()
+    :autocmd! TermClose * :call vimext#config#TerminalClose()
+    :autocmd! BufEnter term://* :call vimext#config#TerminalEnter()
+    :autocmd! BufLeave term://* :call vimext#config#TerminalLeave()
+    :tnoremap <C-j> <C-\><C-N>gt
+    :tnoremap <C-k> <C-\><C-N>gT
   else
     :tnoremap <C-j> <C-W>gt
     :tnoremap <C-k> <C-W>gT

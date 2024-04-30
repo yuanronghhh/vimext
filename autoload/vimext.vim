@@ -179,7 +179,11 @@ endfunction
 function vimext#SetEditor() abort
   let cext = expand("%:e")
 
-  if cext == "c" || cext == "cpp"
+  if cext == "c"
+        \ || cext == "cpp"
+        \ || cext == "cc"
+        \ || cext == "h"
+        \ || cext == "hpp"
     if has("win32")
       :set makeencoding=gbk
     endif
