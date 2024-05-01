@@ -2,6 +2,7 @@ let s:spath = "s.vim"
 
 function vimext#session#SaveSession(sfile) abort
   let sfile = a:sfile
+  let wid = win_getid()
   if strlen(a:sfile) == 0
     let sfile = "s.vim"
   endif
@@ -12,6 +13,7 @@ function vimext#session#SaveSession(sfile) abort
 
   if exists(":NERDTree")
     :execute ":tabdo NERDTreeClose"
+    call win_gotoid(wid)
   endif
 
   :call vimext#logger#Info("mks! ".g:vim_session."/".sfile)
@@ -40,6 +42,7 @@ function vimext#session#OpenSession(sfile) abort
   :execute "source ".g:vim_session."/".sfile
   :call win_gotoid(wid)
 
+  :normal 1gt
   if exists(":NERDTree")
     :execute ":NERDTreeFind"
   endif

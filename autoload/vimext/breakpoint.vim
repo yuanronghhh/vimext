@@ -20,7 +20,7 @@ function vimext#breakpoint#Parse(args)
 
   if a:args =~ '^\(\d\+\)$'
     let info[0] = 1
-    let info[1] = v:null
+    let info[1] = expand("%:p")
     let info[2] = a:args
     return info
   endif

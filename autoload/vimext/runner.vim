@@ -210,15 +210,12 @@ function vimext#runner#Break(args) abort
   endif
 
   if info[0] == 1
-    let info[1] = vimext#runner#GetSouceWinPath(s:self)
-    let fname = fnamemodify(info[1], ":t")
-
     let brk = vimext#breakpoint#Get(info[1], info[2])
     if brk isnot v:null
       :call vimext#breakpoint#Delete(brk)
       :call s:Call(s:self.proto.Clear, brk[1])
     else
-      :call s:Call(s:self.proto.Break, fname .. ":" .. info[2])
+      :call s:Call(s:self.proto.Break, info[1] .. ":" .. info[2])
     endif
   else
     :call s:Call(s:self.proto.Break, info[1])
