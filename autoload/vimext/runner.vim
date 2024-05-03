@@ -199,6 +199,10 @@ function vimext#runner#Step() abort
   :call s:Call(s:self.proto.Step, v:null)
 endfunction
 
+function vimext#runner#Finish() abort
+  :call s:Call(s:self.proto.Finish, v:null)
+endfunction
+
 function vimext#runner#Continue() abort
   :call s:Call(s:self.proto.Continue, v:null)
 endfunction
