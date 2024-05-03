@@ -3,8 +3,7 @@ function vimext#buffer#WinExists(winid) abort
     return v:false
   endif
 
-  let bnr = winbufnr(a:winid)
-  return bufexists(bnr)
+  return winbufnr(a:winid) != -1
 endfunction
 
 function vimext#buffer#ClearWin(winid) abort

@@ -185,6 +185,10 @@ function vimext#runner#Source() abort
   :call vimext#viewer#Show(s:self.source_viewer)
 endfunction
 
+function vimext#runner#ReRun() abort
+  :call s:Call(s:self.proto.Run, v:null)
+endfunction
+
 function vimext#runner#Run(args) abort
   let start = vimext#proto#GetStart(s:self.proto)
   if start is v:null
@@ -380,6 +384,7 @@ function s:PromptOut(channel, msg) abort
   if info is v:null
     return
   endif
+  let asm_viewer = s:self.asm_viewer
 
   if info[0] == 1 " hit breakpoint
     :call vimext#runner#LoadSource(s:self, info[2], info[3])
@@ -407,14 +412,14 @@ function s:PromptOut(channel, msg) abort
     :call vimext#breakpoint#DeleteID(info[1])
 
   elseif info[0] == 14 " asm break
-    :call vimext#viewer#SetSignText(s:self.asm_viewer, info[1])
+    :call vimext#viewer#SetSignText(asm_viewer, info[1])
 
   elseif info[0] == 15 " asm start
-    :call vimext#viewer#SetUniqueID(s:self.asm_viewer, info[1])
+    :call vimext#viewer#SetUniqueID(asm_viewer, info[1])
 
   elseif info[0] == 16 " asm end
-    :call vimext#viewer#SetLines(s:self.asm_viewer, info[1])
-    :call vimext#viewer#LoadByLines(s:self.asm_viewer)
+    :call vimext#viewer#SetLines(asm_viewer, info[1])
+    :call vimext#viewer#LoadByLines(asm_viewer)
   else " info[0] == 7
   endif
 endfunction

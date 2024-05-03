@@ -53,6 +53,7 @@ endfunction
 function s:StartPre() abort
   :nnoremap <F5>  :call vimext#runner#Continue()<cr>
   :nnoremap <F6>  :call vimext#runner#Next()<cr>
+  :nnoremap <S-F5>  :call vimext#runner#ReRun()<cr>
   :nnoremap <S-F6> :call vimext#runner#Finish()<cr>
   :nnoremap <F7>  :call vimext#runner#Step()<cr>
   :nnoremap <F8>  :call vimext#runner#Break(line("."))<cr>

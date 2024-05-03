@@ -1,11 +1,11 @@
 let s:self = v:null
-
+let s:lines = []
+let s:state = 0
+let s:varname = v:null
 
 function vimext#proto#Create(name) abort
   let s:mi_cmd = {
         \ "name": "mi",
-        \ "state": 0,
-        \ "lines": [],
         \ "Break": "-break-insert",
         \ "Clear": "-break-delete",
         \ "Arguments": "-exec-arguments",
@@ -172,8 +172,6 @@ function s:ProcessInput(self, cmd) abort
 endfunction
 
 function vimext#proto#ProcessMsg(text) abort
-  let text = v:null
-
   if a:text =~ "(gdb)"
         \ || a:text == ""
         \ || a:text[0] == "&"
@@ -184,7 +182,62 @@ function vimext#proto#ProcessMsg(text) abort
 endfunction
 
 function s:GetLine(self) abort
-  return a:self.lines
+  return s:lines
+endfunction
+
+function s:HandleAsmInfo(info, msg) abort
+  let info = a:info
+  let msg = a:msg
+
+  if s:state == 0
+    if msg =~ '^\~"Dump of assembler code for function '
+      let nameIdx = matchlist(msg, '^\~"Dump of assembler code for function \([^$]\+\):')
+
+      if len(nameIdx) > 0
+        let info[0] = 15
+        let info[1] = nameIdx[1]
+      endif
+
+      let s:lines = []
+      let s:state = 1
+      return v:true
+    endif
+
+  elseif s:state == 1
+    if msg =~ '^\~"End of assembler dump.'
+      let info[0] = 16
+      let info[1] = s:lines
+      let s:state = 0
+
+    elseif msg =~ '^\~"=>'
+      let nameIdx = matchlist(msg[2:], '^=>\s\+\(\S\+\) <+\(\d\+\)>')
+      let msg = vimext#debug#DecodeMessage(msg[1:], v:false)
+
+      if len(nameIdx) > 0
+        let info[0] = 14
+        let info[1] = nameIdx[1]
+        let info[2] = nameIdx[2]
+        let info[3] = substitute(msg, "^=>[ ]*", "", "")
+        :call add(s:lines, info[3])
+      endif
+
+    elseif msg[0] == '~'
+      let info[0] = 0
+      let line = msg[1:]
+      let line = substitute(line, '^\"[ ]*', "", "")
+      let line = substitute(line, '\\n\"\r$', '', '')
+      let line = substitute(line, '\\n\"$', '', '')
+      let line = substitute(line, '\r', '', '')
+      let line = substitute(line, '\\t', '\t', 'g')
+      :call add(s:lines, line)
+    else
+      return v:false
+    endif
+
+    return v:true
+  else
+    return v:false
+  endif
 endfunction
 
 function s:MIProcessOutput(msg) abort
@@ -194,6 +247,10 @@ function s:MIProcessOutput(msg) abort
   endif
 
   let info = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+  if s:HandleAsmInfo(info, msg)
+    return info
+  endif
 
   if msg =~ '^\*stopped,reason="breakpoint-hit"'
     let nameIdx = matchlist(msg, '^\*stopped,reason="breakpoint-hit",.*,bkptno="\(\d*\)",.*,fullname=\([^,]*\),line="\(\d\+\)"')
@@ -216,7 +273,7 @@ function s:MIProcessOutput(msg) abort
 
     if len(nameIdx) > 0
       let info[0] = 3
-      let info[1] = s:self.varname
+      let info[1] = s:varname
       let info[2] = vimext#debug#DecodeMessage(nameIdx[1], v:false)
     endif
 
@@ -269,6 +326,10 @@ function s:MIProcessOutput(msg) abort
   elseif msg =~ '^\^exit'
     let info[0] = 6
 
+  elseif msg[0] == '~'
+    let info[0] = 8
+    let info[1] = vimext#debug#DecodeMessage(msg[1:], v:false)
+
   elseif msg =~ '^=message,text='
     let nameIdx = matchlist(msg, '^=message,text=\([^\n]*\),send-to="\([^,]\+"\)')
 
@@ -287,45 +348,6 @@ function s:MIProcessOutput(msg) abort
       let info[2] = nameIdx[1]  " break number
       let info[3] = nameIdx[2]  " type
       let info[4] = nameIdx[3] == "y" ? 1 : 0  " enable
-    endif
-
-  elseif msg =~ '^\~"Dump of assembler code for function '
-    let nameIdx = matchlist(msg, '^\~"Dump of assembler code for function \([^$]\+\):')
-
-    if len(nameIdx) > 0
-      let info[0] = 15
-      let info[1] = nameIdx[1]
-    endif
-
-    let s:self.state = 1
-    let s:self.lines = []
-  elseif msg =~ '^\~"End of assembler dump.'
-    let info[0] = 16
-    let info[1] = s:self.lines
-    let s:self.state = 0
-
-  elseif msg =~ '^\~"=>'
-    let nameIdx = matchlist(msg[2:], '^=>\s\+\(\S\+\) <+\(\d\+\)>')
-    let msg = vimext#debug#DecodeMessage(msg[1:], v:false)
-
-    if len(nameIdx) > 0
-      let info[0] = 14
-      let info[1] = nameIdx[1]
-      let info[2] = nameIdx[2]
-      let info[3] = substitute(msg, "^=>[ ]*", "", "")
-      :call add(s:self.lines, info[3])
-    endif
-  elseif msg[0] == '~'
-
-    if s:self.state == 1
-      let info[0] = 0
-      let line = vimext#debug#DecodeMessage(msg[1:], v:false)
-      let line = substitute(line, '^[ ]*', "", "g")
-      let line = substitute(line, '^=>[ ]*', "", "g")
-      :call add(s:self.lines, line)
-    else
-      let info[0] = 8
-      let info[1] = vimext#debug#DecodeMessage(msg[1:], v:false)
     endif
 
   elseif msg =~ '^=cmd-param-changed,'
@@ -382,7 +404,7 @@ function s:MIProcessOutput(msg) abort
     if len(nameIdx) > 0
       let info[0] = 17
       let info[1] = nameIdx[1]
-      let s:self.varname = nameIdx[1]
+      let s:varname = nameIdx[1]
     endif
   else
     return v:null
