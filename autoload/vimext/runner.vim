@@ -67,7 +67,40 @@ function vimext#runner#Create(lang, args) abort
     doauto <nomodeline> User DbgDebugStartPost
   endif
 
+  :call vimext#runner#EnableBalloon(self)
+
   return self
+endfunction
+
+function vimext#runner#BalloonExpr() abort
+  :call s:Call(s:self.proto.DataEvaluate, '"' .. v:beval_text .. '"')
+  return ""
+endfunction
+
+function vimext#runner#EnableBalloon(self) abort
+  if has("balloon_eval") || has("balloon_eval_term")
+    set balloonexpr=vimext#runner#BalloonExpr()
+  endif
+
+  if has("balloon_eval")
+    set ballooneval
+  endif
+  if has("balloon_eval_term")
+    set balloonevalterm
+  endif
+endfunction
+
+function vimext#runner#DisableBalloon(self) abort
+  if has("balloon_eval") || has("balloon_eval_term")
+    set balloonexpr=
+  endif
+
+  if has("balloon_eval")
+    set noballooneval
+  endif
+  if has("balloon_eval_term")
+    set noballoonevalterm
+  endif
 endfunction
 
 function s:Call(cmd, args) abort
@@ -105,6 +138,7 @@ function vimext#runner#Dispose() abort
 
   :call s:self.cmd_term.Destroy(s:self.cmd_term)
   :call s:self.dbg_term.Destroy(s:self.dbg_term)
+  :call vimext#runner#DisableBalloon(s:self)
 
   let s:self = v:null
 endfunction
@@ -312,6 +346,10 @@ function vimext#runner#LoadSource(self, fname, lnum) abort
   endif
 endfunction
 
+function vimext#runner#ShowBalloon(self, msg) abort
+  call balloon_show(a:msg)
+endfunction
+
 function vimext#runner#PrintOutput(self, msg) abort
   let msg = vimext#proto#ProcessMsg(a:msg)
   if msg is v:null
@@ -346,11 +384,14 @@ function s:PromptOut(channel, msg) abort
   if info[0] == 1 " hit breakpoint
     :call vimext#runner#LoadSource(s:self, info[2], info[3])
 
+  elseif info[0] == 3 " print expr value
+    :call vimext#runner#ShowBalloon(s:self, info[1] . " = " . info[2])
+
   elseif info[0] == 4 " user set breakpoint
     "brkid,type,disp,enable,func,file,fullname,line
     :call vimext#breakpoint#Add(info[0:8])
 
-  elseif info[0] == 5 " exit end stepping range
+  elseif info[0] == 5 " stopped end stepping range
     :call vimext#runner#LoadSource(s:self, info[1], info[2])
 
   elseif info[0] == 8 " message
@@ -374,6 +415,6 @@ function s:PromptOut(channel, msg) abort
   elseif info[0] == 16 " asm end
     :call vimext#viewer#SetLines(s:self.asm_viewer, info[1])
     :call vimext#viewer#LoadByLines(s:self.asm_viewer)
-  else
+  else " info[0] == 7
   endif
 endfunction

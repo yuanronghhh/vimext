@@ -18,6 +18,7 @@ function vimext#proto#Create(name) abort
         \ "Continue": "-exec-continue",
         \ "Until": "-exec-until",
         \ "Eval": "-var-evaluate-expression",
+        \ "DataEvaluate": "-data-evaluate-expression",
         \ "VarCreate": "-var-create",
         \ "VarChildren": "-var-list-children",
         \ "Frame": "-interpreter-exec mi frame",
@@ -193,6 +194,7 @@ function s:MIProcessOutput(msg) abort
   endif
 
   let info = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
   if msg =~ '^\*stopped,reason="breakpoint-hit"'
     let nameIdx = matchlist(msg, '^\*stopped,reason="breakpoint-hit",.*,bkptno="\(\d*\)",.*,fullname=\([^,]*\),line="\(\d\+\)"')
     if len(nameIdx) == 0
@@ -208,6 +210,15 @@ function s:MIProcessOutput(msg) abort
   elseif msg == '*stopped,reason="exited",exit-code="0"'
         \ || msg == '*stopped,reason="exited-normally"'
     let info[0] = 2
+
+  elseif msg =~ '^\^done,value='
+    let nameIdx = matchlist(msg, '^\^done,value=\(.*\)')
+
+    if len(nameIdx) > 0
+      let info[0] = 3
+      let info[1] = s:self.varname
+      let info[2] = vimext#debug#DecodeMessage(nameIdx[1], v:false)
+    endif
 
   elseif msg =~ '^=breakpoint-deleted,id='
     let nameIdx = matchlist(msg, '=breakpoint-deleted,id="\(\d\+\)"')
@@ -363,6 +374,15 @@ function s:MIProcessOutput(msg) abort
     if len(nameIdx) > 0
       let info[0] = 10
       let info[1] = "exit-code: " . nameIdx[1]
+    endif
+
+  elseif msg =~ '^-data-evaluate-expression'
+    let nameIdx = matchlist(msg, '-data-evaluate-expression "\([^"]*\)"')
+
+    if len(nameIdx) > 0
+      let info[0] = 17
+      let info[1] = nameIdx[1]
+      let s:self.varname = nameIdx[1]
     endif
   else
     return v:null
