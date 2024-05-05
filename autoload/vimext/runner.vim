@@ -69,6 +69,13 @@ function vimext#runner#Create(lang, args) abort
 
   :call vimext#runner#EnableBalloon(self)
 
+  augroup DbgDebug
+    autocmd SwapExists * echohl WarningMsg
+          \ | echo 'Warning: file is being edited elsewhere'
+          \ | echohl None
+          \ | let v:swapchoice = 'o'
+  augroup END
+
   return self
 endfunction
 
@@ -139,6 +146,10 @@ function vimext#runner#Dispose() abort
   :call s:self.cmd_term.Destroy(s:self.cmd_term)
   :call s:self.dbg_term.Destroy(s:self.dbg_term)
   :call vimext#runner#DisableBalloon(s:self)
+
+  augroup DbgDebug
+    autocmd! SwapExists
+  augroup END
 
   let s:self = v:null
 endfunction
