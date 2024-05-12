@@ -55,7 +55,22 @@ class AutoTag:
     def __init__(self):
         self.th = None
         self.tagfile = None
-        self.matches = ['*.vim', '*.c', '*.h' , '*.cc', '*.cpp' , '*.hpp' , '*.py' , '*.cs' , '*.js' , 'CMakeLists.txt', '*.cmake', '*.lua', '*.java', '*.go', '*.s']
+        self.matches = ['*.vim',
+                        '*.c', 
+                        '*.h' , 
+                        '*.cc', 
+                        '*.cpp' , 
+                        '*.hpp' , 
+                        '*.py' , 
+                        '*.cs' , 
+                        '*.js' , 
+                        'CMakeLists.txt', 
+                        '*.cmake', 
+                        '*.lua', 
+                        '*.java', 
+                        '*.go', 
+                        '*.s', 
+                        '*.rs']
         self.tags_cmd = "ctags"
         self.sys_incs = []
         self.igns = []
