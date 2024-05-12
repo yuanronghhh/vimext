@@ -15,10 +15,13 @@ function s:SetConfig(self, prompt, proto) abort
   ":call a:prompt.Send(a:prompt, a:proto.Set . " " . "step-filtering 1")
 endfunction
 
-function s:GetCmd(self, param) abort
+function s:GetCmd(self, cmd_term, args) abort
+  let protoname = a:self.proto.name
+
   let cmd = ["netcoredbg"]
-  let cmd += ["--interpreter=" . a:self.proto.name]
+  let cmd += ["--interpreter=" . protoname]
   let cmd += ["--", "dotnet"]
+
   return cmd
 endfunction
 

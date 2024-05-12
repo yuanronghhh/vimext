@@ -79,8 +79,21 @@ function vimext#runner#Create(lang, args) abort
   return self
 endfunction
 
+function vimext#runner#Eval(self, argstr) abort
+  let info = vimext#proto#ParseEval(a:self.proto, a:argstr)
+
+  :call s:Call(info[1], join(info[2:], " "))
+  :call s:Call(a:self.proto.Eval, "_innervar")
+endfunction
+
 function vimext#runner#BalloonExpr() abort
-  :call s:Call(s:self.proto.DataEvaluate, '"' .. v:beval_text .. '"')
+  if s:self.dbg.name == "netcoredbg"
+
+    call vimext#runner#Eval(s:self, v:beval_text)
+  else
+    :call s:Call(s:self.proto.DataEvaluate, '"' .. v:beval_text .. '"')
+  endif
+
   return ""
 endfunction
 
@@ -210,13 +223,10 @@ function vimext#runner#Run(args) abort
     if s:self.dbg.name == "gdb"
       :call vimext#runner#Restore()
       " :call s:Call(s:self.proto.Start, v:null)
-    else
-      let args = vimext#debug#DecodeFilePath(a:args)
-      if args[0] != "\""
-        let args = "\"" . args . "\""
-      endif
+    elseif s:self.dbg.name == "netcoredbg"
+      let argsstr = join(a:args, " ")
 
-      :call s:Call(s:self.proto.Arguments, args)
+      :call s:Call(s:self.proto.Arguments, argsstr)
     endif
   endif
 endfunction
@@ -274,7 +284,7 @@ function vimext#runner#Break(args) abort
     :call s:Call(s:self.proto.Break, info[1])
   endif
 
-  :call vimext#runner#SaveBrks()
+  :call vimext#runner#SaveBrks(s:self)
 endfunction
 
 function vimext#runner#Clear(args) abort
@@ -375,8 +385,10 @@ function vimext#runner#PrintOutput(self, msg) abort
   :call term.Print(term, a:msg)
 endfunction
 
-function vimext#runner#SaveBrks() abort
-  :call s:Call(s:self.proto.SaveBreakoints, s:gdb_cfg)
+function vimext#runner#SaveBrks(self) abort
+  if a:self.dbg.name == "gdb"
+    :call s:Call(a:self.proto.SaveBreakoints, s:gdb_cfg)
+  endif
 endfunction
 
 function vimext#runner#PrintError(self, msg) abort

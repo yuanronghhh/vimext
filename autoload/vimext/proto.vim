@@ -78,6 +78,27 @@ function vimext#proto#ParseInputArgs(cmd) abort
   return nameIdx[2]
 endfunction
 
+function vimext#proto#ParseEval(self, argstr) abort
+  let info = [7, "", "", 0]
+
+  if a:self.name == "mi"
+    if stridx(a:argstr, "*") > -1
+      let info[1] = a:self.VarChildren
+      let info[2] = "_innervar"
+      let info[3] = a:self.VarCreate . " _innervar" . "  " . "\"" . substitute(a:argstr, "*", "", "g") . "\""
+    else
+      let info[1] = a:self.VarCreate
+      let info[2] = "_innervar" . "  " . "\"" . a:argstr . "\""
+    endif
+  else
+    let info[1] = a:self.Print
+    let info[2] = a:argstr
+  endif
+  let s:varname = a:argstr
+
+  return info
+endfunction
+
 function s:ProcessInput(self, cmd) abort
   " type,cmd,args,pre-execute-cmd
   let info = [0, "", "", 0]
@@ -149,20 +170,7 @@ function s:ProcessInput(self, cmd) abort
   if cmd =~ "^p "
         \ || cmd =~ "^print "
     let args = vimext#proto#ParseInputArgs(cmd)
-
-    if a:self.name == "mi"
-      if stridx(args, "*") > -1
-        let info[1] = a:self.VarChildren
-        let info[2] = "_innervar"
-        let info[3] = a:self.VarCreate . " _innervar" . "  " . "\"" . substitute(args, "*", "", "g") . "\""
-      else
-        let info[1] = a:self.VarCreate
-        let info[2] = "_innervar" . "  " . "\"" . args . "\""
-      endif
-    else
-      let info[1] = a:self.Print
-      let info[2] = args
-    endif
+    let info = vimext#proto#ParseEval(a:self, args)
 
     let info[0] = 7
     return info

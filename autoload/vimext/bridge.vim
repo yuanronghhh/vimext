@@ -25,7 +25,7 @@ endfunction
 
 function vimext#bridge#Create(dbg, funcs) abort
   let self = v:null
-  if has("win32")
+  if has("win32") || a:dbg.name == "netcoredbg"
     let self = vimext#prompt#Create(a:funcs)
   else
     let self = vimext#term#Create(a:funcs)
