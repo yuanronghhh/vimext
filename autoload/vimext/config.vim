@@ -83,7 +83,6 @@ function vimext#config#LoadConfig()
 
     let g:python_cmd="python"
     let $BashBin=vimext#config#GetWinBash()
-    :set errorformat^=%f(%l\\,%c):\ %t%*[^\ ]\ C%n:\ %m,%f(%l\\,%c):\ fatal\ \ %t%*[^\ ]\ C%n:\ %m
 
     if len($BashBin) > 0
       :set shell=$BashBin

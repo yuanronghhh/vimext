@@ -79,8 +79,8 @@ function vimext#runner#Create(lang, args) abort
   return self
 endfunction
 
-function vimext#runner#Eval(self, argstr) abort
-  let info = vimext#proto#ParseEval(a:self.proto, a:argstr)
+function vimext#runner#Eval(self, argsstr) abort
+  let info = vimext#proto#ParseEval(a:self.proto, a:argsstr)
 
   :call s:Call(info[1], join(info[2:], " "))
   :call s:Call(a:self.proto.Eval, "_innervar")
@@ -123,17 +123,17 @@ function vimext#runner#DisableBalloon(self) abort
   endif
 endfunction
 
-function s:Call(cmd, args) abort
+function s:Call(cmd, argsstr) abort
   if s:self is v:null
     return
   endif
 
   let term = s:self.dbg_term
 
-  if a:args is v:null
+  if a:argsstr is v:null
     :call term.Send(term, a:cmd)
   else
-    :call term.Send(term, a:cmd . " " . a:args)
+    :call term.Send(term, a:cmd . " " . a:argsstr)
   endif
 endfunction
 

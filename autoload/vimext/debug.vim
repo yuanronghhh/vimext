@@ -83,7 +83,7 @@ function s:StartDebug(bang, ...) abort
   endif
   let lang = a:000[0]
 
-  let pargs = ""
+  let pargs = []
   if len(a:000) > 1
     let pargs = a:000[1:]
   endif
