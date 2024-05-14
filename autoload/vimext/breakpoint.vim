@@ -19,8 +19,10 @@ function vimext#breakpoint#Parse(args)
   endif
 
   if a:args =~ '^\(\d\+\)$'
+    let filepath = substitute(expand("%:p"), "\\", "/", "g")
+
     let info[0] = 1
-    let info[1] = expand("%:p")
+    let info[1] = filepath
     let info[2] = a:args
     return info
   endif
@@ -137,4 +139,8 @@ endfunction
 
 function vimext#breakpoint#DeInit()
   :call s:DeleteBrks(v:true)
+endfunction
+
+function vimext#breakpoint#Print()
+  :call vimext#logger#Info(s:breaks)
 endfunction

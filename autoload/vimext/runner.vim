@@ -283,6 +283,11 @@ function vimext#runner#Break(args) abort
 
   if info[0] == 1
     let brk = vimext#breakpoint#Get(info[1], info[2])
+
+    if s:self.dbg.name == "netcoredbg"
+      let info[1] = substitute(info[1], "/", "\\", "g")
+    endif
+
     if brk isnot v:null
       :call vimext#breakpoint#Delete(brk)
       :call s:Call(s:self.proto.Clear, brk[1])
