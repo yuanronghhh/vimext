@@ -44,7 +44,8 @@ function vimext#prompt#New(mode, name, cmd, opts) abort
           \ "exit_cb":  get(a:opts, "exit_cb", v:null),
           \ "out_cb": get(a:opts, "out_cb", v:null)
           \ })
-    if job is v:null
+
+    if job_status(job) == "fail"
       return v:null
     endif
 

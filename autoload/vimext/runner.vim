@@ -52,12 +52,21 @@ function vimext#runner#Create(lang, args) abort
   let self.bridge = bridge
 
   let cmd_term = bridge.NewProg()
+  if cmd_term is v:null
+    :call vimext#logger#Warning("create cmd_term failed")
+    return v:null
+  endif
   let self.cmd_term = cmd_term
 
   :call win_execute(empty_win, "close")
 
   let cmd = dbg.GetCmd(self.dbg, cmd_term, a:args)
   let dbg_term = bridge.NewDbg(bridge, cmd)
+  if dbg_term is v:null
+    :call vimext#logger#Warning("create dbg_term failed: " .. join(cmd, " "))
+    return v:null
+  endif
+
   let self.dbg_term = dbg_term
 
   :call dbg.SetConfig(dbg, dbg_term, proto)
