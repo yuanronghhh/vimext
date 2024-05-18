@@ -113,13 +113,13 @@ function s:NewProg() abort
   return  term
 endfunction
 
-function s:Print(self, msg) abort
+function s:Print(self, msgs) abort
   let cwin = win_getid()
-
   :call win_gotoid(a:self.winid)
-  :call append(line('$') - 1, a:msg)
-  :call setcursorcharpos('$', 1)
 
+  :call append(line('$') - 1, a:msgs)
+
+  :call setcursorcharpos('$', 1)
   :call win_gotoid(cwin)
 endfunction
 " term end"

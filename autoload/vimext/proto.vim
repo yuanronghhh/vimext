@@ -79,13 +79,13 @@ function vimext#proto#ParseInputArgs(cmd) abort
 endfunction
 
 function vimext#proto#ParseEval(self, argstr) abort
-  let info = [7, "", "", 0]
+  let info = [7, v:null, v:null, v:null]
 
   if a:self.name == "mi"
     if stridx(a:argstr, "*") > -1
       let info[1] = a:self.VarChildren
       let info[2] = "_innervar"
-      let info[3] = a:self.VarCreate . " _innervar" . "  " . "\"" . substitute(a:argstr, "*", "", "g") . "\""
+      let info[3] = a:self.VarCreate . " _innervar" . " " . "\"" . substitute(a:argstr, "*", "", "g") . "\""
     else
       let info[1] = a:self.VarCreate
       let info[2] = "_innervar" . "  " . "\"" . a:argstr . "\""
@@ -101,7 +101,7 @@ endfunction
 
 function s:ProcessInput(self, cmd) abort
   " type,cmd,args,pre-execute-cmd
-  let info = [0, "", "", 0]
+  let info = [0, v:null, v:null, v:null]
   let cmd = "next"
 
   if a:cmd != "" && a:cmd isnot v:null
@@ -248,13 +248,28 @@ function s:HandleAsmInfo(info, msg) abort
   endif
 endfunction
 
+function s:ParseChildrenInfo(msg) abort
+  let msgs = split(a:msg, "},")
+
+  let values = []
+  for ch in msgs
+    let nameIdx = matchlist(ch, 'child={name="\([^\"]*\)",attributes="\([^"]*\)",exp="\([^"]*\)",numchild="\(\d\+\)",type="\([^"]*\)",thread-id="\(\d\+\)"')
+
+    if len(nameIdx) > 0
+      :call add(values, nameIdx)
+    endif
+  endfor
+
+  return values
+endfunction
+
 function s:MIProcessOutput(msg) abort
   let msg = vimext#proto#ProcessMsg(a:msg)
   if msg is v:null
     return v:null
   endif
 
-  let info = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+  let info = [0, v:null, v:null, v:null, v:null, v:null, v:null, v:null, v:null, v:null]
 
   if s:HandleAsmInfo(info, msg)
     return info
@@ -336,14 +351,14 @@ function s:MIProcessOutput(msg) abort
 
   elseif msg[0] == '~'
     let info[0] = 8
-    let info[1] = vimext#debug#DecodeMessage(msg[1:], v:false)
+    let info[1] = [vimext#debug#DecodeMessage(msg[1:], v:false)]
 
   elseif msg =~ '^=message,text='
     let nameIdx = matchlist(msg, '^=message,text=\([^\n]*\),send-to="\([^,]\+"\)')
 
     if len(nameIdx) > 0
       let info[0] = 8
-      let info[1] = vimext#debug#DecodeMessage(nameIdx[1], v:false)
+      let info[1] = [vimext#debug#DecodeMessage(nameIdx[1], v:false)]
       let info[2] = nameIdx[2]
     endif
 
@@ -363,7 +378,7 @@ function s:MIProcessOutput(msg) abort
 
     if len(nameIdx) > 0
       let info[0] = 8
-      let info[1] = nameIdx[1] . " " . nameIdx[2]
+      let info[1] = [nameIdx[1] . " " . nameIdx[2]]
     endif
 
   elseif msg =~ '^\^done,name='
@@ -371,7 +386,26 @@ function s:MIProcessOutput(msg) abort
 
     if len(nameIdx) > 0
       let info[0] = 8
-      let info[1] = nameIdx[4] . " = " . vimext#debug#DecodeMessage(nameIdx[2], v:false)
+      let info[1] = [nameIdx[4] . " = " . vimext#debug#DecodeMessage(nameIdx[2], v:false)]
+    endif
+
+  elseif msg =~ '^\^done,numchild='
+    let nameIdx = matchlist(msg, '^\^done,numchild="\(\d\+\)",children=\[\([^\n]\+\)\].*')
+
+    if len(nameIdx) > 0
+      let values = s:ParseChildrenInfo(nameIdx[2])
+
+      let chstr = []
+      :call add(chstr, "{")
+      for ch in values
+        :call add(chstr, "    \"" . ch[3] . "\" (" . ch[5] . ") [" . ch[4] . "]")
+      endfor
+      :call add(chstr, "}")
+
+      if len(nameIdx) > 0
+        let info[0] = 8
+        let info[1] = chstr
+      endif
     endif
 
   elseif msg =~ '^\*stopped,reason="entry-point-hit"'

@@ -64,7 +64,7 @@ endfunction
 
 function vimext#GetBinPath(cmd)
   let l:bpath = exepath(a:cmd)
-  if len(l:bpath) == 0
+  if strlen(l:bpath) == 0
     return ""
   endif
 

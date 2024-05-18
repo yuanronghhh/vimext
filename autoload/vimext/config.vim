@@ -84,7 +84,7 @@ function vimext#config#LoadConfig()
     let g:python_cmd="python"
     let $BashBin=vimext#config#GetWinBash()
 
-    if len($BashBin) > 0
+    if strlen($BashBin) > 0
       :set shell=$BashBin
     endif
 
@@ -188,7 +188,7 @@ endfunction
 
 function vimext#config#GetWinBash()
   let bpath = vimext#GetBinPath("bash.exe")
-  if len(bpath) == 0
+  if strlen(bpath) == 0
     return ""
   endif
 

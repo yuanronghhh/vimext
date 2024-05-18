@@ -103,7 +103,7 @@ function vimext#sign#Get(id) abort
 endfunction
 
 function vimext#sign#New(winid, breakid, text, enable) abort
-  if len(a:text) > 2
+  if strlen(a:text) > 2
     return v:null
   endif
 

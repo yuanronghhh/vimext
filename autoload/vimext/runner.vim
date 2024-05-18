@@ -6,7 +6,7 @@ function vimext#runner#Create(lang, args) abort
   let proto = v:null
 
   if s:self isnot v:null
-    :call vimext#logger#Warning("call not start two debugger")
+    :call vimext#logger#Warning("Can not start two debugger")
     return v:null
   endif
 
@@ -330,7 +330,7 @@ function s:PromptInput(cmd) abort
   endif
 
   if info[0] == 7 " print
-    if info[3] != 0
+    if info[3] isnot v:null
       :call s:Call(info[3], v:null)
     endif
   endif
@@ -389,14 +389,10 @@ function vimext#runner#ShowBalloon(self, msg) abort
   call balloon_show(a:msg)
 endfunction
 
-function vimext#runner#PrintOutput(self, msg) abort
-  let msg = vimext#proto#ProcessMsg(a:msg)
-  if msg is v:null
-    return
-  endif
-
+function vimext#runner#PrintOutput(self, msgs) abort
   let term = a:self.cmd_term
-  :call term.Print(term, a:msg)
+
+  :call term.Print(term, a:msgs)
 endfunction
 
 function vimext#runner#SaveBrks(self) abort
