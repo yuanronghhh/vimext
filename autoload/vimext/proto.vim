@@ -206,7 +206,7 @@ function s:HandleAsmInfo(info, msg) abort
 
     elseif msg =~ '^\~"=>'
       let nameIdx = matchlist(msg[2:], '^=>\s\+\(\S\+\) <+\(\d\+\)>')
-      let msg = vimext#debug#DecodeMessage(msg[1:], v:false)
+      let msg = vimext#debug#DecodeMessage2(msg[1:])
 
       if len(nameIdx) > 0
         let info[0] = 14
@@ -283,8 +283,7 @@ function s:MIProcessOutput(msg) abort
 
     if len(nameIdx) > 0
       let info[0] = 3
-      let info[1] = s:varname
-      let info[2] = [vimext#debug#DecodeMessage(nameIdx[1], v:false)]
+      let info[1] = s:varname . " = " . vimext#debug#DecodeText(nameIdx[1])
     endif
 
   elseif msg =~ '^=breakpoint-deleted,id='
@@ -338,14 +337,14 @@ function s:MIProcessOutput(msg) abort
 
   elseif msg[0] == '~'
     let info[0] = 8
-    let info[1] = [vimext#debug#DecodeMessage(msg[1:], v:false)]
+    let info[1] = vimext#debug#DecodeMessage2(msg[1:])
 
   elseif msg =~ '^=message,text='
     let nameIdx = matchlist(msg, '^=message,text=\([^\n]*\),send-to="\([^,]\+"\)')
 
     if len(nameIdx) > 0
       let info[0] = 8
-      let info[1] = [vimext#debug#DecodeMessage(nameIdx[1], v:false)]
+      let info[1] = vimext#debug#DecodeMessage2(nameIdx[1])
       let info[2] = nameIdx[2]
     endif
 
@@ -354,7 +353,7 @@ function s:MIProcessOutput(msg) abort
 
     if len(nameIdx) > 0
       let info[0] = 9         " user set breakpoint
-      let info[1] = vimext#debug#DecodeMessage(nameIdx[5], v:true) " warning
+      let info[1] = vimext#debug#DecodeMessage2(nameIdx[5]) " warning
       let info[2] = nameIdx[1]  " break number
       let info[3] = nameIdx[2]  " type
       let info[4] = nameIdx[3] == "y" ? 1 : 0  " enable
@@ -373,7 +372,7 @@ function s:MIProcessOutput(msg) abort
 
     if len(nameIdx) > 0
       let info[0] = 8
-      let info[1] = [nameIdx[4] . " = " . vimext#debug#DecodeMessage(nameIdx[2], v:false)]
+      let info[1] = vimext#debug#DecodeMessage2(nameIdx[4] . " = " . nameIdx[2])
     endif
 
   elseif msg =~ '^\^done,numchild='
@@ -410,7 +409,7 @@ function s:MIProcessOutput(msg) abort
 
     if len(nameIdx) > 0
       let info[0] = 10
-      let info[1] = vimext#debug#DecodeMessage(nameIdx[1], v:false)
+      let info[1] = vimext#debug#DecodeMessage2(nameIdx[1])
     endif
     let s:varname = "<value>"
 
@@ -418,7 +417,7 @@ function s:MIProcessOutput(msg) abort
     let nameIdx = matchlist(msg, '^\*stopped,reason="exception-received",exception-name="\([^"]\+\)",exception="\([^"]\+\)",')
     if len(nameIdx) > 0
       let info[0] = 10
-      let info[1] = nameIdx[1] . ": " . vimext#debug#DecodeMessage('"' . nameIdx[2] . '\"', v:false)
+      let info[1] = [nameIdx[1] . ": " . vimext#debug#DecodeText('"' . nameIdx[2] . '\"')]
     endif
 
   elseif msg =~ '^\*stopped,reason="exited",exit-code='

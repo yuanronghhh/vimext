@@ -431,12 +431,12 @@ function s:PromptOut(channel, msg) abort
   endif
   let asm_viewer = s:self.asm_viewer
 
-  :call vimext#logger#Info(info)
+  ":call vimext#logger#Info(info)
   if info[0] == 1 " hit breakpoint
     :call vimext#runner#LoadSource(s:self, info[2], info[3])
 
   elseif info[0] == 3 " print expr value
-    :call vimext#runner#ShowBalloon(s:self, info[1] . " = " . join(info[2], "\n"))
+    :call vimext#runner#ShowBalloon(s:self, info[1])
 
   elseif info[0] == 4 " user set breakpoint
     "brkid,type,disp,enable,func,file,fullname,line

@@ -21,6 +21,18 @@ function vimext#debug#DecodeFilePath(filepath)
   return msg
 endfunction
 
+function vimext#debug#DecodeText(msgstr)
+  return a:msgstr
+        \ ->substitute('\\t', "\t", 'g')
+        \ ->substitute('\\r\\n', '\n', 'g')
+        \ ->substitute('\\n', '\n', 'g')
+endfunction
+
+function vimext#debug#DecodeMessage2(msgstr)
+  let msg = vimext#debug#DecodeText(a:msgstr)
+  return split(msg, '\n')
+endfunction
+
 function vimext#debug#DecodeMessage(quotedText, literal)
   if a:quotedText[0] != '"'
     :call vimext#logger#Error('DecodeMessage(): missing quote in ' . a:quotedText)
