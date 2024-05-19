@@ -326,7 +326,9 @@ endfunction
 
 function s:PromptInput(cmdstr) abort
   let cmds = s:self.proto.ProcessInput(s:self.proto, a:cmdstr)
-  ":call vimext#logger#Info(cmds)
+
+  :call vimext#logger#Debug(cmds)
+
   for cmd in cmds
     if cmd[0] == s:self.proto.Exit
       if exists('#User#DbgDebugStopPre')
@@ -335,7 +337,7 @@ function s:PromptInput(cmdstr) abort
     endif
 
     if cmd[0] == s:self.proto.Break
-      :call vimext#runner#Break(info[2])
+      :call vimext#runner#Break(cmd[1])
       return v:null
     endif
   endfor
@@ -431,7 +433,8 @@ function s:PromptOut(channel, msg) abort
   endif
   let asm_viewer = s:self.asm_viewer
 
-  ":call vimext#logger#Info(info)
+  :call vimext#logger#Debug(info)
+
   if info[0] == 1 " hit breakpoint
     :call vimext#runner#LoadSource(s:self, info[2], info[3])
 

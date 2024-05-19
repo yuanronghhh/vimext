@@ -22,7 +22,23 @@ function vimext#debug#DecodeFilePath(filepath)
 endfunction
 
 function vimext#debug#DecodeText(msgstr)
+  if a:msgstr[0] != '"'
+    :call vimext#logger#Error('DecodeMessage(): missing quote in ' . a:msgstr)
+    return
+  endif
+
   return a:msgstr
+        \ ->substitute('^"\|[^\\]\zs".*', '', 'g')
+        \ ->substitute('\\"', '"', 'g')
+        \ ->substitute('\\000', s:NullRepl, 'g')
+        \ ->substitute('\\\o\o\o', {-> eval('"' .. submatch(0) .. '"')}, 'g')
+        "\ Note: GDB docs also mention hex encodings - the translations below work
+        "\       but we keep them out for performance-reasons until we actually see
+        "\       those in mi-returns
+        "\ \ ->substitute('\\0x\(\x\x\)', {-> eval('"\x' .. submatch(1) .. '"')}, 'g')
+        "\ \ ->substitute('\\0x00', s:NullRepl, 'g')
+        \ ->substitute('\\\\', '\', 'g')
+        \ ->substitute(s:NullRepl, '\\000', 'g')
         \ ->substitute('\\t', "\t", 'g')
         \ ->substitute('\\r\\n', '\n', 'g')
         \ ->substitute('\\n', '\n', 'g')

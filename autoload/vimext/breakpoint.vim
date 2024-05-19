@@ -142,5 +142,5 @@ function vimext#breakpoint#DeInit()
 endfunction
 
 function vimext#breakpoint#Print()
-  :call vimext#logger#Info(s:breaks)
+  :call vimext#logger#Debug(s:breaks)
 endfunction

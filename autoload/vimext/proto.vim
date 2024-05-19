@@ -257,6 +257,9 @@ function s:MIProcessOutput(msg) abort
   endif
 
   let info = [0, v:null, v:null, v:null, v:null, v:null, v:null, v:null, v:null, v:null]
+  if g:vimext_debug == 1
+    let info[9] = msg
+  endif
 
   if s:HandleAsmInfo(info, msg)
     return info
@@ -282,6 +285,7 @@ function s:MIProcessOutput(msg) abort
     let nameIdx = matchlist(msg, '^\^done,value=\(.*\)')
 
     if len(nameIdx) > 0
+      " balloon can show multiple line
       let info[0] = 3
       let info[1] = s:varname . " = " . vimext#debug#DecodeText(nameIdx[1])
     endif
@@ -353,7 +357,7 @@ function s:MIProcessOutput(msg) abort
 
     if len(nameIdx) > 0
       let info[0] = 9         " user set breakpoint
-      let info[1] = vimext#debug#DecodeMessage2(nameIdx[5]) " warning
+      let info[1] = vimext#debug#DecodeText(nameIdx[5]) " warning
       let info[2] = nameIdx[1]  " break number
       let info[3] = nameIdx[2]  " type
       let info[4] = nameIdx[3] == "y" ? 1 : 0  " enable
@@ -372,7 +376,7 @@ function s:MIProcessOutput(msg) abort
 
     if len(nameIdx) > 0
       let info[0] = 8
-      let info[1] = vimext#debug#DecodeMessage2(nameIdx[4] . " = " . nameIdx[2])
+      let info[1] = split(nameIdx[4] . " = " . vimext#debug#DecodeText(nameIdx[2]), "\n")
     endif
 
   elseif msg =~ '^\^done,numchild='
