@@ -20,7 +20,7 @@ function s:GetCmd(self, cmd_term, args) abort
 
   let cmd = ["netcoredbg"]
   let cmd += ["--interpreter=" . protoname]
-  let cmd += ["--", "dotnet"]
+  let cmd += a:args
 
   return cmd
 endfunction

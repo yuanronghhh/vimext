@@ -81,6 +81,7 @@ function s:Send(self, cmd) abort
     return
   endif
 
+  ":call vimext#logger#Info(a:cmd)
   :call ch_sendraw(a:self.channel, a:cmd . "\n")
 endfunction
 

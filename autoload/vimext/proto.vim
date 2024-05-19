@@ -1,7 +1,9 @@
 let s:self = v:null
 let s:lines = []
 let s:state = 0
-let s:varname = v:null
+let s:varname = "<value>"
+let s:lastcmd = "next"
+let s:isballoon = v:false
 
 function vimext#proto#Create(name) abort
   let s:mi_cmd = {
@@ -72,111 +74,96 @@ endfunction
 function vimext#proto#ParseInputArgs(cmd) abort
   let nameIdx = matchlist(a:cmd, '\(\S*\) \([^\n]*\)')
   if len(nameIdx) <= 2
-    return ""
+    return [a:cmd, ""]
   endif
 
-  return nameIdx[2]
+  return [nameIdx[1], nameIdx[2]]
 endfunction
 
-function vimext#proto#ParseEval(self, argstr) abort
-  let info = [7, v:null, v:null, v:null]
+function vimext#proto#ParseCmds(self, argstr) abort
+  let cmds = []
 
   if a:self.name == "mi"
     if stridx(a:argstr, "*") > -1
-      let info[1] = a:self.VarChildren
-      let info[2] = "_innervar"
-      let info[3] = a:self.VarCreate . " _innervar" . " " . "\"" . substitute(a:argstr, "*", "", "g") . "\""
+      :call add(cmds, [a:self.VarCreate, " _innervar" . " " . "\"" . substitute(a:argstr, "*", "", "g") . "\""])
+      :call add(cmds, [a:self.VarChildren, "_innervar"])
     else
-      let info[1] = a:self.VarCreate
-      let info[2] = "_innervar" . "  " . "\"" . a:argstr . "\""
+      :call add(cmds, [a:self.VarCreate, "_innervar" . "  " . "\"" . a:argstr . "\""])
+      :call add(cmds, [a:self.Eval, "_innervar"])
     endif
   else
-    let info[1] = a:self.Print
-    let info[2] = a:argstr
+    :call add(cmds, [a:self.Print, a:argstr])
   endif
   let s:varname = a:argstr
 
-  return info
+  return cmds
 endfunction
 
-function s:ProcessInput(self, cmd) abort
-  " type,cmd,args,pre-execute-cmd
-  let info = [0, v:null, v:null, v:null]
-  let cmd = "next"
+function vimext#proto#ProcessExpr(self, expr, isballoon) abort
+  let s:isballoon = a:isballoon
+  " lhs,rhs
+  let cmds = vimext#proto#ParseCmds(a:self, a:expr)
 
-  if a:cmd != "" && a:cmd isnot v:null
-    let cmd = a:cmd
-    let info[1] = cmd
+  return cmds
+endfunction
+
+function s:ProcessInput(self, cmdstr) abort
+  let cmds = []
+  let vals = vimext#proto#ParseInputArgs(a:cmdstr)
+  let cmd = vals[0]
+  let args = vals[1]
+
+  if vals[0] == ''
+    let cmd = s:lastcmd
+  else
+    let s:lastcmd = cmd
   endif
 
   if cmd == "q"
         \ || cmd == "quit"
         \ || cmd == "exit"
-    let info[0] = 1
-    let info[1] = a:self.Exit
-    let info[2] = vimext#proto#ParseInputArgs(cmd)
-    return info
-  endif
 
-  if cmd == "s"
+    :call add(cmds, [a:self.Exit, args])
+
+  elseif cmd == "s"
         \ || cmd == "step"
-    let info[0] = 2
-    let info[1] = a:self.Step
-    let info[2] = vimext#proto#ParseInputArgs(cmd)
-    return info
-  endif
 
-  if cmd == "fin"
+    :call add(cmds, [a:self.Step, args])
+
+  elseif cmd == "fin"
         \ || cmd == "finish"
-    let info[0] = 3
-    let info[1] = a:self.Finish
-    let info[2] = vimext#proto#ParseInputArgs(cmd)
-    return info
-  endif
 
-  if cmd == "c"
+    :call add(cmds, [a:self.Finish, args])
+  elseif cmd == "c"
         \ || cmd == "continue"
-    let info[0] = 4
-    let info[1] = a:self.Continue
-    let info[2] = vimext#proto#ParseInputArgs(cmd)
-    return info
-  endif
 
-  if cmd == "n"
+    :call add(cmds, [a:self.Continue, args])
+  elseif cmd == "n"
         \ || cmd == "next"
-    let info[0] = 4
-    let info[1] = a:self.Next
-    let info[2] = vimext#proto#ParseInputArgs(cmd)
-    return info
-  endif
 
-  if cmd == "r"
+    :call add(cmds, [a:self.Next, args])
+
+  elseif cmd == "r"
         \ || cmd == "run"
-    let info[0] = 5
-    let info[1] = a:self.Run
-    let info[2] = vimext#proto#ParseInputArgs(cmd)
-    return info
+
+    :call add(cmds, [a:self.Run, args])
+
+  elseif cmd == "b"
+        \ || cmd == "break"
+
+    :call add(cmds, [a:self.Break, args])
+
+  elseif cmd == "p"
+        \ || cmd == "print"
+    let expcmds = vimext#proto#ProcessExpr(a:self, args, v:false)
+
+    :call extend(cmds, expcmds)
+  else
+
+    :call add(cmds, [cmd, args])
   endif
 
-  if cmd =~ "^b "
-        \ || cmd =~ "^break "
-    let info[0] = 6
-    let info[1] = a:self.Break
-    let info[2] = vimext#proto#ParseInputArgs(cmd)
-
-    return info
-  endif
-
-  if cmd =~ "^p "
-        \ || cmd =~ "^print "
-    let args = vimext#proto#ParseInputArgs(cmd)
-    let info = vimext#proto#ParseEval(a:self, args)
-
-    let info[0] = 7
-    return info
-  endif
-
-  return info
+  return cmds
 endfunction
 
 function vimext#proto#ProcessMsg(text) abort
@@ -297,7 +284,7 @@ function s:MIProcessOutput(msg) abort
     if len(nameIdx) > 0
       let info[0] = 3
       let info[1] = s:varname
-      let info[2] = vimext#debug#DecodeMessage(nameIdx[1], v:false)
+      let info[2] = [vimext#debug#DecodeMessage(nameIdx[1], v:false)]
     endif
 
   elseif msg =~ '^=breakpoint-deleted,id='
@@ -425,6 +412,7 @@ function s:MIProcessOutput(msg) abort
       let info[0] = 10
       let info[1] = vimext#debug#DecodeMessage(nameIdx[1], v:false)
     endif
+    let s:varname = "<value>"
 
   elseif msg =~ '\*stopped,reason="exception-received",'
     let nameIdx = matchlist(msg, '^\*stopped,reason="exception-received",exception-name="\([^"]\+\)",exception="\([^"]\+\)",')

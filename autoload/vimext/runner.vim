@@ -1,5 +1,7 @@
 let s:gdb_cfg = g:vim_session."/gdb.cfg"
 let s:self = v:null
+let s:balloon_multiline = has("balloon_multiline")
+let s:balloon_eval_term = has("balloon_eval_term")
 
 function vimext#runner#Create(lang, args) abort
   let bridge = v:null
@@ -88,21 +90,25 @@ function vimext#runner#Create(lang, args) abort
   return self
 endfunction
 
-function vimext#runner#Eval(self, argsstr) abort
-  let info = vimext#proto#ParseEval(a:self.proto, a:argsstr)
+function vimext#runner#RunCmds(self, cmds) abort
+  for cmd in a:cmds
+    :call s:Call(cmd[0], cmd[1])
+  endfor
+endfunction
 
-  :call s:Call(info[1], join(info[2:], " "))
-  :call s:Call(a:self.proto.Eval, "_innervar")
+function vimext#runner#Eval(self, expr, isballon) abort
+  let cmds = vimext#proto#ProcessExpr(s:self.proto, a:expr, a:isballon)
+
+  if s:self.dbg.name == "netcoredbg"
+
+    call vimext#runner#RunCmds(s:self, cmds)
+  else
+    :call s:Call(s:self.proto.DataEvaluate, '"' .. a:expr .. '"')
+  endif
 endfunction
 
 function vimext#runner#BalloonExpr() abort
-  if s:self.dbg.name == "netcoredbg"
-
-    call vimext#runner#Eval(s:self, v:beval_text)
-  else
-    :call s:Call(s:self.proto.DataEvaluate, '"' .. v:beval_text .. '"')
-  endif
-
+  :call vimext#runner#Eval(s:self, v:beval_text, v:true)
   return ""
 endfunction
 
@@ -117,6 +123,7 @@ function vimext#runner#EnableBalloon(self) abort
   if has("balloon_eval_term")
     set balloonevalterm
   endif
+
 endfunction
 
 function vimext#runner#DisableBalloon(self) abort
@@ -233,9 +240,9 @@ function vimext#runner#Run(args) abort
       :call vimext#runner#Restore()
       " :call s:Call(s:self.proto.Start, v:null)
     elseif s:self.dbg.name == "netcoredbg"
-      let argsstr = join(a:args, " ")
-
-      :call s:Call(s:self.proto.Arguments, argsstr)
+      "let argsstr = join(a:args, " ")
+      ":call s:Call(s:self.proto.Arguments, argsstr)
+      :call s:Call(s:self.proto.Run, v:null)
     endif
   endif
 endfunction
@@ -280,6 +287,7 @@ function vimext#runner#Break(args) abort
   if info is v:null
     return
   endif
+  let cmds = []
 
   if info[0] == 1
     let brk = vimext#breakpoint#Get(info[1], info[2])
@@ -290,14 +298,15 @@ function vimext#runner#Break(args) abort
 
     if brk isnot v:null
       :call vimext#breakpoint#Delete(brk)
-      :call s:Call(s:self.proto.Clear, brk[1])
+      :call add(cmds, [s:self.proto.Clear, brk[1]])
     else
-      :call s:Call(s:self.proto.Break, info[1] .. ":" .. info[2])
+      :call add(cmds, [s:self.proto.Break, info[1] .. ":" .. info[2]])
     endif
   else
-    :call s:Call(s:self.proto.Break, info[1])
+    :call add(cmds, [s:self.proto.Break, info[1]])
   endif
 
+  :call vimext#runner#RunCmds(s:self, cmds)
   :call vimext#runner#SaveBrks(s:self)
 endfunction
 
@@ -315,27 +324,24 @@ function s:PromptExit(job, status) abort
   endif
 endfunction
 
-function s:PromptInput(cmd) abort
-  let info = s:self.proto.ProcessInput(s:self.proto, a:cmd)
-
-  if info[0] == 1 " quit
-    if exists('#User#DbgDebugStopPre')
-      doauto <nomodeline> User DbgDebugStopPre
+function s:PromptInput(cmdstr) abort
+  let cmds = s:self.proto.ProcessInput(s:self.proto, a:cmdstr)
+  ":call vimext#logger#Info(cmds)
+  for cmd in cmds
+    if cmd[0] == s:self.proto.Exit
+      if exists('#User#DbgDebugStopPre')
+        doauto <nomodeline> User DbgDebugStopPre
+      endif
     endif
-  endif
 
-  if info[0] == 6
-    :call vimext#runner#Break(info[2])
-    return v:null
-  endif
-
-  if info[0] == 7 " print
-    if info[3] isnot v:null
-      :call s:Call(info[3], v:null)
+    if cmd[0] == s:self.proto.Break
+      :call vimext#runner#Break(info[2])
+      return v:null
     endif
-  endif
+  endfor
+  let cmds = filter(cmds, "v:val[0] != s:self.proto.Break")
 
-  :call s:Call(info[1] . " " . info[2], v:null)
+  :call vimext#runner#RunCmds(s:self, cmds)
 endfunction
 
 function s:DeleteBreakPointByFName(self, fname, lnum) abort
@@ -385,8 +391,14 @@ function vimext#runner#LoadSource(self, fname, lnum) abort
   endif
 endfunction
 
-function vimext#runner#ShowBalloon(self, msg) abort
-  call balloon_show(a:msg)
+function vimext#runner#ShowBalloon(self, amsg) abort
+  if s:balloon_eval_term
+    let msg = balloon_split(a:amsg)
+
+    :call balloon_show(msg)
+  else
+    :call balloon_show(a:amsg)
+  endif
 endfunction
 
 function vimext#runner#PrintOutput(self, msgs) abort
@@ -401,9 +413,9 @@ function vimext#runner#SaveBrks(self) abort
   endif
 endfunction
 
-function vimext#runner#PrintError(self, msg) abort
+function vimext#runner#PrintError(self, msgs) abort
   let term = a:self.cmd_term
-  :call term.Print(term, a:msg)
+  :call term.Print(term, a:msgs)
 endfunction
 
 function s:PromptOut(channel, msg) abort
@@ -419,11 +431,12 @@ function s:PromptOut(channel, msg) abort
   endif
   let asm_viewer = s:self.asm_viewer
 
+  :call vimext#logger#Info(info)
   if info[0] == 1 " hit breakpoint
     :call vimext#runner#LoadSource(s:self, info[2], info[3])
 
   elseif info[0] == 3 " print expr value
-    :call vimext#runner#ShowBalloon(s:self, info[1] . " = " . info[2])
+    :call vimext#runner#ShowBalloon(s:self, info[1] . " = " . join(info[2], "\n"))
 
   elseif info[0] == 4 " user set breakpoint
     "brkid,type,disp,enable,func,file,fullname,line
