@@ -10,6 +10,10 @@ function vimext#plugins#LoadPlugin(plugins) abort
       let ppath = g:vim_plugin."/".p
     endif
 
+    if !isdirectory(ppath)
+      :call vimext#logger#Warning("plugin path not exists: " . ppath)
+    endif
+
     :execute "set rtp+=".ppath
   endfor
 endfunction
