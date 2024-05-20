@@ -125,9 +125,6 @@ class AutoTag:
     def ctag_update(self, cmd, cwd, tagfile, filename):
         self.lock.acquire()
 
-        # sleep for write file complete
-        time.sleep(1)
-
         if not cmd:
             return
 

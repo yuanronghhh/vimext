@@ -240,9 +240,6 @@ function vimext#runner#Run(args) abort
       :call vimext#runner#Restore()
       " :call s:Call(s:self.proto.Start, v:null)
     elseif s:self.dbg.name == "netcoredbg"
-      "let argsstr = join(a:args, " ")
-      ":call s:Call(s:self.proto.Arguments, argsstr)
-      :call s:Call(s:self.proto.Run, v:null)
     endif
   endif
 endfunction
