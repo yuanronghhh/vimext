@@ -99,6 +99,9 @@ function s:NewDbg(self, cmd, name) abort
         \ "callback": a:self.HandleInput,
         \ "interrupt": a:self.Interrupt,
         \ })
+  :setlocal nowrap
+  :setlocal noswapfile
+  :setlocal bufhidden=wipe
 
   return term
 endfunction
@@ -109,6 +112,13 @@ function s:NewProg() abort
     :call vimext#logger#Error('Failed to start debugger term')
     return v:null
   endif
+
+  :setlocal nowrap
+  :setlocal number
+  :setlocal noswapfile
+  :setlocal buftype=nofile
+  :setlocal signcolumn=no
+  :setlocal modifiable
 
   return  term
 endfunction

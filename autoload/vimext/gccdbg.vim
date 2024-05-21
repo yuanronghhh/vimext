@@ -56,6 +56,7 @@ endfunction
 function s:GetGccCmd(protoname, tty, args) abort
   let cmd = ["gdb"]
   let cmd += ['-quiet']
+  let cmd += a:args
   let cmd += ['-iex', 'set pagination off']
   let cmd += ['-iex', 'set mi-async on']
 
@@ -64,7 +65,6 @@ function s:GetGccCmd(protoname, tty, args) abort
   else
     let cmd += ['-tty', a:tty]
   endif
-  let cmd += a:args
 
   return cmd
 endfunction
