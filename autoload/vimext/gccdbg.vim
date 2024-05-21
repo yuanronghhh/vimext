@@ -58,6 +58,7 @@ function s:GetGccCmd(protoname, tty, args) abort
   let cmd += ['-quiet']
   let cmd += ['-iex', 'set pagination off']
   let cmd += ['-iex', 'set mi-async on']
+  let cmd += ['-iex', 'set debuginfod enabled off']
   let cmd += a:args
 
   if a:protoname == "mi2" && has("win32")
