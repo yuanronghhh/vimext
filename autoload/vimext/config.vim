@@ -132,7 +132,6 @@ function vimext#config#LoadConfig()
         \ "tagbar",
         \ "hexmode",
         \ "ale",
-        \ "vim-glsl",
         \ "nerdtree"
         \ ]
   :call vimext#plugins#LoadPlugin(plugins)
@@ -207,7 +206,7 @@ function vimext#config#ALEConfig()
   let g:ale_lint_delay = 1000
   let g:ale_c_cc_options = "@compile_flags.txt"
   let g:ale_c_clangd_options = '--pch-storage=memory'
-  let g:ale_linters = { 'cs': ['mcs'], 'c': ['gcc'], 'python': ['pylint'] }
+  let g:ale_linters = { 'cs': ['mcs'], 'c': ['clangd'], 'python': ['pylint'] }
   let g:ale_python_pylint_options = "--errors-only"
 
   if has("win32")

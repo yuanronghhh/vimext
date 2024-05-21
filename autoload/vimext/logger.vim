@@ -15,7 +15,7 @@ function vimext#logger#Debug(msg) abort
     return
   endif
 
-  :echomsg '[info] '.string(a:msg)
+  :echomsg '[debug] '.string(a:msg)
 endfunction
 
 function vimext#logger#Info(msg) abort

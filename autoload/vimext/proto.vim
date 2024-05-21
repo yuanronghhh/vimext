@@ -6,54 +6,14 @@ let s:lastcmd = "next"
 let s:isballoon = v:false
 
 function vimext#proto#Create(name) abort
-  let s:mi_cmd = {
-        \ "name": "mi",
-        \ "Break": "-break-insert",
-        \ "Clear": "-break-delete",
-        \ "Arguments": "-exec-arguments",
-        \ "Abort": "-exec-abort",
-        \ "Run": "-exec-run",
-        \ "Step": "-exec-step",
-        \ "Next": "-exec-next",
-        \ "Finish": "-exec-finish",
-        \ "Interrupt": "-exec-interrupt",
-        \ "Continue": "-exec-continue",
-        \ "Until": "-exec-until",
-        \ "Eval": "-var-evaluate-expression",
-        \ "DataEvaluate": "-data-evaluate-expression",
-        \ "VarCreate": "-var-create",
-        \ "VarChildren": "-var-list-children",
-        \ "Frame": "-interpreter-exec mi frame",
-        \ "Console": "-interpreter-exec console",
-        \ "Attach": "--attach",
-        \ "Source": "source",
-        \ "Set": "-gdb-set",
-        \ "Exit": "-gdb-exit",
-        \ "SaveBreakoints": "save breakpoints",
-        \ "Start": "start",
-        \ "Disassemble": "disassemble",
-        \ "Print": "print",
-        \ "ProcessOutput": function("s:MIProcessOutput"),
-        \ "ProcessInput": function("s:ProcessInput"),
-        \ "Dispose": function("s:Dispose"),
-        \ }
-
-  let s:vscode_cmd = {
-        \ "name": "vscode",
-        \ }
-
   let self = v:null
-  if a:name == "mi"
-    let self = s:mi_cmd
-  endif
-
-  if a:name == "mi2"
-    let s:mi_cmd.name = "mi2"
-    let self = s:mi_cmd
+  if a:name == "mi" || a:name == "mi2"
+    let self = vimext#proto#MiCreate()
+    let self.name = a:name
   endif
 
   if a:name == "vscode"
-    let self = s:vscode_cmd
+    let self = vimext#proto#DapCreate()
   endif
 
   let s:self = self
@@ -61,14 +21,43 @@ function vimext#proto#Create(name) abort
   return self
 endfunction
 
-function vimext#proto#GetStart(self) abort
-  if a:self.name == "mi"
-    return a:self.Run
-  elseif a:self.name == "mi2"
-    return a:self.Start
-  else
-    return v:null
-  endif
+" mi protocol ===============
+function vimext#proto#MiCreate() abort
+  let self = {
+        \ "name": "mi",
+        \ "Break": function("s:MiBreak"),
+        \ "Clear": function("s:MiClear"),
+        \ "Arguments": function("s:MiArguments"),
+        \ "Abort": function("s:MiAbort"),
+        \ "Run": function("s:MiRun"),
+        \ "Step": function("s:MiStep"),
+        \ "Next": function("s:MiNext"),
+        \ "Finish": function("s:MiFinish"),
+        \ "Interrupt": function("s:MiInterrupt"),
+        \ "Continue": function("s:MiContinue"),
+        \ "Until": function("s:MiUntil"),
+        \ "Eval": function("s:MiEval"),
+        \ "DataEvaluate": function("s:MiDataEvaluate"),
+        \ "VarCreate": function("s:MiVarCreate"),
+        \ "VarChildren": function("s:MiVarChildren"),
+        \ "Frame": function("s:MiFrame"),
+        \ "Console": function("s:MiConsole"),
+        \ "Attach": function("s:MiAttach"),
+        \ "Source": function("s:MiSource"),
+        \ "Set": function("s:MiSet"),
+        \ "Exit": function("s:MiExit"),
+        \ "SaveBreakoints": function("s:MiSaveBreakoints"),
+        \ "Start": function("s:MiStart"),
+        \ "Disassemble": function("s:MiDisassemble"),
+        \ "Print": function("s:MiPrint"),
+        \ "ProcessOutput": function("s:MiProcessOutput"),
+        \ "ProcessInput": function("s:MiProcessInput"),
+        \ "Call": function("s:MiCall"),
+        \ "ExprToCmds": function("s:MiExprToCmds"),
+        \ "Dispose": function("s:MiDispose"),
+        \ }
+
+  return self
 endfunction
 
 function vimext#proto#ParseInputArgs(cmd) abort
@@ -80,34 +69,22 @@ function vimext#proto#ParseInputArgs(cmd) abort
   return [nameIdx[1], nameIdx[2]]
 endfunction
 
-function vimext#proto#ParseCmds(self, argstr) abort
-  let cmds = []
-
-  if a:self.name == "mi"
-    if stridx(a:argstr, "*") > -1
-      :call add(cmds, [a:self.VarCreate, " _innervar" . " " . "\"" . substitute(a:argstr, "*", "", "g") . "\""])
-      :call add(cmds, [a:self.VarChildren, "_innervar"])
-    else
-      :call add(cmds, [a:self.VarCreate, "_innervar" . "  " . "\"" . a:argstr . "\""])
-      :call add(cmds, [a:self.Eval, "_innervar"])
-    endif
-  else
-    :call add(cmds, [a:self.Print, a:argstr])
-  endif
-  let s:varname = a:argstr
-
-  return cmds
-endfunction
-
-function vimext#proto#ProcessExpr(self, expr, isballoon) abort
+function s:MiExprToCmds(self, expr, isballoon) abort
   let s:isballoon = a:isballoon
   " lhs,rhs
-  let cmds = vimext#proto#ParseCmds(a:self, a:expr)
+  let cmds = s:ExprToCmdsInner(a:self, a:expr)
 
   return cmds
 endfunction
 
-function s:ProcessInput(self, cmdstr) abort
+function s:MiCall(self, args) abort
+  return a:args
+endfunction
+
+function s:MiDispose(self) abort
+endfunction
+
+function s:MiProcessInput(self, cmdstr) abort
   let cmds = []
   let vals = vimext#proto#ParseInputArgs(a:cmdstr)
   let cmd = vals[0]
@@ -155,12 +132,12 @@ function s:ProcessInput(self, cmdstr) abort
 
   elseif cmd == "p"
         \ || cmd == "print"
-    let expcmds = vimext#proto#ProcessExpr(a:self, args, v:false)
+    let expcmds = s:MiExprToCmds(a:self, args, v:false)
 
     :call extend(cmds, expcmds)
   else
 
-    :call add(cmds, [cmd, args])
+    :call add(cmds, [a:self.Call, cmd])
   endif
 
   return cmds
@@ -206,7 +183,7 @@ function s:HandleAsmInfo(info, msg) abort
 
     elseif msg =~ '^\~"=>'
       let nameIdx = matchlist(msg[2:], '^=>\s\+\(\S\+\) <+\(\d\+\)>')
-      let msg = vimext#debug#DecodeMessage2(msg[1:])
+      let msg = vimext#debug#DecodeText(msg[1:])
 
       if len(nameIdx) > 0
         let info[0] = 14
@@ -250,7 +227,7 @@ function s:ParseChildrenInfo(msg) abort
   return values
 endfunction
 
-function s:MIProcessOutput(msg) abort
+function s:MiProcessOutput(msg) abort
   let msg = vimext#proto#ProcessMsg(a:msg)
   if msg is v:null
     return v:null
@@ -438,6 +415,7 @@ function s:MIProcessOutput(msg) abort
       let info[0] = 17
       let info[1] = nameIdx[1]
       let s:varname = nameIdx[1]
+      :call vimext#logger#Info(nameIdx)
     endif
   else
     return v:null
@@ -446,5 +424,166 @@ function s:MIProcessOutput(msg) abort
   return info
 endfunction
 
-function s:Dispose(self) abort
+function s:ExprToCmdsInner(self, argstr) abort
+  let cmds = []
+
+  if a:self.name == "mi"
+    if stridx(a:argstr, "*") > -1
+      :call add(cmds, [a:self.VarCreate, " _innervar" . " " . "\"" . substitute(a:argstr, "*", "", "g") . "\""])
+      :call add(cmds, [a:self.VarChildren, "_innervar"])
+    else
+      :call add(cmds, [a:self.VarCreate, "_innervar" . "  " . "\"" . a:argstr . "\""])
+      :call add(cmds, [a:self.Eval, "_innervar"])
+    endif
+  else
+    :call add(cmds, [a:self.Print, a:argstr])
+  endif
+  let s:varname = a:argstr
+
+  return cmds
+endfunction
+
+function s:MiBreak(self, args) abort 
+  return "-break-insert " . a:args
+endfunction
+
+function s:MiClear(self, args) abort 
+  return "-break-delete " . a:args
+endfunction
+
+function s:MiArguments(self, args) abort 
+  return "-exec-arguments " . a:args
+endfunction
+
+function s:MiAbort(self, args) abort 
+  return "-exec-abort"
+endfunction
+
+function s:MiRun(self, args) abort 
+  return "-exec-run " . a:args
+endfunction
+
+function s:MiStep(self, args) abort 
+  return "-exec-step"
+endfunction
+
+function s:MiNext(self, args) abort 
+  return "-exec-next"
+endfunction
+
+function s:MiFinish(self, args) abort 
+  return "-exec-finish"
+endfunction
+
+function s:MiInterrupt(self, args) abort 
+  return "-exec-interrupt"
+endfunction
+
+function s:MiContinue(self, args) abort 
+  return "-exec-continue"
+endfunction
+
+function s:MiUntil(self, args) abort 
+  return "-exec-until"
+endfunction
+
+function s:MiEval(self, args) abort 
+  return "-var-evaluate-expression " . a:args
+endfunction
+
+function s:MiDataEvaluate(self, args) abort 
+  return "-data-evaluate-expression " . a:args
+endfunction
+
+function s:MiVarCreate(self, args) abort 
+  return "-var-create " . a:args
+endfunction
+
+function s:MiVarChildren(self, args) abort 
+  return "-var-list-children " . a:args
+endfunction
+
+function s:MiFrame(self, args) abort 
+  return "-interpreter-exec mi frame"
+endfunction
+
+function s:MiConsole(self, args) abort 
+  return "-interpreter-exec console"
+endfunction
+
+function s:MiAttach(self, args) abort 
+  return "--attach " . a:args
+endfunction
+
+function s:MiSource(self, args) abort 
+  return "source " . a:args
+endfunction
+
+function s:MiSet(self, args) abort 
+  return "-gdb-set " . a:args
+endfunction
+
+function s:MiExit(self, args) abort 
+  return "-gdb-exit"
+endfunction
+
+function s:MiSaveBreakoints(self, args) abort 
+  return "save breakpoints " . a:args
+endfunction
+
+function s:MiStart(self, args) abort
+  if a:self.name == "mi"
+    return s:MiRun(a:self, a:args)
+  elseif a:self.name == "mi2"
+    return "start"
+  else
+    return v:null
+  endif
+endfunction
+
+function s:MiDisassemble(self, args) abort 
+  return "disassemble " . a:args
+endfunction
+
+function s:MiPrint(self, args) abort 
+  return "print " . a:args
+endfunction
+
+" dap protocol start
+function vimext#proto#DapCreate(name) abort
+  " todo implement
+  let self = {
+        \ "name": "dap",
+        \ "Break": function("s:DapBreak"),
+        \ "Clear": function("s:DapClear"),
+        \ "Arguments": function("s:DapArguments"),
+        \ "Abort": function("s:DapAbort"),
+        \ "Run": function("s:DapRun"),
+        \ "Step": function("s:DapStep"),
+        \ "Next": function("s:DapNext"),
+        \ "Finish": function("s:DapFinish"),
+        \ "Interrupt": function("s:DapInterrupt"),
+        \ "Continue": function("s:DapContinue"),
+        \ "Until": function("s:DapUntil"),
+        \ "Eval": function("s:DapEval"),
+        \ "DataEvaluate": function("s:DapDataEvaluate"),
+        \ "VarCreate": function("s:DapVarCreate"),
+        \ "VarChildren": function("s:DapVarChildren"),
+        \ "Frame": function("s:DapFrame"),
+        \ "Console": function("s:DapConsole"),
+        \ "Attach": function("s:DapAttach"),
+        \ "Source": function("s:DapSource"),
+        \ "Set": function("s:DapSet"),
+        \ "Exit": function("s:DapExit"),
+        \ "SaveBreakoints": function("s:DapSaveBreakoints"),
+        \ "Start": function("s:DapStart"),
+        \ "Call": function("s:DapCall"),
+        \ "Disassemble": function("s:DapDisassemble"),
+        \ "Print": function("s:DapPrint"),
+        \ "ProcessOutput": function("s:DapProcessOutput"),
+        \ "ProcessInput": function("s:DapProcessInput"),
+        \ "Dispose": function("s:DapDispose"),
+        \ }
+
+  return self
 endfunction

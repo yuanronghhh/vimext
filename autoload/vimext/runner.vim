@@ -96,19 +96,38 @@ function vimext#runner#RunCmds(self, cmds) abort
   endfor
 endfunction
 
-function vimext#runner#Eval(self, expr, isballon) abort
-  let cmds = vimext#proto#ProcessExpr(s:self.proto, a:expr, a:isballon)
+function s:NetDbgExprToCmds(proto, argstr) abort
+  let cmds = []
+
+  if a:proto.name == "mi"
+    if stridx(a:argstr, "*") > -1
+      :call add(cmds, [a:proto.VarCreate, " _innervar" . " " . "\"" . substitute(a:argstr, "*", "", "g") . "\""])
+      :call add(cmds, [a:proto.VarChildren, "_innervar"])
+    else
+      :call add(cmds, [a:proto.VarCreate, "_innervar" . "  " . "\"" . a:argstr . "\""])
+      :call add(cmds, [a:proto.Eval, "_innervar"])
+    endif
+  else
+    :call add(cmds, [a:proto.Print, a:argstr])
+  endif
+  let s:varname = a:argstr
+
+  return cmds
+endfunction
+
+function s:Eval(self, expr, isballon) abort
+  let proto = a:self.proto
+  let cmds = proto.ExprToCmds(proto, a:expr, a:isballon)
 
   if s:self.dbg.name == "netcoredbg"
-
     call vimext#runner#RunCmds(s:self, cmds)
   else
-    :call s:Call(s:self.proto.DataEvaluate, '"' .. a:expr .. '"')
+    :call s:Call(proto.DataEvaluate, '"' .. a:expr .. '"')
   endif
 endfunction
 
 function vimext#runner#BalloonExpr() abort
-  :call vimext#runner#Eval(s:self, v:beval_text, v:true)
+  :call s:Eval(s:self, v:beval_text, v:true)
   return ""
 endfunction
 
@@ -139,18 +158,22 @@ function vimext#runner#DisableBalloon(self) abort
   endif
 endfunction
 
-function s:Call(cmd, argsstr) abort
+function s:Call(func, args) abort
   if s:self is v:null
     return
   endif
 
-  let term = s:self.dbg_term
-
-  if a:argsstr is v:null
-    :call term.Send(term, a:cmd)
+  let argsstr = ""
+  if a:args is v:null
   else
-    :call term.Send(term, a:cmd . " " . a:argsstr)
+    let argsstr = a:args
   endif
+
+  let term = s:self.dbg_term
+  let proto = s:self.proto
+  let msg = a:func(proto, argsstr)
+
+  :call term.Send(term, msg)
 endfunction
 
 function vimext#runner#Dispose() abort
@@ -230,15 +253,11 @@ function vimext#runner#ReRun() abort
 endfunction
 
 function vimext#runner#Run(args) abort
-  let start = vimext#proto#GetStart(s:self.proto)
-  if start is v:null
-    return
-  endif
+  :call s:self.proto.Start(s:self.proto, a:args)
 
   if a:args isnot v:null
     if s:self.dbg.name == "gdb"
       :call vimext#runner#Restore()
-      " :call s:Call(s:self.proto.Start, v:null)
     elseif s:self.dbg.name == "netcoredbg"
     endif
   endif
@@ -324,7 +343,7 @@ endfunction
 function s:PromptInput(cmdstr) abort
   let cmds = s:self.proto.ProcessInput(s:self.proto, a:cmdstr)
 
-  :call vimext#logger#Debug(cmds)
+  ":call vimext#logger#Debug(cmds)
 
   for cmd in cmds
     if cmd[0] == s:self.proto.Exit
@@ -430,7 +449,7 @@ function s:PromptOut(channel, msg) abort
   endif
   let asm_viewer = s:self.asm_viewer
 
-  :call vimext#logger#Debug(info)
+  ":call vimext#logger#Debug(info)
 
   if info[0] == 1 " hit breakpoint
     :call vimext#runner#LoadSource(s:self, info[2], info[3])

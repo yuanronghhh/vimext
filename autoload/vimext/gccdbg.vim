@@ -12,11 +12,11 @@ endfunction
 
 function s:SetConfig(self, prompt, proto) abort
   if has("win32")
-    :call a:prompt.Send(a:prompt, a:proto.Set . " new-console on")
-    :call a:prompt.Send(a:prompt, a:proto.Set . " print pretty on")
-    :call a:prompt.Send(a:prompt, a:proto.Set . " breakpoint pending on")
+    :call a:prompt.Send(a:prompt, a:proto.Set(a:proto, "new-console on"))
+    :call a:prompt.Send(a:prompt, a:proto.Set(a:proto, "print pretty on"))
+    :call a:prompt.Send(a:prompt, a:proto.Set(a:proto, "breakpoint pending on"))
   else
-    :call a:prompt.Send(a:prompt, "set breakpoint pending on")
+    :call a:prompt.Send(a:prompt, a:proto.Set(a:proto, "breakpoint pending on"))
   endif
 
 endfunction
