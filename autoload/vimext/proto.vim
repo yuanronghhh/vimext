@@ -415,7 +415,6 @@ function s:MiProcessOutput(msg) abort
       let info[0] = 17
       let info[1] = nameIdx[1]
       let s:varname = nameIdx[1]
-      :call vimext#logger#Info(nameIdx)
     endif
   else
     return v:null
