@@ -11,8 +11,7 @@ function vimext#netcoredbg#Create(proto) abort
 endfunction
 
 function s:SetConfig(self, prompt, proto) abort
-  :call a:prompt.Send(a:prompt, a:proto.Set . " " . "just-my-code 1")
-  ":call a:prompt.Send(a:prompt, a:proto.Set . " " . "step-filtering 1")
+  :call a:prompt.Send(a:prompt, a:proto.Set(a:proto, " " . "just-my-code 1"))
 endfunction
 
 function s:GetCmd(self, cmd_term, args) abort

@@ -3,8 +3,28 @@ let s:self = v:null
 let s:balloon_multiline = has("balloon_multiline")
 let s:balloon_eval_term = has("balloon_eval_term")
 
+function s:CreateConsole(dbg, funcs) abort
+  let console = v:null
+  if has("win32") || a:dbg.name == "netcoredbg"
+    let console = vimext#prompt#Create(a:funcs)
+  else
+    let console = vimext#term#Create(a:funcs)
+  endif
+
+  if console is v:null
+    return v:null
+  endif
+
+  if !has('terminal')
+    :call vimext#logger#Error("+terminal not enabled in vim")
+    return v:null
+  endif
+
+  return console
+endfunction
+
 function vimext#runner#Create(lang, args) abort
-  let bridge = v:null
+  let console = v:null
   let proto = v:null
 
   if s:self isnot v:null
@@ -36,7 +56,7 @@ function vimext#runner#Create(lang, args) abort
 
   let self = {
         \ "proto": proto,
-        \ "bridge": v:null,
+        \ "console": v:null,
         \ "dbg": dbg,
         \ "dbg_term": v:null,
         \ "cmd_term": v:null,
@@ -50,10 +70,10 @@ function vimext#runner#Create(lang, args) abort
   endif
   let empty_win = win_getid()
 
-  let bridge = vimext#bridge#Create(dbg, funcs)
-  let self.bridge = bridge
+  let console = s:CreateConsole(dbg, funcs)
+  let self.console = console
 
-  let cmd_term = bridge.NewProg()
+  let cmd_term = console.NewProg()
   if cmd_term is v:null
     :call vimext#logger#Warning("create cmd_term failed")
     return v:null
@@ -63,7 +83,7 @@ function vimext#runner#Create(lang, args) abort
   :call win_execute(empty_win, "close")
 
   let cmd = dbg.GetCmd(self.dbg, cmd_term, a:args)
-  let dbg_term = bridge.NewDbg(bridge, cmd)
+  let dbg_term = console.NewDbg(console, cmd, "(" . dbg.name . ") ")
   if dbg_term is v:null
     :call vimext#logger#Warning("create dbg_term failed: " .. join(cmd, " "))
     return v:null
@@ -177,7 +197,7 @@ function s:Call(func, args) abort
 endfunction
 
 function vimext#runner#Dispose() abort
-  :call s:self.bridge.Dispose(s:self.bridge)
+  :call s:self.console.Dispose(s:self.console)
   :call s:self.proto.Dispose(s:self.proto)
   :call s:self.dbg.Dispose(s:self.dbg)
 

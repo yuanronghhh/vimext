@@ -61,7 +61,7 @@ function s:Running(self) abort
   return v:true
 endfunction
 
-function s:NewDbgTerm(cmd, out_func, exit_func) abort
+function s:NewDbgTerm(cmd, out_func, exit_func, name) abort
   let cmd_term = vimext#term#New("NONE", {
         \ 'term_name': 'cmd hidden term',
         \ 'out_cb': a:out_func,
@@ -73,6 +73,7 @@ function s:NewDbgTerm(cmd, out_func, exit_func) abort
   endif
 
   let dbg_term = vimext#term#New(a:cmd, {
+        \ 'term_name': a:name,
         \ 'term_finish': 'close',
         \ 'exit_cb': a:exit_func,
         \ })
@@ -89,10 +90,11 @@ function s:NewDbgTerm(cmd, out_func, exit_func) abort
   return cmd_term
 endfunction
 
-function s:NewDbg(self, cmd) abort
+function s:NewDbg(self, cmd, name) abort
   return s:NewDbgTerm(a:cmd,
         \ function("s:TermOut"),
-        \ function("s:TermExit")
+        \ function("s:TermExit"),
+        \ a:name
         \ )
 endfunction
 

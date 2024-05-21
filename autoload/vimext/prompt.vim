@@ -2,7 +2,6 @@
 " refactor version of termdbug
 """
 let s:self = v:null
-let s:parent = v:null
 
 
 " term start
@@ -59,7 +58,7 @@ function vimext#prompt#New(mode, name, cmd, opts) abort
     let self.channel = job_getchannel(job)
 
     setlocal buftype=prompt
-    :call prompt_setprompt(self.buf, '(gdb) ')
+    :call prompt_setprompt(self.buf, a:name)
     :call prompt_setcallback(self.buf, get(a:opts, "callback", v:null))
     :call prompt_setinterrupt(self.buf, get(a:opts, "interrupt", v:null))
     startinsert
@@ -93,8 +92,8 @@ function s:Running(self) abort
   return v:true
 endfunction
 
-function s:NewDbg(self, cmd) abort
-  let term = vimext#prompt#New(1, "Dbg", a:cmd, {
+function s:NewDbg(self, cmd, name) abort
+  let term = vimext#prompt#New(1, a:name, a:cmd, {
         \ "exit_cb": a:self.HandleExit,
         \ "out_cb": a:self.HandleOutput,
         \ "callback": a:self.HandleInput,
@@ -155,7 +154,6 @@ function vimext#prompt#Create(funcs) abort
   endif
 
   let s:self = self
-  let s:parent = vimext#bridge#Ref()
 
   return self
 endfunction

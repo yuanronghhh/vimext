@@ -460,7 +460,7 @@ function s:MiAbort(self, args) abort
 endfunction
 
 function s:MiRun(self, args) abort 
-  return "-exec-run " . a:args
+  return "-exec-run"
 endfunction
 
 function s:MiStep(self, args) abort 
