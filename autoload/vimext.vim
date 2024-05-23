@@ -184,17 +184,15 @@ function vimext#SetEditor() abort
         \ || cext == "cc"
         \ || cext == "h"
         \ || cext == "hpp"
-    if has("win32")
-      :set makeencoding=gbk
-    endif
+
+    " work for msvc
+    "if has("win32")
+    "  :set makeencoding=gbk
+    "endif
   elseif cext == "cs"
     :set shiftwidth=4
     :set foldmethod=indent
     :set foldlevel=2
-    :set errorformat^=%f(%l\\,%c):\ %t%*[^\ ]\ C%n:\ %m,
-          \%f(%l\\,%c):\ fatal\ \ %t%*[^\ ]\ C%n:\ %m,
-          \%f(%l\\,%c):\ %t%*[^\ ]\ CS%n:\ %m,
-          \%f(%l\\,%c):\ fatal\ \ %t%*[^\ ]\ CS%n:\ %m
   else
   endif
 endfunction
