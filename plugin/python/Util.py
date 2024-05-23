@@ -201,6 +201,9 @@ class UtilInfo:
         self.version = version
 
     def get_system_header_path(self):
+        if not self.compilerInfo:
+            return []
+
         incs = None
 
         if self.platform == "Windows":
@@ -242,7 +245,7 @@ class UtilInfo:
         vs = self.compilerInfo
 
         # vs 2017
-        if vs["installationVersion"].startswith("15."):
+        if self.version.startswith("15."):
             inc_path = "%s/VC/Tools/MSVC/14.16.27023/include" % (vs["installationPath"])
         else:
             inc_path = "%s/VC/Tools/MSVC/14.29.30133/include" % (vs["installationPath"])
