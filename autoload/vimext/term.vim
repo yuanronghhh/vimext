@@ -98,10 +98,10 @@ function s:NewDbg(self, cmd, name) abort
         \ )
 endfunction
 
-function s:NewProg() abort
+function s:NewOutput() abort
   " start buffer
   let term = vimext#term#New("NONE", {
-        \ 'term_name': 'term debugger',
+        \ 'term_name': 'term output',
         \ 'vertical': 1,
         \ })
   if term is v:null
@@ -109,11 +109,12 @@ function s:NewProg() abort
     return v:null
   endif
 
-  return  term
+  return term
 endfunction
 
 function s:Print(self, msgs) abort
-  "call s:Send(a:self, a:msgs)
+  "let msg = join(a:msgs, "")
+  ":call s:Send(a:self, msg)
 endfunction
 "Term end
 
@@ -133,7 +134,7 @@ endfunction
 function vimext#term#Create(param) abort
   let self = {
         \ "term_pid": 0,
-        \ "NewProg": function("s:NewProg"),
+        \ "NewOutput": function("s:NewOutput"),
         \ "NewDbg": function("s:NewDbg"),
         \ 'HandleExit': get(a:param, "HandleExit", v:null),
         \ "HandleInput": get(a:param, "HandleInput", v:null),

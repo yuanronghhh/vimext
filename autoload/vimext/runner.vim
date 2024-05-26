@@ -73,7 +73,7 @@ function vimext#runner#Create(lang, args) abort
   let console = s:CreateConsole(dbg, funcs)
   let self.console = console
 
-  let cmd_term = console.NewProg()
+  let cmd_term = console.NewOutput()
   if cmd_term is v:null
     :call vimext#logger#Warning("create cmd_term failed")
     return v:null
@@ -430,13 +430,7 @@ function vimext#runner#LoadSource(self, fname, lnum) abort
 endfunction
 
 function vimext#runner#ShowBalloon(self, amsg) abort
-  if s:balloon_eval_term
-    let msg = balloon_split(a:amsg)
-
-    :call balloon_show(msg)
-  else
-    :call balloon_show(a:amsg)
-  endif
+  :call balloon_show(a:amsg)
 endfunction
 
 function vimext#runner#PrintOutput(self, msgs) abort

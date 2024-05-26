@@ -1,5 +1,5 @@
 let g:vimext_python = 0
-let g:vimext_debug = 0
+let g:vimext_debug = 1
 let s:is_fullscreen = 0
 let g:vimext_c_api = 0
 let g:autosave_session = 0

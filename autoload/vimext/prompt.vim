@@ -106,8 +106,8 @@ function s:NewDbg(self, cmd, name) abort
   return term
 endfunction
 
-function s:NewProg() abort
-  let term = vimext#prompt#New(2, "Output", v:null, {})
+function s:NewOutput() abort
+  let term = vimext#prompt#New(2, "term output", v:null, {})
   if term is v:null
     :call vimext#logger#Error('Failed to start debugger term')
     return v:null
@@ -150,7 +150,7 @@ function vimext#prompt#Create(funcs) abort
         \ "prompt_pid": 0,
         \ "prompt_buf": 0,
         \ "NewDbg": function("s:NewDbg"),
-        \ "NewProg": function("s:NewProg"),
+        \ "NewOutput": function("s:NewOutput"),
         \ "Interrupt": function("s:PromptInterrupt"),
         \ 'HandleExit': get(a:funcs, "HandleExit", v:null),
         \ "HandleInput": get(a:funcs, "HandleInput", v:null),
