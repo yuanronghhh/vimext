@@ -56,6 +56,9 @@ function vimext#prompt#New(mode, name, cmd, opts) abort
 
     let self.job = job
     let self.channel = job_getchannel(job)
+    if ch_status(self.channel) == 'fail'
+      return v:null
+    endif
 
     setlocal buftype=prompt
     :call prompt_setprompt(self.buf, a:name)
@@ -80,7 +83,7 @@ function s:Send(self, cmd) abort
     return
   endif
 
-  ":call vimext#logger#Debug(a:cmd)
+  " check a:cmd if failed to execute
   :call ch_sendraw(a:self.channel, a:cmd . "\n")
 endfunction
 
@@ -99,6 +102,11 @@ function s:NewDbg(self, cmd, name) abort
         \ "callback": a:self.HandleInput,
         \ "interrupt": a:self.Interrupt,
         \ })
+  if term is v:null
+    :call vimext#logger#Error('Failed to start Dbg' . string(a:cmd))
+    return v:null
+  endif
+
   :setlocal nowrap
   :setlocal noswapfile
   :setlocal bufhidden=wipe

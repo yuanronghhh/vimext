@@ -35,7 +35,7 @@ endfunction
 
 function vimext#buffer#NewWindowLayout(name, dr) abort
   if a:dr == 1
-    :execute ":vertical new ".a:name
+    :execute ":vertical new " . a:name
     :execute (&columns / 2 - 1) . "wincmd |"
   elseif a:dr == 2
     :execute ":new ".a:name
