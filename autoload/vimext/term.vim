@@ -28,6 +28,7 @@ function vimext#term#New(cmd, opts) abort
         \ "Go": function("s:Go"),
         \ "GetLine": function("s:GetLine"),
         \ "Send": function("s:Send"),
+        \ "SendCall": function("s:SendCall"),
         \ "Print": function("s:Print"),
         \ "Running": function("s:Running"),
         \ "Destroy": function("s:Destroy")
@@ -50,6 +51,10 @@ function vimext#term#New(cmd, opts) abort
 endfunction
 
 function s:Send(self, cmd) abort
+  :call term_sendkeys(a:self.buf, a:cmd . "\n")
+endfunction
+
+function s:SendCall(self, cmd, func) abort
   :call term_sendkeys(a:self.buf, a:cmd . "\n")
 endfunction
 

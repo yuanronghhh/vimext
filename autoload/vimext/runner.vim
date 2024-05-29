@@ -28,6 +28,11 @@ function vimext#runner#Create(langstr, args) abort
     return v:null
   endif
 
+  let defaultname = vimext#dbg#GetProtoByDbgName(langinfo[0])
+  if langinfo[1] is v:null
+    let langinfo[1] = defaultname
+  endif
+
   let proto = vimext#proto#Create(langinfo[1])
   if proto is v:null
     :call vimext#logger#Warning("runner create proto failed")
@@ -357,8 +362,6 @@ endfunction
 function s:PromptInput(cmdstr) abort
   let cmds = s:self.proto.ProcessInput(s:self.proto, a:cmdstr)
 
-  ":call vimext#logger#Debug(cmds)
-
   for cmd in cmds
     if cmd[0] == s:self.proto.Exit
       if exists('#User#DbgDebugStopPre')
@@ -456,8 +459,6 @@ function s:PromptOut(channel, msg) abort
     return
   endif
   let asm_viewer = s:self.asm_viewer
-
-  ":call vimext#logger#Debug(info)
 
   if info[0] == 1 " hit breakpoint
     :call vimext#runner#LoadSource(s:self, info[2], info[3])

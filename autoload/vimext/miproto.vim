@@ -6,7 +6,7 @@ let s:lastcmd = "next"
 let s:isballoon = v:false
 
 " mi protocol ===============
-function vimext#miproto#MiCreate() abort
+function vimext#miproto#Create() abort
   let self = {
         \ "name": "mi",
         \ "Break": function("s:MiBreak"),

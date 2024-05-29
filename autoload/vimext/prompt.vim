@@ -33,6 +33,7 @@ function vimext#prompt#New(mode, name, cmd, opts) abort
         \ "GetWinID": function("s:GetWinID"),
         \ "Go": function("s:Go"),
         \ "Send": function("s:Send"),
+        \ "SendCall": function("s:SendCall"),
         \ "Print": function("s:Print"),
         \ "Running": function("s:Running"),
         \ "Destroy": function("s:Destroy")
@@ -78,13 +79,25 @@ function vimext#prompt#New(mode, name, cmd, opts) abort
   return self
 endfunction
 
+function s:SendCallback(channel, msg) abort
+  echo 'Received: ' .. a:msg
+endfunction
+
 function s:Send(self, cmd) abort
   if a:self.channel is v:null
     return
   endif
 
-  " check a:cmd if failed to execute
   :call ch_sendraw(a:self.channel, a:cmd . "\n")
+endfunction
+
+function s:SendCall(self, cmd, func) abort
+  if a:self.channel is v:null
+    return
+  endif
+
+  " check a:cmd if failed to execute
+  :call ch_sendraw(a:self.channel, a:cmd . "\n", #{callback: "s:SendCallback"})
 endfunction
 
 function s:Running(self) abort

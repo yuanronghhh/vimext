@@ -3,7 +3,7 @@ let s:state = 0
 let s:lastcmd = "next"
 
 " dap protocol start
-function vimext#dapproto#DapCreate(name) abort
+function vimext#dapproto#Create() abort
   " todo implement
   let self = {
         \ "name": "dap",
@@ -122,7 +122,62 @@ endfunction
 function s:DapProcessOutput(self, args) abort
 endfunction
 
-function s:DapProcessInput(self, args) abort
+function s:DapProcessInput(self, cmdstr) abort
+  let cmds = []
+  let vals = vimext#proto#ParseInputArgs(a:cmdstr)
+  let cmd = vals[0]
+  let args = vals[1]
+
+  if vals[0] == ''
+    let cmd = s:lastcmd
+  else
+    let s:lastcmd = cmd
+  endif
+
+  if cmd == "q"
+        \ || cmd == "quit"
+        \ || cmd == "exit"
+
+    :call add(cmds, [a:self.Exit, args])
+
+  elseif cmd == "s"
+        \ || cmd == "step"
+
+    :call add(cmds, [a:self.Step, args])
+
+  elseif cmd == "fin"
+        \ || cmd == "finish"
+
+    :call add(cmds, [a:self.Finish, args])
+  elseif cmd == "c"
+        \ || cmd == "continue"
+
+    :call add(cmds, [a:self.Continue, args])
+  elseif cmd == "n"
+        \ || cmd == "next"
+
+    :call add(cmds, [a:self.Next, args])
+
+  elseif cmd == "r"
+        \ || cmd == "run"
+
+    :call add(cmds, [a:self.Run, args])
+
+  elseif cmd == "b"
+        \ || cmd == "break"
+
+    :call add(cmds, [a:self.Break, args])
+
+  elseif cmd == "p"
+        \ || cmd == "print"
+
+    :call add(cmds, [a:self.Print, a:cmdstr])
+  else
+
+    :call add(cmds, [a:self.Call, a:cmdstr])
+  endif
+
+  return cmds
 endfunction
 
 function s:DapDispose(self, args) abort
