@@ -56,16 +56,17 @@ endfunction
 function s:GetGccCmd(protoname, tty, args) abort
   let cmd = ["gdb"]
   let cmd += ['-quiet']
-  " tty should set before execute
-  let cmd += ['-tty', a:tty]
+  let cmd += ['--interpreter=mi2']
+
+  if a:tty isnot v:null
+    " tty should set before execute
+    let cmd += ['-tty', a:tty]
+  endif
+
   let cmd += ['-iex', 'set pagination off']
   let cmd += ['-iex', 'set mi-async on']
   let cmd += ['-iex', 'set debuginfod enabled off']
   let cmd += a:args
-
-  if a:protoname == "mi2" && has("win32")
-    let cmd += ['--interpreter=mi2']
-  endif
 
   return cmd
 endfunction

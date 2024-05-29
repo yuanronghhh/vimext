@@ -112,7 +112,7 @@ function s:MiProcessInput(self, cmdstr) abort
     :call extend(cmds, expcmds)
   else
 
-    :call add(cmds, [a:self.Call, cmd])
+    :call add(cmds, [a:self.Call, a:cmdstr])
   endif
 
   return cmds
