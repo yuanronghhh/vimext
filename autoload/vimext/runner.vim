@@ -23,26 +23,39 @@ function s:CreateConsole(dbg, funcs) abort
   return console
 endfunction
 
-function vimext#runner#Create(lang, args) abort
+function s:ParseLangInfo(langstr) abort
+  let langv = split(a:langstr, "-")
+  let langinfo = [v:null, v:null]
+
+  if len(langv) > 1
+    let langinfo[0] = langv[0]
+    let langinfo[1] = langv[1]
+  else
+    let langinfo[0] = langv[0]
+  endif
+
+  return langinfo
+endfunction
+
+function vimext#runner#Create(langstr, args) abort
   let console = v:null
   let proto = v:null
+  let langinfo = s:ParseLangInfo(a:langstr)
 
-  if s:self isnot v:null
+  if s:self isnot v:null || len(langinfo) == 0
     :call vimext#logger#Warning("Can not start two debugger")
     return v:null
   endif
 
-  if a:lang == "csharp"
-    let proto = vimext#proto#Create("mi")
-    let dbg = vimext#netcoredbg#Create(proto)
-  elseif a:lang == "c"
-    let proto = vimext#proto#Create("mi2")
-    let dbg = vimext#gccdbg#Create(proto)
-  else
+  let proto = vimext#proto#Create(langinfo[1])
+  if proto is v:null
+    :call vimext#logger#Warning("runner create proto failed")
     return v:null
   endif
 
-  if dbg is v:null || proto is v:null
+  let dbg = vimext#dbg#Create(langinfo[0], proto)
+  if dbg is v:null
+    :call vimext#logger#Warning("runner create dbg failed")
     return v:null
   endif
 
