@@ -3,7 +3,7 @@ let s:state = 0
 let s:lastcmd = "next"
 
 " dap protocol start
-function vimext#proto#DapCreate(name) abort
+function vimext#dapproto#DapCreate(name) abort
   " todo implement
   let self = {
         \ "name": "dap",

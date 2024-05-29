@@ -3,28 +3,9 @@ let s:self = v:null
 let s:balloon_multiline = has("balloon_multiline")
 let s:balloon_eval_term = has("balloon_eval_term")
 
-function s:CreateConsole(dbg, funcs) abort
-  let console = v:null
-  if has("win32") || a:dbg.name == "netcoredbg"
-    let console = vimext#prompt#Create(a:funcs)
-  else
-    let console = vimext#term#Create(a:funcs)
-  endif
-
-  if console is v:null
-    return v:null
-  endif
-
-  if !has('terminal')
-    :call vimext#logger#Error("+terminal not enabled in vim")
-    return v:null
-  endif
-
-  return console
-endfunction
-
 function s:ParseLangInfo(langstr) abort
   let langv = split(a:langstr, "-")
+  " lang,proto
   let langinfo = [v:null, v:null]
 
   if len(langv) > 1
@@ -83,7 +64,7 @@ function vimext#runner#Create(langstr, args) abort
   endif
   let empty_win = win_getid()
 
-  let console = s:CreateConsole(dbg, funcs)
+  let console = vimext#console#Create(dbg, funcs)
   let self.console = console
 
   let cmd_term = console.NewOutput()
