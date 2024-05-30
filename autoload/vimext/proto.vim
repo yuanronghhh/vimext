@@ -3,10 +3,6 @@ let s:self = v:null
 function vimext#proto#Create(name) abort
   let self = v:null
 
-  if a:name is v:null
-    let a:name = defaultname
-  endif
-
   if a:name == "mi"
     let self = vimext#miproto#Create()
     let self.name = a:name
