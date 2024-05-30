@@ -8,7 +8,7 @@ function vimext#dbg#Create(name, proto) abort
   elseif a:name == "lldb"
     let self = vimext#lldb#Create(a:proto)
   elseif a:name == "gdb"
-    let self = vimext#gccdbg#Create(a:proto)
+    let self = vimext#gdb#Create(a:proto)
   else
     return v:null
   endif
@@ -24,7 +24,7 @@ function vimext#dbg#GetProtoByDbgName(dbgname) abort
   elseif a:dbgname == "netcoredbg"
     let protoname = "mi"
   elseif a:dbgname == "lldb"
-    let protoname = "dap"
+    let protoname = "lsp"
   else
   endif
 

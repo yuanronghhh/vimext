@@ -95,7 +95,7 @@ function s:NewDbgTerm(cmd, out_func, exit_func, name) abort
   return cmd_term
 endfunction
 
-function s:NewDbg(self, cmd, name) abort
+function s:NewDbg(self, cmd, name, mode) abort
   return s:NewDbgTerm(a:cmd,
         \ function("s:TermOut"),
         \ function("s:TermExit"),

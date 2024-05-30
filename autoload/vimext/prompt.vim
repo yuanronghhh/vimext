@@ -39,11 +39,23 @@ function vimext#prompt#New(mode, name, cmd, opts) abort
         \ "Destroy": function("s:Destroy")
         \ }
 
-  if a:mode == 1
-    let job = job_start(a:cmd, {
-          \ "exit_cb":  get(a:opts, "exit_cb", v:null),
-          \ "out_cb": get(a:opts, "out_cb", v:null)
-          \ })
+  if a:mode == 1 || a:mode == 3
+    if a:mode == 1
+      let job = job_start(a:cmd, {
+            \ "exit_cb":  get(a:opts, "exit_cb", v:null),
+            \ "out_cb": get(a:opts, "out_cb", v:null)
+            \ })
+    elseif a:mode == 3
+      call vimext#logger#Debug(a:cmd)
+      let job = job_start(a:cmd, {
+            \ "exit_cb":  get(a:opts, "exit_cb", v:null),
+            \ "out_cb": get(a:opts, "out_cb", v:null),
+            \ "in_mode": "lsp",
+            \ "out_mode": "lsp",
+            \ "err_mode": "nl"
+            \ })
+    else
+    endif
 
     if job_status(job) == "fail"
       return v:null
@@ -56,10 +68,12 @@ function vimext#prompt#New(mode, name, cmd, opts) abort
     let self.buf = bufnr("%")
 
     let self.job = job
-    let self.channel = job_getchannel(job)
-    if ch_status(self.channel) == 'fail'
+    let channel = job_getchannel(job)
+
+    if ch_status(channel) == 'fail'
       return v:null
     endif
+    let self.channel = channel
 
     setlocal buftype=prompt
     :call prompt_setprompt(self.buf, a:name)
@@ -88,6 +102,11 @@ function s:Send(self, cmd) abort
     return
   endif
 
+  if a:cmd is v:null
+    return
+  endif
+
+  call vimext#logger#Debug(a:cmd)
   :call ch_sendraw(a:self.channel, a:cmd . "\n")
 endfunction
 
@@ -108,8 +127,12 @@ function s:Running(self) abort
   return v:true
 endfunction
 
-function s:NewDbg(self, cmd, name) abort
-  let term = vimext#prompt#New(1, a:name, a:cmd, {
+function s:NewDbg(self, cmd, name, mode) abort
+  "mode: 
+  "  1 for job
+  "  2 for output
+  "  3 for lsp mode
+  let term = vimext#prompt#New(a:mode, a:name, a:cmd, {
         \ "exit_cb": a:self.HandleExit,
         \ "out_cb": a:self.HandleOutput,
         \ "callback": a:self.HandleInput,

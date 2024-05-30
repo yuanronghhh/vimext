@@ -11,8 +11,8 @@ function vimext#proto#Create(name) abort
     let self = vimext#miproto#Create()
     let self.name = a:name
 
-  elseif a:name == "dap"
-    let self = vimext#dapproto#Create()
+  elseif a:name == "lsp"
+    let self = vimext#lspproto#Create()
   else
     :call vimext#logger#Warning("no proto detected for debugger")
     return v:null

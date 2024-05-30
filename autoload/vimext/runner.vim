@@ -82,7 +82,8 @@ function vimext#runner#Create(langstr, args) abort
   :call win_execute(empty_win, "close")
 
   let cmd = dbg.GetCmd(self.dbg, cmd_term, a:args)
-  let dbg_term = console.NewDbg(console, cmd, "(" . dbg.name . ") ")
+
+  let dbg_term = console.NewDbg(console, cmd, "(" . dbg.name . ") ", dbg.mode)
   if dbg_term is v:null
     :call vimext#logger#Warning("create dbg_term failed: " .. join(cmd, " "))
     return v:null
@@ -354,6 +355,7 @@ function vimext#runner#Delete() abort
 endfunction
 
 function s:PromptExit(job, status) abort
+  :call vimext#logger#Debug("exit")
   if exists('#User#DbgDebugStopPost')
     doauto <nomodeline> User DbgDebugStopPost
   endif
@@ -448,13 +450,14 @@ function vimext#runner#PrintError(self, msgs) abort
 endfunction
 
 function s:PromptOut(channel, msg) abort
+  call vimext#logger#Info(a:msg)
   if s:self is v:null
     return
   endif
 
   let proto = s:self.proto
 
-  let info = proto.ProcessOutput(a:msg)
+  let info = proto.ProcessOutput(proto, a:msg)
   if info is v:null
     return
   endif

@@ -2,6 +2,7 @@ function vimext#lldb#Create(proto) abort
   let self = {
         \ "proto": a:proto,
         \ "name": "lldb",
+        \ "mode": 3,
         \ "GetCmd": function("s:GetCmd"),
         \ "SetConfig": function("s:SetConfig"),
         \ "Dispose": function("s:Dispose")
@@ -12,6 +13,7 @@ endfunction
 
 function s:SetConfig(self, prompt, proto) abort
   if has("win32")
+    :call a:prompt.Send(a:prompt, a:proto.Initialize(a:proto, v:null))
     :call a:prompt.Send(a:prompt, a:proto.Set(a:proto, "new-console on"))
     :call a:prompt.Send(a:prompt, a:proto.Set(a:proto, "print pretty on"))
     :call a:prompt.Send(a:prompt, a:proto.Set(a:proto, "breakpoint pending on"))
@@ -55,16 +57,12 @@ endfunction
 
 function s:GetLLDBCmd(protoname, tty, args) abort
   let cmd = ["lldb-dap"]
-  let cmd += ['-quiet']
+  let cmd += ["--repl-mode", "auto"]
 
   if a:tty isnot v:null
     " tty should set before execute
     let cmd += ['-tty', a:tty]
   endif
-
-  let cmd += ['-iex', 'set pagination off']
-  let cmd += ['-iex', 'set mi-async on']
-  let cmd += ['-iex', 'set debuginfod enabled off']
   let cmd += a:args
 
   return cmd

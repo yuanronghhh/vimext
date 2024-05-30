@@ -1,7 +1,8 @@
-function vimext#gccdbg#Create(proto) abort
+function vimext#gdb#Create(proto) abort
   let self = {
         \ "proto": a:proto,
         \ "name": "gdb",
+        \ "mode": 1,
         \ "GetCmd": function("s:GetCmd"),
         \ "SetConfig": function("s:SetConfig"),
         \ "Dispose": function("s:Dispose")
@@ -21,7 +22,7 @@ function s:SetConfig(self, prompt, proto) abort
 
 endfunction
 
-function vimext#gccdbg#FilterStart(term) abort
+function vimext#gdb#FilterStart(term) abort
   let try_count = 0
 
   while 1
@@ -50,10 +51,10 @@ function s:GetCmd(self, oterm, args) abort
   let tty = a:oterm.tty
   let protoname = a:self.proto.name
 
-  return s:GetGccCmd(protoname, tty, a:args)
+  return s:GetGdbCmd(protoname, tty, a:args)
 endfunction
 
-function s:GetGccCmd(protoname, tty, args) abort
+function s:GetGdbCmd(protoname, tty, args) abort
   let cmd = ["gdb"]
   let cmd += ['-quiet']
   let cmd += ['--interpreter=mi2']

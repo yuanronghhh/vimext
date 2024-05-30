@@ -2,6 +2,7 @@ function vimext#netcoredbg#Create(proto) abort
   let self = {
         \ "proto": a:proto,
         \ "name": "netcoredbg",
+        \ "mode": 1,
         \ "GetCmd": function("s:GetCmd"),
         \ "SetConfig": function("s:SetConfig"),
         \ "Dispose": function("s:Dispose")

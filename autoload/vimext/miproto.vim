@@ -9,6 +9,7 @@ let s:isballoon = v:false
 function vimext#miproto#Create() abort
   let self = {
         \ "name": "mi",
+        \ "Initialize": function("s:MiInitialize"),
         \ "Break": function("s:MiBreak"),
         \ "Clear": function("s:MiClear"),
         \ "Arguments": function("s:MiArguments"),
@@ -188,7 +189,7 @@ function s:ParseChildrenInfo(msg) abort
   return values
 endfunction
 
-function s:MiProcessOutput(msg) abort
+function s:MiProcessOutput(self, msg) abort
   let msg = vimext#proto#ProcessMsg(a:msg)
   if msg is v:null
     return v:null
@@ -401,6 +402,10 @@ function s:ExprToCmdsInner(self, argstr) abort
   let s:varname = a:argstr
 
   return cmds
+endfunction
+
+function s:MiInitialize(self, args) abort 
+  return ""
 endfunction
 
 function s:MiBreak(self, args) abort 
