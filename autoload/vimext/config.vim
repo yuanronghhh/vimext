@@ -214,9 +214,9 @@ function vimext#config#ALEConfig()
     let g:ale_c_build_dir_names = []
   endif
 
-  :nnoremap <C-M>[ :ALEFindReferences -quickfix<cr>
-  :nnoremap <C-M>] :ALEGoToDefinition -split<cr>
-  :nnoremap <C-M>h :ALEHover<cr>
+  :nnoremap <leader>[ :ALEFindReferences -quickfix<cr>
+  :nnoremap <leader>] :ALEGoToDefinition -split<cr>
+  :nnoremap <leader>h :ALEHover<cr>
 endfunction
 
 function vimext#config#GitBash()
