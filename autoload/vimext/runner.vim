@@ -355,7 +355,6 @@ function vimext#runner#Delete() abort
 endfunction
 
 function s:PromptExit(job, status) abort
-  :call vimext#logger#Debug("exit")
   if exists('#User#DbgDebugStopPost')
     doauto <nomodeline> User DbgDebugStopPost
   endif
@@ -450,7 +449,6 @@ function vimext#runner#PrintError(self, msgs) abort
 endfunction
 
 function s:PromptOut(channel, msg) abort
-  call vimext#logger#Info(a:msg)
   if s:self is v:null
     return
   endif

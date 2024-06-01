@@ -3,7 +3,6 @@
 """
 let s:self = v:null
 
-
 " term start
 function s:GetWinID(self) abort
   return a:self.winid
@@ -33,7 +32,6 @@ function vimext#prompt#New(mode, name, cmd, opts) abort
         \ "GetWinID": function("s:GetWinID"),
         \ "Go": function("s:Go"),
         \ "Send": function("s:Send"),
-        \ "SendCall": function("s:SendCall"),
         \ "Print": function("s:Print"),
         \ "Running": function("s:Running"),
         \ "Destroy": function("s:Destroy")
@@ -46,7 +44,6 @@ function vimext#prompt#New(mode, name, cmd, opts) abort
             \ "out_cb": get(a:opts, "out_cb", v:null)
             \ })
     elseif a:mode == 3
-      call vimext#logger#Debug(a:cmd)
       let job = job_start(a:cmd, {
             \ "exit_cb":  get(a:opts, "exit_cb", v:null),
             \ "out_cb": get(a:opts, "out_cb", v:null),
@@ -93,30 +90,26 @@ function vimext#prompt#New(mode, name, cmd, opts) abort
   return self
 endfunction
 
-function s:SendCallback(channel, msg) abort
-  echo 'Received: ' .. a:msg
+function s:Send(self, cmd) abort
+
+  :call s:SendCall(a:self, a:cmd)
 endfunction
 
-function s:Send(self, cmd) abort
+function s:SendCall(self, cmd) abort
   if a:self.channel is v:null
     return
   endif
 
   if a:cmd is v:null
-    return
+    :call vimext#logger#Warning('Send channel cmd is null: ' .. string(a:self.channel))
   endif
 
-  call vimext#logger#Debug(a:cmd)
-  :call ch_sendraw(a:self.channel, a:cmd . "\n")
-endfunction
-
-function s:SendCall(self, cmd, func) abort
-  if a:self.channel is v:null
-    return
+  if a:self.mode == 3
+    let res = ch_sendexpr(a:self.channel, a:cmd)
+  else
+    " check a:cmd if failed to execute
+    :call ch_sendraw(a:self.channel, a:cmd . "\n")
   endif
-
-  " check a:cmd if failed to execute
-  :call ch_sendraw(a:self.channel, a:cmd . "\n", #{callback: "s:SendCallback"})
 endfunction
 
 function s:Running(self) abort
@@ -128,8 +121,8 @@ function s:Running(self) abort
 endfunction
 
 function s:NewDbg(self, cmd, name, mode) abort
-  "mode: 
-  "  1 for job
+  "mode:
+  "  1 for normal job
   "  2 for output
   "  3 for lsp mode
   let term = vimext#prompt#New(a:mode, a:name, a:cmd, {
@@ -139,7 +132,7 @@ function s:NewDbg(self, cmd, name, mode) abort
         \ "interrupt": a:self.Interrupt,
         \ })
   if term is v:null
-    :call vimext#logger#Error('Failed to start Dbg' . string(a:cmd))
+    :call vimext#logger#error('failed to start dbg' . string(a:cmd))
     return v:null
   endif
 

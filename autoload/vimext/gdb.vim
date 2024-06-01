@@ -54,10 +54,15 @@ function s:GetCmd(self, oterm, args) abort
   return s:GetGdbCmd(protoname, tty, a:args)
 endfunction
 
-function s:GetGdbCmd(protoname, tty, args) abort
+function s:GetGdbCmd(protostr, tty, args) abort
+  let protoname = a:protostr
   let cmd = ["gdb"]
   let cmd += ['-quiet']
-  let cmd += ['--interpreter=mi2']
+
+  if protoname == "lsp"
+    let protoname = "dap"
+    let cmd += ['--interpreter=' . protoname]
+  endif
 
   if a:tty isnot v:null
     " tty should set before execute
