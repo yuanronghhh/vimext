@@ -41,7 +41,8 @@ function vimext#prompt#New(mode, name, cmd, opts) abort
     if a:mode == 1
       let job = job_start(a:cmd, {
             \ "exit_cb":  get(a:opts, "exit_cb", v:null),
-            \ "out_cb": get(a:opts, "out_cb", v:null)
+            \ "out_cb": get(a:opts, "out_cb", v:null),
+            \ "err_cb": get(a:opts, "out_cb", v:null)
             \ })
     elseif a:mode == 3
       let job = job_start(a:cmd, {

@@ -35,7 +35,6 @@ endfunction
 function vimext#proto#ProcessMsg(text) abort
   if a:text =~ "(gdb)"
         \ || a:text == ""
-        \ || a:text[0] == "&"
     return v:null
   endif
 

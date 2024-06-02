@@ -457,6 +457,7 @@ function s:PromptOut(channel, msg) abort
   endif
 
   let proto = s:self.proto
+  let dbg = s:self.dbg
 
   let info = proto.ProcessOutput(proto, a:msg)
   if info is v:null
@@ -498,6 +499,12 @@ function s:PromptOut(channel, msg) abort
   elseif info[0] == 16 " asm end
     :call vimext#viewer#SetLines(asm_viewer, info[1])
     :call vimext#viewer#LoadByLines(asm_viewer)
+
+  elseif info[0] == 18 " error for lldb-mi
+    if dbg.name == "lldb"
+      :call vimext#runner#PrintError(s:self, info[1])
+    endif
+
   else " info[0] == 7
   endif
 endfunction

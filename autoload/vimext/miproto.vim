@@ -195,6 +195,7 @@ function s:MiProcessOutput(self, msg) abort
     return v:null
   endif
 
+  "call vimext#logger#Debug(msg)
   let info = [0, v:null, v:null, v:null, v:null, v:null, v:null, v:null, v:null, v:null]
   if g:vimext_debug == 1
     let info[9] = msg
@@ -378,6 +379,10 @@ function s:MiProcessOutput(self, msg) abort
       let info[1] = nameIdx[1]
       let s:varname = nameIdx[1]
     endif
+  elseif msg[0] == '&'
+    let info[0] = 18
+    let info[1] = vimext#debug#DecodeMessage2(msg[1:])
+
   elseif msg[0] != '^'
         \ && msg[0] != '='
         \ && msg[0] != '-'
