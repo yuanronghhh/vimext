@@ -62,6 +62,15 @@ function s:LspInitialize(self, args) abort
   return req
 endfunction
 
+function s:RequestCommand(command, arguments) abort
+  let req = {}
+  let req.type = "request"
+  let req.arguments = arguments
+  let req.command = command
+
+  return req
+endfunction
+
 function s:LspBefore(dic) abort
   let s:seq += 1
   let a:dic.seq = s:seq
@@ -132,24 +141,33 @@ function s:LspRun(self, args) abort
 endfunction
 
 function s:LspStep(self, args) abort
+  return s:RequestCommand("stepIn", {})
 endfunction
 
 function s:LspNext(self, args) abort
+  return s:RequestCommand("next", {})
 endfunction
 
 function s:LspFinish(self, args) abort
+  return s:RequestCommand("finish", {})
 endfunction
 
 function s:LspInterrupt(self, args) abort
 endfunction
 
 function s:LspContinue(self, args) abort
+  return s:RequestCommand("continue", {})
 endfunction
 
 function s:LspUntil(self, args) abort
+  return s:RequestCommand("pause", {})
 endfunction
 
 function s:LspEval(self, args) abort
+  return s:RequestCommand("evaluate", {
+        \ "expression": args,
+        \ 'context': 'repl'
+        \ })
 endfunction
 
 function s:LspDataEvaluate(self, args) abort
@@ -171,6 +189,12 @@ function s:LspAttach(self, args) abort
 endfunction
 
 function s:LspSource(self, args) abort
+  let source = {}
+  let source.path = args[0]
+
+  return s:RequestCommand("source", {
+        \ 'source': source
+        \ })
 endfunction
 
 function s:LspSet(self, args) abort
@@ -178,12 +202,15 @@ function s:LspSet(self, args) abort
 endfunction
 
 function s:LspExit(self, args) abort
+  return v:null
 endfunction
 
 function s:LspSaveBreakoints(self, args) abort
+  return v:null
 endfunction
 
 function s:LspStart(self, args) abort
+  return v:null
 endfunction
 
 function s:LspCall(self, args) abort
@@ -191,6 +218,13 @@ function s:LspCall(self, args) abort
 endfunction
 
 function s:LspDisassemble(self, args) abort
+  return s:RequestCommand("disassemble", {
+        \ 'memoryReference': v:null,
+        \ 'offset': 0,
+        \ 'instructionOffset': 0,
+        \ 'instructionCount': 0,
+        \ 'resolveSymbols': v:true
+        \ })
 endfunction
 
 function s:LspPrint(self, args) abort
