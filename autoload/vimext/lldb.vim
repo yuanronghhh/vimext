@@ -36,6 +36,10 @@ function s:GetLLDBCmd(protostr, tty, args) abort
     " tty should set before execute
     let cmd += ['-tty', a:tty]
   endif
+
+  if len(a:args) == 1
+    let a:args[0] = vimext#debug#DecodeFilePath(a:args[0])
+  endif
   let cmd += a:args
 
   return cmd
