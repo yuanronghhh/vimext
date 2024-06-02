@@ -59,10 +59,7 @@ function s:GetGdbCmd(protostr, tty, args) abort
   let cmd = ["gdb"]
   let cmd += ['-quiet']
 
-  if protoname == "lsp"
-    let protoname = "dap"
-    let cmd += ['--interpreter=' . protoname]
-  endif
+  let cmd += ['--interpreter=' . protoname]
 
   if a:tty isnot v:null
     " tty should set before execute

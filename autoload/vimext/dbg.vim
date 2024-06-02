@@ -24,7 +24,7 @@ function vimext#dbg#GetProtoByDbgName(dbgname) abort
   elseif a:dbgname == "netcoredbg"
     let protoname = "mi"
   elseif a:dbgname == "lldb"
-    let protoname = "lsp"
+    let protoname = "mi2"
   else
   endif
 

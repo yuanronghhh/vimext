@@ -192,6 +192,9 @@ function s:Call(func, args) abort
   let term = s:self.dbg_term
   let proto = s:self.proto
   let msg = a:func(proto, argsstr)
+  if msg is v:null
+    return
+  endif
 
   :call term.Send(term, msg)
 endfunction

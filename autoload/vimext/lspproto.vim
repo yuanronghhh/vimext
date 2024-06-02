@@ -65,8 +65,8 @@ endfunction
 function s:RequestCommand(command, arguments) abort
   let req = {}
   let req.type = "request"
-  let req.arguments = arguments
-  let req.command = command
+  let req.arguments = a:arguments
+  let req.command = a:command
 
   return req
 endfunction
@@ -138,6 +138,7 @@ function s:LspAbort(self, args) abort
 endfunction
 
 function s:LspRun(self, args) abort
+  return s:RequestCommand("run", {})
 endfunction
 
 function s:LspStep(self, args) abort
@@ -202,7 +203,7 @@ function s:LspSet(self, args) abort
 endfunction
 
 function s:LspExit(self, args) abort
-  return v:null
+  return s:RequestCommand("quit", {})
 endfunction
 
 function s:LspSaveBreakoints(self, args) abort
@@ -238,9 +239,13 @@ function s:LspProcessOutput(self, msg) abort
     return info
   endif
 
-  if has_key(a:msg.body, "breakpoints")
+  if a:msg.command == "setFunctionBreakpoints"
     let brks = a:msg.body.breakpoints
     let brk = brks[0]
+    if empty(brk)
+      return info
+    endif
+
     let info[0] = 1
     let info[1] = brk.id  " breakpoint
     let info[2] = "" " filename
