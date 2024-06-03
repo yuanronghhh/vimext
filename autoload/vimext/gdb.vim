@@ -69,6 +69,10 @@ function s:GetGdbCmd(protostr, tty, args) abort
   let cmd += ['-iex', 'set pagination off']
   let cmd += ['-iex', 'set mi-async on']
   let cmd += ['-iex', 'set debuginfod enabled off']
+
+  if len(a:args) == 1
+    let a:args[0] = vimext#debug#DecodeFilePath(a:args[0])
+  endif
   let cmd += a:args
 
   return cmd
