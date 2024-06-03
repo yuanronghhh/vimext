@@ -15,6 +15,7 @@ function s:SetConfig(self, prompt, proto) abort
   if has("win32")
     :call a:prompt.Send(a:prompt, a:proto.Set(a:proto, "new-console on"))
     :call a:prompt.Send(a:prompt, a:proto.Set(a:proto, "breakpoint pending on"))
+    :call a:prompt.Send(a:prompt, a:proto.Call(a:proto, "process launch --stop-at-entry"))
   else
     :call a:prompt.Send(a:prompt, a:proto.Set(a:proto, "breakpoint pending on"))
   endif
@@ -30,12 +31,7 @@ endfunction
 function s:GetLLDBCmd(protostr, tty, args) abort
   let protoname = a:protostr
   let cmd = ["lldb-mi"]
-  let cmd += ['--interpreter=' . protoname]
-
-  if a:tty isnot v:null
-    " tty should set before execute
-    let cmd += ['-tty', a:tty]
-  endif
+  let cmd += ["--interpreter=" . protoname]
 
   if len(a:args) == 1
     let a:args[0] = vimext#debug#DecodeFilePath(a:args[0])
