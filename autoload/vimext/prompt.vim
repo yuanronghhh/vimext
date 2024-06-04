@@ -139,6 +139,7 @@ function s:NewDbg(self, cmd, name, mode) abort
 
   :setlocal nowrap
   :setlocal noswapfile
+  :setlocal fdm=manual
   :setlocal bufhidden=wipe
 
   return term
@@ -155,6 +156,7 @@ function s:NewOutput() abort
   :setlocal number
   :setlocal noswapfile
   :setlocal buftype=nofile
+  :setlocal fdm=manual
   :setlocal signcolumn=no
   :setlocal modifiable
 
