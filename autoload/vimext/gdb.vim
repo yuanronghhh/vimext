@@ -59,7 +59,9 @@ function s:GetGdbCmd(protostr, tty, args) abort
   let cmd = ["gdb"]
   let cmd += ['-quiet']
 
-  let cmd += ['--interpreter=' . protoname]
+  if has("win32")
+    let cmd += ['--interpreter=' . protoname]
+  endif
 
   if a:tty isnot v:null
     " tty should set before execute
