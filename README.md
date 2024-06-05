@@ -44,10 +44,21 @@ call vimext#config#LoadConfig()
 3. command `JsonFormat` use for python json.tools format.
 4. command `GetComment` generate comment for function only python, c, C#.
 5. command `GenCtags` to generate tags and automatically update tags when saved one file.
-6. command `TabMan` for new tab for man page.
-7. command `Debug` for remote vim8.0 `Termdebug` feature.
+6. command `ManTab` for new tab for man page.
+7. command `DbgDebug` for reimplement `Termdebug`.
 
 ### Window feature
 1. terminal find if add `GitPortable/bin/bash.exe` in path.
 2. command `:Fullscreen` command for win10.
 3. add `ctags.exe` to vim path, see `$vimext_home/tools`.
+
+### Debugger
+1. install `clang/gdb`, `netcoredbg`
+2. for `c` language, set arguments `-gdwarf` on windows,
+   for `c#` language, set `<EmbedAllSources>true</EmbedAllSources>` to `.csproj` file in `<PropertyGroup></PropertyGroup>`
+3. send debug command to vim
+```bash
+   $ gvim --servername ${VIM_SESSION} --remote-send ':DbgDebug ${DEBUGGER} ${ARGS}<cr>'
+```
+   this will open newtab for debug
+4. press `q` for close debug tab
