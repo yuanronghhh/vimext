@@ -80,7 +80,7 @@ function vimext#config#LoadConfig()
     let $PATH .= ";".$vimext_home."/tools"
     :set clipboard=unnamed
     :set guifont=Consolas:h12
-
+    let &shellpipe = ">%s 2>&1"
     let g:python_cmd="python"
     let $BashBin=vimext#config#GetWinBash()
 
@@ -96,9 +96,9 @@ function vimext#config#LoadConfig()
   endif
 
   if has("nvim")
-    let &shellxquote = '('
+    let &shellxquote = "("
     let &shellslash = v:true
-    let &shellcmdflag = '-c'
+    let &shellcmdflag = "-c"
 
     :tnoremap <Esc> <C-\><C-N>
     :tnoremap <expr> <C-R> '<C-\><C-N>"'.nr2char(getchar()).'pi'

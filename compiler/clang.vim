@@ -6,7 +6,8 @@ let current_compiler = "clang"
 let s:cpo_save = &cpo
 set cpo&vim
 
-CompilerSet errorformat+=
+CompilerSet errorformat=
+      \%f(%l\\,%c):\ %t%*[^\ ]\:\ %m,
       \%f(%l\\,%c):\ %t%*[^\ ]\ :\ %m,
       \%f(%l\\,%c):\ fatal\ %t%*[^\ ]\ :\ %m
 
