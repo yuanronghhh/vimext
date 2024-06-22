@@ -41,7 +41,8 @@ function vimext#session#OpenSession(sfile) abort
   endif
 
   let s:spath = sfile
-  :execute "source ".g:vim_session."/".sfile
+  let fname = g:vim_session."/".sfile
+  :execute ":source ".fname
   :call win_gotoid(wid)
 
   :normal 1gt

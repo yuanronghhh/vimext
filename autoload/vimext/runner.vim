@@ -1,4 +1,4 @@
-let s:gdb_cfg = g:vim_session."/gdb.cfg"
+let s:gdb_cfg = g:vim_session . "/gdb.cfg"
 let s:self = v:null
 let s:balloon_multiline = has("balloon_multiline")
 let s:balloon_eval_term = has("balloon_eval_term")
@@ -279,10 +279,7 @@ function vimext#runner#Run(args) abort
   :call s:self.proto.Start(s:self.proto, a:args)
 
   if a:args isnot v:null
-    if s:self.dbg.name == "gdb"
-      :call vimext#runner#Restore()
-    elseif s:self.dbg.name == "netcoredbg"
-    endif
+    :call vimext#runner#Restore(s:self)
   endif
 endfunction
 
@@ -290,15 +287,16 @@ function vimext#runner#Attach(pid) abort
   :call s:Call(s:self.proto.Attach, a:pid)
 endfunction
 
-function vimext#runner#Restore() abort
+function vimext#runner#Restore(self) abort
+  if a:self.dbg.name != "gdb"
+    return
+  endif
+
   if !filereadable(s:gdb_cfg)
     :call writefile([], s:gdb_cfg, "w")
-  else
-    if s:self.proto.name == "mi"
-    else
-      :call s:Call(s:self.proto.Source, s:gdb_cfg)
-    endif
   endif
+
+  :call s:Call(s:self.proto.Source, s:gdb_cfg)
 endfunction
 
 function vimext#runner#Next() abort
