@@ -208,6 +208,7 @@ function vimext#config#ALEConfig()
   let g:ale_c_clangd_options = '--pch-storage=memory'
   let g:ale_linters = { 'cs': ['mcs'], 'c': ['clangd'], 'python': ['pylint'] }
   let g:ale_python_pylint_options = "--errors-only"
+  let g:ale_enabled = v:true
 
   if has("win32")
     let g:ale_c_parse_compile_commands = 0
