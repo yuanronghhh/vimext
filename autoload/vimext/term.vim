@@ -9,6 +9,9 @@ function s:Go(self) abort
   return win_gotoid(a:self.winid)
 endfunction
 
+function s:SetPid(self, pid) abort
+endfunction
+
 function s:Destroy(self) abort
   :call job_stop(a:self.job, "kill")
   :call vimext#buffer#Wipe(a:self.buf)
@@ -20,6 +23,7 @@ endfunction
 
 function vimext#term#New(cmd, opts) abort
   let info = {
+        \ "pid": 0,
         \ "buf": v:null,
         \ "job": v:null,
         \ "tty": v:null,
@@ -28,6 +32,7 @@ function vimext#term#New(cmd, opts) abort
         \ "Go": function("s:Go"),
         \ "GetLine": function("s:GetLine"),
         \ "Send": function("s:Send"),
+        \ "SetPid": function("s:SetPid"),
         \ "Print": function("s:Print"),
         \ "Running": function("s:Running"),
         \ "Destroy": function("s:Destroy")

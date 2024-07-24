@@ -503,6 +503,9 @@ function s:PromptOut(channel, msg) abort
       :call vimext#runner#PrintError(s:self, info[1])
     endif
 
+  elseif info[0] == 19 " pid
+    let term = s:self.dbg_term
+    :call term.SetPid(term, info[2])
   else " info[0] == 7
   endif
 endfunction

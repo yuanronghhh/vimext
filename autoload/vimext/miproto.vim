@@ -371,6 +371,14 @@ function s:MiProcessOutput(self, msg) abort
       let info[1] = "exit-code: " . nameIdx[1]
     endif
 
+  elseif msg =~ '^=thread-group-started,'
+    let nameIdx = matchlist(msg, '^=thread-group-started,id="\(\w\+\)",pid="\(\d\+\)"')
+    if len(nameIdx) > 0
+      let info[0] = 19
+      let info[1] = nameIdx[1]
+      let info[2] = nameIdx[2]
+    endif
+
   elseif msg =~ '^-data-evaluate-expression'
     let nameIdx = matchlist(msg, '-data-evaluate-expression "\([^"]*\)"')
 

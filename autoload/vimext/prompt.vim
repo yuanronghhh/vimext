@@ -2,6 +2,7 @@
 " refactor version of termdbug
 """
 let s:self = v:null
+let s:pid = 0
 
 " term start
 function s:GetWinID(self) abort
@@ -10,6 +11,10 @@ endfunction
 
 function s:Go(self) abort
   return win_gotoid(a:self.winid)
+endfunction
+
+function s:SetPid(self, pid) abort
+  let s:pid = a:pid
 endfunction
 
 function s:Destroy(self) abort
@@ -31,6 +36,7 @@ function vimext#prompt#New(mode, name, cmd, opts) abort
         \ "winid": v:null,
         \ "GetWinID": function("s:GetWinID"),
         \ "Go": function("s:Go"),
+        \ "SetPid": function("s:SetPid"),
         \ "Send": function("s:Send"),
         \ "Print": function("s:Print"),
         \ "Running": function("s:Running"),
@@ -176,19 +182,18 @@ endfunction
 
 " prompt
 function s:PromptInterrupt() abort
-  if s:pid == 0
+  let pid = s:pid
+  if pid == 0
     :call vimext#logger#Error('Cannot interrupt, not find a process ID')
     return
   endif
 
-  :call debugbreak(s:prompt_pid)
+  :call debugbreak(pid)
 endfunction
 
 " prompt manager
 function vimext#prompt#Create(funcs) abort
   let self = {
-        \ "prompt_pid": 0,
-        \ "prompt_buf": 0,
         \ "NewDbg": function("s:NewDbg"),
         \ "NewOutput": function("s:NewOutput"),
         \ "Interrupt": function("s:PromptInterrupt"),
