@@ -50,6 +50,14 @@ def get_content(buf, start, end = -1):
 def search(s, flag):
     vim.eval("search(\"%s\", \"%s\")" % (s, flag))
 
+def taglist(regx, filename = None):
+    if not filename:
+        lines = vim.bindeval("taglist(\"%s\")" % (regx))
+    else:
+        lines = vim.bindeval("taglist(\"%s\", \"%s\")" % (regx, filename))
+
+    return lines
+
 class VimPyInfo:
     def __init__(self):
         self.is_unix = has("unix")

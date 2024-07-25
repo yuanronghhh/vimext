@@ -8,7 +8,7 @@ import sys
 from os import path
 from threading import Thread, Lock
 
-maxsize = 100 # mb
+maxsize = 400 # mb
 
 def clean_tags(tagfile, filename):
     pname = path.dirname(tagfile)
@@ -123,10 +123,10 @@ class AutoTag:
         return self.find_tag_recursive(np)
 
     def ctag_update(self, cmd, cwd, tagfile, filename):
-        self.lock.acquire()
-
         if not cmd:
             return
+
+        self.lock.acquire()
 
         if filename:
             clean_tags(tagfile, filename)
