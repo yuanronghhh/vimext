@@ -25,6 +25,10 @@ function vimext#buffer#Wipe(buf) abort
 endfunction
 
 function vimext#buffer#WipeWin(win) abort
+  if &modified
+    :call vimext#buffer#save()
+  endif
+
   :call win_execute(a:win, "close")
 endfunction
 
@@ -62,4 +66,13 @@ function vimext#buffer#NewWindow(name, dr, basewin) abort
   :call win_gotoid(cwin)
 
   return nwin
+endfunction
+
+function vimext#buffer#save() abort
+  try
+    noautocmd write
+  catch /E212/
+    :call vimext#logger#Warning("File modified and I can't save it. Please save it manually.")
+    return 0
+  endtry
 endfunction

@@ -64,22 +64,6 @@ function python#Operate(lnum)
   endif
 endfunction
 
-function python#save()
-  if g:vimext_python == 0
-    return
-  endif
-
-  if &modifiable && &modified
-    try
-      noautocmd write
-    catch /E212/
-      :call python#error("File modified and I can't save it. Please save it manually.")
-      return 0
-    endtry
-  endif
-  return expand('%') != ''
-endfunction
-
 function python#doc(word)
   if g:vimext_python == 0
     return
