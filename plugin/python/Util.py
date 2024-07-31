@@ -129,6 +129,9 @@ def get_vs_info():
     if err:
         return None
 
+    if not out:
+        return None
+
     compilerInfo = json.loads(out)
     return compilerInfo
 
