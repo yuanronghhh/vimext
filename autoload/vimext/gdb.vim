@@ -68,7 +68,6 @@ function s:GetGdbCmd(protostr, tty, args) abort
     let cmd += ['-tty', a:tty]
   endif
 
-  let cmd += ['-iex', 'set index-cache on']
   let cmd += ['-iex', 'set pagination off']
   let cmd += ['-iex', 'set mi-async on']
   let cmd += ['-iex', 'set debuginfod enabled off']

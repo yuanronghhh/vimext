@@ -49,6 +49,8 @@ class GetterGenerator:
         self.default_set = {
             "SysBool": "false",
             "SysInt": "-1",
+            "SysInt64": "-1",
+            "SysUInt64": "-1",
             "SysUInt": "0",
             "SysDouble": "-1"
         }
