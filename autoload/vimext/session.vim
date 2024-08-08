@@ -62,9 +62,8 @@ function vimext#session#SaveOption(sfile) abort
   let afile = glob(a:sfile)
   let usercmds = []
 
-let current_compiler = "clang"
   if exists("b:current_compiler")
-    let usercmds += [":compiler " .. b:current_compiler]
+    let usercmds += [":compiler! " .. b:current_compiler]
   endif
 
   call writefile(usercmds, afile, 'a')

@@ -6,6 +6,10 @@ let current_compiler = "clang"
 let s:cpo_save = &cpo
 set cpo&vim
 
+if exists(":CompilerSet") != 2	" older Vim always used :setlocal
+  command -nargs=* CompilerSet setlocal <args>
+endif
+
 CompilerSet errorformat=
       \%f(%l\\,%c):\ %t%*[^\ ]\:\ %m,
       \%f(%l\\,%c):\ %t%*[^\ ]\ :\ %m,
