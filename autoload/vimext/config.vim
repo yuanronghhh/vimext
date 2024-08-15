@@ -200,7 +200,7 @@ endfunction
 
 function vimext#config#ALEConfig()
   let g:ale_set_loclist = 0
-  let g:ale_set_balloons = 0
+  " let g:ale_set_balloons = 0
   let g:ale_linters_explicit = 1
   let g:ale_lint_on_save = 0
   let g:ale_lint_delay = 1000
