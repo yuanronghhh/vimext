@@ -72,6 +72,7 @@ function vimext#buffer#save() abort
   try
     noautocmd write
   catch /E212/
+  catch /E382/
     :call vimext#logger#Warning("File modified and I can't save it. Please save it manually.")
     return 0
   endtry
