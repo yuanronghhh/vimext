@@ -1,7 +1,5 @@
 let s:gdb_cfg = g:vim_session . "/gdb.cfg"
 let s:self = v:null
-let s:balloon_multiline = has("balloon_multiline")
-let s:balloon_eval_term = has("balloon_eval_term")
 
 function s:ParseLangInfo(langstr) abort
   let langv = split(a:langstr, "-")
@@ -149,7 +147,7 @@ endfunction
 function vimext#runner#BalloonExpr() abort
   let winid = vimext#viewer#GetWinID(s:self.source_viewer)
   if v:beval_winid != winid
-    return
+    return ""
   endif
 
   :call s:Eval(s:self, v:beval_text, v:true)
@@ -158,7 +156,7 @@ endfunction
 
 function vimext#runner#EnableBalloon(self) abort
   if has("balloon_eval") || has("balloon_eval_term")
-    set! balloonexpr=vimext#runner#BalloonExpr()
+    set balloonexpr=vimext#runner#BalloonExpr()
   endif
 
   if has("balloon_eval")
@@ -433,8 +431,15 @@ function vimext#runner#LoadSource(self, fname, lnum) abort
   endif
 endfunction
 
-function vimext#runner#ShowBalloon(self, amsg) abort
-  :call balloon_show(a:amsg)
+function vimext#runner#ShowBalloon(self, msg) abort
+  if has("win32")
+    " FIXME:  balloonexpr will not trigger on win32
+    "         after balloon_show called sometimes
+    let nmsg = split(a:msg, "\n")
+    :call vimext#runner#PrintOutput(a:self, nmsg)
+  else
+    :call balloon_show(a:msg)
+  endif
 endfunction
 
 function vimext#runner#PrintOutput(self, msgs) abort
