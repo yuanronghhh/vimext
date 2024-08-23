@@ -25,7 +25,7 @@ function vimext#buffer#Wipe(buf) abort
 endfunction
 
 function vimext#buffer#WipeWin(win) abort
-  if &modified
+  if &modified && (&buftype == "<empty>")
     :call vimext#buffer#save()
   endif
 
