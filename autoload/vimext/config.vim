@@ -139,6 +139,7 @@ function vimext#config#LoadConfig()
 
   :command! -nargs=? -complete=custom,vimext#session#SessionCompelete OpenSession :call vimext#session#OpenSession("<args>")
   :command! -nargs=? -complete=custom,vimext#session#SessionCompelete SaveSession :call vimext#session#SaveSession("<args>")
+  :command! -nargs=? -complete=custom,vimext#session#SessionCompelete DeleteSession :call vimext#session#DeleteSession("<args>")
   :command! -nargs=? HeaderOrCode :call vimext#HeaderOrCode()
   :command! -nargs=? EditConfig :call vimext#config#Edit()
   :command! -nargs=? ManTab :call vimext#ManTab("<args>")
@@ -158,8 +159,6 @@ function vimext#config#LoadConfig()
   :inoremap } <c-r>=vimext#ClosePair('}')<CR>
   :inoremap [ []<ESC>i
   :inoremap ] <c-r>=vimext#ClosePair(']')<CR>
-  :inoremap " ""<ESC>i
-  :inoremap ' ''<ESC>i
   :inoremap <c-o> <ESC>o
   :inoremap { {}<ESC>i
   :nnoremap x "_x

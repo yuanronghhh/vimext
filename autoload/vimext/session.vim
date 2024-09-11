@@ -1,5 +1,15 @@
 let s:spath = "s.vim"
 
+function vimext#session#DeleteSession(sfile) abort
+  let fname = g:vim_session."/".a:sfile
+  if !filereadable(fname)
+    return
+  endif
+
+  :call vimext#logger#Info(fname)
+  :call delete(fname)
+endfunction
+
 function vimext#session#SaveSession(sfile) abort
   let sfile = a:sfile
   let wid = win_getid()
