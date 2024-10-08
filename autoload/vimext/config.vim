@@ -57,6 +57,7 @@ function vimext#config#LoadConfig()
   :colorscheme jellybeans
   " switch case 缩进问题
   :set cinoptions=l1
+  :set tagcase=match
   :set sessionoptions=buffers,curdir,tabpages,unix,help,slash,winsize,resize
 
   if has("gui_running")

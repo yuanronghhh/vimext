@@ -69,6 +69,7 @@ class AutoTag:
                         '*.cmake', 
                         '*.lua', 
                         '*.java', 
+                        '*.kt', 
                         '*.go', 
                         '*.s', 
                         '*.rs']
