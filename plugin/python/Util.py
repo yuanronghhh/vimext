@@ -167,6 +167,9 @@ def get_system_header_str():
 def move_file(src, dst):
     shutil.move(src, dst)
 
+def copy_file(src, dst):
+    shutil.copy(src, dst)
+
 def newtmp(mode):
     return tempfile.NamedTemporaryFile(mode, delete=False)
 

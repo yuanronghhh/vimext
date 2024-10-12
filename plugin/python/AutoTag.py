@@ -18,7 +18,6 @@ def clean_tags(tagfile, filename):
     tfp = Util.newtmp("w+b")
     fp = open(tagfile, "r+b")
 
-    has_match = False
     for line in iter(fp.readline, b'\n'):
         if line == b'':
             break
@@ -35,16 +34,13 @@ def clean_tags(tagfile, filename):
         vs = nv[1].lstrip(b'.').replace(b'\\', b'/').decode('utf-8')
 
         if vs.endswith(relpath) or vs == filename:
-            has_match = True
             continue
 
         tfp.write(line)
 
     fp.close()
     tfp.close()
-
-    if has_match:
-        Util.move_file(tfp.name, tagfile)
+    Util.move_file(tfp.name, tagfile)
 
 class CtagsTask:
     def __init__(self, cwd, tagfile, filename):
