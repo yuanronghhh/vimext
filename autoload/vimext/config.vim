@@ -54,7 +54,7 @@ function vimext#config#LoadConfig()
   :set foldmethod=syntax
   :set foldlevel=2
   :set t_Co=256
-  :colorscheme jellybeans
+  :colorscheme materialtheme
   " switch case 缩进问题
   :set cinoptions=l1
   :set tagcase=match
