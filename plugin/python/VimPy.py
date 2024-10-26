@@ -61,7 +61,7 @@ def taglist(regx, filename = None):
 class VimPyInfo:
     def __init__(self):
         self.is_unix = has("unix")
-        self.gui = has("gui")
+        self.gui = has("gui_running")
         self.vimext_home = vim.eval("$vimext_home")
 
 g_vimpy_info = VimPyInfo()

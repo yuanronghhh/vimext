@@ -145,7 +145,7 @@ function vimext#config#LoadConfig()
   :command! -nargs=? EditConfig :call vimext#config#Edit()
   :command! -nargs=? ManTab :call vimext#ManTab("<args>")
 
-  :autocmd! QuickfixCmdPost make :call vimext#config#QuickFixFunc()
+  ":autocmd! QuickfixCmdPost make :call vimext#config#QuickFixFunc()
   :autocmd! BufRead *.vs,*.vert,*.glsl,*.frag,*.comp :set syntax=c
   :autocmd! BufRead *.vue,*.cshtml :set syntax=html
   :autocmd! BufRead *.vala,*.mojom :set syntax=cs
