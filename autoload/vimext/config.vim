@@ -67,7 +67,6 @@ function vimext#config#LoadConfig()
 
   if v:version >= 800
     :set sessionoptions+=terminal
-    :packadd termdebug
     :packadd cfilter
   endif
 
