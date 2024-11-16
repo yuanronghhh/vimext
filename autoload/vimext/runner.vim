@@ -322,6 +322,10 @@ function vimext#runner#Continue() abort
   :call s:Call(s:self.proto.Continue, v:null)
 endfunction
 
+function vimext#runner#Jump(args) abort
+  :call s:Call(s:self.proto.Jump, a:args)
+endfunction
+
 function vimext#runner#Break(args) abort
   let info = vimext#breakpoint#Parse(a:args)
   if info is v:null

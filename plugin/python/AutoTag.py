@@ -10,10 +10,42 @@ from threading import Thread, Lock
 
 maxsize = 400 # mb
 
-def clean_tags(tagfile, filename):
+
+def clean_tags_mem(tagfile, filename):
     pname = path.dirname(tagfile)
     relpath = filename[len(pname):].lstrip("/")
     lines = []
+
+    fp = open(tagfile, "r+b")
+
+    for line in iter(fp.readline, b'\n'):
+        if line == b'':
+            break
+
+        if line[0] == ord('!'):
+            lines.append(line)
+            continue
+
+        nv = line.split(b'\t')
+        if len(nv) < 2:
+            logging.error("may be not correct tag file")
+            return False
+
+        vs = nv[1].lstrip(b'.').replace(b'\\', b'/').decode('utf-8')
+
+        if vs.endswith(relpath) or vs == filename:
+            continue
+
+        lines.append(line)
+
+    fp.seek(0)
+    fp.truncate()
+    fp.writelines(lines)
+    fp.close()
+
+def clean_tags(tagfile, filename):
+    pname = path.dirname(tagfile)
+    relpath = filename[len(pname):].lstrip("/")
 
     tfp = Util.newtmp("w+b")
     fp = open(tagfile, "r+b")
@@ -126,7 +158,7 @@ class AutoTag:
         self.lock.acquire()
 
         if filename:
-            clean_tags(tagfile, filename)
+            clean_tags_mem(tagfile, filename)
 
         Util.process_cmd(cmd, cwd)
 
