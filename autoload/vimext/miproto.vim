@@ -20,6 +20,7 @@ function vimext#miproto#Create() abort
         \ "Finish": function("s:MiFinish"),
         \ "Interrupt": function("s:MiInterrupt"),
         \ "Continue": function("s:MiContinue"),
+        \ "Jump": function("s:MiJump"),
         \ "Until": function("s:MiUntil"),
         \ "Eval": function("s:MiEval"),
         \ "DataEvaluate": function("s:MiDataEvaluate"),
@@ -91,6 +92,10 @@ function s:MiProcessInput(self, cmdstr) abort
         \ || cmd == "continue"
 
     :call add(cmds, [a:self.Continue, args])
+  elseif cmd == "j"
+        \ || cmd == "jump"
+
+    :call add(cmds, [a:self.Jump, args])
   elseif cmd == "n"
         \ || cmd == "next"
 
@@ -466,6 +471,10 @@ endfunction
 
 function s:MiContinue(self, args) abort 
   return "-exec-continue"
+endfunction
+
+function s:MiJump(self, args) abort 
+  return "-exec-jump " . a:args
 endfunction
 
 function s:MiUntil(self, args) abort 

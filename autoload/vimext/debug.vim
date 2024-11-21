@@ -80,6 +80,7 @@ function s:StartPre() abort
   :nnoremap <S-F6> :call vimext#runner#Finish()<cr>
   :nnoremap <F7>  :call vimext#runner#Step()<cr>
   :nnoremap <F8>  :call vimext#runner#Break(line("."))<cr>
+  :nnoremap <S-F8> :call vimext#runner#Jump(line("."))<cr>
 
   :execute ":silent tabnew"
 endfunction
@@ -118,11 +119,31 @@ function s:StartDebug(bang, ...) abort
   :call vimext#runner#Run(pargs)
 endfunction
 
+function vimext#debug#SetBrk(lnum) abort
+  let line = getline(a:lnum)
+  let c_brk_cmd = ['if(0)', '{', '  puts("debugger put here");', '}']
+
+  let plnum = prevnonblank(a:lnum)
+  if &expandtab
+    let indents = repeat(' ', indent(plnum))
+  else
+    let indents = repeat("\t", plnum / &shiftwidth)
+  endif
+
+  for line in c_brk_cmd
+    :call append(line('.')-1, indents .. line)
+  endfor
+
+  :normal 4k
+  :normal 3l
+endfunction
+
 function vimext#debug#Init() abort
   :autocmd! User DbgDebugStartPre :call s:StartPre()
   :autocmd! User DbgDebugStartPost :call s:StartPost()
   :autocmd! User DbgDebugStopPre :call s:StopPre()
   :autocmd! User DbgDebugStopPost :call s:StopPost()
+  :autocmd! FileType c :nnoremap <buffer> <leader>b :call vimext#debug#SetBrk(line('.'))<cr>
 
   :command -nargs=* -complete=file -bang DbgDebug :call s:StartDebug(<bang>0, <f-args>)
   :command DbgAsm :call vimext#runner#Asm()
