@@ -139,7 +139,6 @@ function s:NewDbg(self, cmd, name, mode) abort
         \ "interrupt": a:self.Interrupt,
         \ })
   if term is v:null
-    :call vimext#logger#error('failed to start dbg' . string(a:cmd))
     return v:null
   endif
 
