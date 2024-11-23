@@ -4,9 +4,9 @@ let s:pc_id = 30
 function s:Highlight(init, old, new) abort
   let default = a:init ? 'default ' : ''
   if a:new ==# 'light' && a:old !=# 'light'
-    :execute "hi " . default . "DbgPC term=reverse ctermbg=lightblue guibg=lightblue"
+    :execute "hi " . default . "DbgPC term=reverse ctermbg=lightgrey guibg=lightblue"
   elseif a:new ==# 'dark' && a:old !=# 'dark'
-    :execute "hi " . default . "DbgPC term=reverse ctermbg=darkblue guibg=darkblue"
+    :execute "hi " . default . "DbgPC term=reverse ctermbg=darkgrey guibg=darkblue"
   endif
 endfunction
 
