@@ -107,12 +107,12 @@ def process_cmd(cmd, cwd):
 
         stdout, stderr = proc.communicate()
         if stderr:
-            logging.error("[err] %s" % (stderr))
+            logging.error("[err] %s,%s" % (rcmd, stderr))
 
         return stdout, stderr
 
     except Exception as err:
-        logging.error("[err] %s" % (err))
+        logging.error("[err] %s,%s" % (rcmd, err))
 
     return None, "execute failed: %s" % (rcmd)
 
